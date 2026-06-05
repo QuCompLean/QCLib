@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Davood Tehrani, David Gross. All rights reserved.
-Released under MIT license as described in the file LICENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Davood Tehrani, David Gross
 -/
 module
