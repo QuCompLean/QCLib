@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 David Gross. All rights reserved.
-Released under MIT license as described in the file LICENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: David Gross
 -/
 module
@@ -152,11 +152,11 @@ instance : SMul (diagonalSubgroup n R) (unitaryGroup n R) := Subgroup.instMulAct
 /-- Shortcut instance -/
 instance : SMul (diagonalSubgroup n R) (n → R) := DistribMulAction.toDistribSMul.toSMul
 --
--- TBD: Investigate. Times out w/out shortcuts when Mathlib is imported.
--- set_option synthInstance.maxHeartbeats 100000
-#synth SMul (diagonalSubgroup n R) (unitaryGroup n R)
--- set_option synthInstance.maxHeartbeats 100000 in
-#synth SMul (diagonalSubgroup n R) (n → R)
+-- -- TBD: Investigate. Times out w/out shortcuts when Mathlib is imported.
+-- -- set_option synthInstance.maxHeartbeats 100000
+-- #synth SMul (diagonalSubgroup n R) (unitaryGroup n R)
+-- -- set_option synthInstance.maxHeartbeats 100000 in
+-- #synth SMul (diagonalSubgroup n R) (n → R)
 
 /-- Provides `(A • B) • z = A • B • z`. -/
 instance : IsScalarTower (diagonalSubgroup n R) (diagonalSubgroup n R) (n → R) where

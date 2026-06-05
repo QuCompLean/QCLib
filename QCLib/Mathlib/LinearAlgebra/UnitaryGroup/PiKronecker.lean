@@ -6,7 +6,7 @@ Authors: Davood Tehrani, David Gross
 module
 
 public import Mathlib.LinearAlgebra.UnitaryGroup
-public import QCLib.Mathlib.LinearAlgebra.Matrix.PiOuterProduct.Basic
+public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
 
 /-!
 
