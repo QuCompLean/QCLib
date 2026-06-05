@@ -39,15 +39,15 @@ making it difficult for the elaborator to reduce them to their corresponding con
 The following example illustrates the issue:
 
 ```
-example (a : Fin 2 → Fin 2) : a ∈ [![0, 0], ![0, 1], ![1,0], ![1,1]] := by
+example (a : Fin 2 → Fin 2) : a ∈ [![0, 0], ![0, 1], ![1, 0], ![1,1]] := by
   fin_cases a
-  simp
+  simp -- fails to prove the goal
 ```
 
-To address this issue, we define `piFinList`, a recursively constructed List containing all
+To address this, we define `piFinList`, a recursively constructed List containing all
 elements of `Fin n → Fin d`. This explicit enumeration avoids the additional abstraction
-introduced by the default Fintype instance and provides a
-representation that is more amenable to simplification.
+introduced by the default Fintype instance and provides a representation that is
+more amenable to simplification.
 
 
 # TBD
