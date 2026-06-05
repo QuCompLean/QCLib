@@ -343,20 +343,12 @@ private theorem reindex_univ_piKronecker [CommSemiring α]
   ext
   simp
 
+/- This equivalence is defined because `Finset.insertPiProdEquiv`
+  doesn't boundle membership into the type. -/
 private def insertPiProdEquiv' {ι : Type*} [DecidableEq ι] {l : ι → Type*}
     {a : ι} {s : Finset ι} (ha : a ∉ s) :
     ((i : ↥(insert a s)) → l i) ≃ l a × ((i : ↥s) → l i) :=
   (Equiv.piCongrLeft' _ (Finset.subtypeInsertEquivOption ha)).trans Equiv.piOptionEquivProd
-
-@[simp] private lemma insertPiProdEquiv'_fst {ι : Type*} [DecidableEq ι]
-    (l : ι → Type*) {a : ι} {s : Finset ι} (ha : a ∉ s)
-    (f : (i : ↥(insert a s)) → l ↑i) :
-    ((insertPiProdEquiv' ha) f).1 = f ⟨a, by simp [ha]⟩ := rfl
-
-@[simp] private lemma insertPiProdEquiv'_snd {ι : Type*} [DecidableEq ι]
-    (l : ι → Type*) {a : ι} {s : Finset ι} (ha : a ∉ s)
-    (f : (i : ↥(insert a s)) → l i) (i : ↥s) :
-    ((insertPiProdEquiv' ha) f).2 i = f ⟨i, by simp [i.property]⟩ := rfl
 
 omit [Fintype ι] in
 private theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableEq ι]
@@ -366,8 +358,7 @@ private theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableE
   rw [←Equiv.eq_symm_apply]
   ext p q
   simp only [piKronecker_apply, Finset.univ_eq_attach, ← Finset.prod_coe_sort_eq_attach,
-    reindex_symm, reindex_apply, symm_symm, submatrix_apply, kroneckerMap_apply,
-    insertPiProdEquiv'_fst, insertPiProdEquiv'_snd]
+    reindex_symm, reindex_apply, symm_symm, submatrix_apply, kroneckerMap_apply]
   rw [Fintype.prod_equiv (Finset.subtypeInsertEquivOption h)
     (fun i => A (i.val) (p i) (q i))
     (fun x => match x with
@@ -375,6 +366,7 @@ private theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableE
       | some i => A i (p ⟨i, by simp⟩) (q ⟨i, by simp⟩)
     ) (by grind [Finset.subtypeInsertEquivOption])]
   simp
+  rfl
 
 open Fintype Finset in
 omit [Fintype ι] in
