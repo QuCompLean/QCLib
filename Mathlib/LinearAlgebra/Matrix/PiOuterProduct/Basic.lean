@@ -8,7 +8,6 @@ module
 public import Mathlib.LinearAlgebra.Matrix.Hermitian
 
 /-!
-
 # Outer product of indexed families of functions and matrices
 
 TBD
@@ -33,11 +32,11 @@ TBD
 
 Fairly stable, but needs more results. Exception is the section on determinants,
 which needs golfing.
-
 -/
 
 public section
 
+/- Misc lemmas. Put somewhere appropriate.  -/
 section Lemmas
 
 namespace Function
@@ -262,8 +261,7 @@ open Function in
 @[simp]
 theorem PiKronecker_add [CommSemiring α] [DecidableEq ι] (A : Π i, Matrix (l i) (m i) α)
     (i : ι) (x : Matrix (l i) (m i) α) (y : Matrix (l i) (m i) α) :
-    (⨂ₒ j, (update A i (x + y)) j) = (⨂ₒ j, (update A i x) j) +
-      (⨂ₒ j, (update A i y) j) := by
+    (⨂ₒ j, (update A i (x + y)) j) = (⨂ₒ j, (update A i x) j) + (⨂ₒ j, (update A i y) j) := by
   ext k l
   simp [update_apply_eq_update₂, Finset.prod_update_of_mem, add_mul]
 
