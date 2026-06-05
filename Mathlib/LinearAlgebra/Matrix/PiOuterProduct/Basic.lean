@@ -5,8 +5,6 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-public import Mathlib.LinearAlgebra.Matrix.Kronecker
-public import Mathlib.Data.Matrix.Action
 public import Mathlib.LinearAlgebra.Matrix.Hermitian
 
 /-!
@@ -17,11 +15,19 @@ TBD
 
 ## Main defintions
 
-TBD
+* `PiOuterProduct`: Tensor product of an indexed family of functions
+* `PiKronecker`: Kronecker product of an indexed family of matrices
+* `PiOuterProduct.toMultilinearMap` / `PiKroneckerProduct.toMultilinearMap`:
+  Outer products as multilinear maps.
+
+## Notation
+
+* `⨂ₒ` Notation typeclass of outer products. We define instances for
+  `PiOuterProduct` and `PiKronecker`.
 
 ## Main results
 
-TBD
+* `PiKronecker_det_dep` The determinant of a KroneckerProducgt
 
 ## Maturity
 
