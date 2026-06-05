@@ -10,7 +10,8 @@ public import Mathlib.LinearAlgebra.Matrix.Hermitian
 /-!
 # Outer product of indexed families of functions and matrices
 
-TBD
+For now, put all results in one file under the `Matrix` directory, as the main
+results are on Kronecker products of matrices.
 
 ## Main defintions
 
@@ -70,8 +71,6 @@ class OuterProduct {ι : Type*} (α : ι → Type*) (β : outParam (Type*)) wher
 scoped[OuterProduct] notation3:100 "⨂ₒ "(...)", "r:(scoped f => OuterProduct.tprod f) => r
 
 open scoped OuterProduct
-
-namespace Matrix
 
 variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {α : Type*}
 
@@ -168,6 +167,8 @@ end OuterProduct
 /-
 # Tensor product of matrices
 -/
+
+namespace Matrix
 
 section PiKroneckerMap
 
