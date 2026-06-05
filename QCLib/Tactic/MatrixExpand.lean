@@ -19,6 +19,9 @@ import Mathlib.LinearAlgebra.StdBasis
 `*_def` lemmas can be tagged by `matrixExpand` to allow automatic unfolding of
 definitions in `matrix_expand`.
 
+`matrix_neq` is a simple tactic for proving inequality of a unitary matrix an identity.
+
+
 # Origin & Problems
 
 This tactic was initially taken from `Timeroot/Lean-QuantumInfo` github repo.
@@ -46,9 +49,12 @@ elements of `Fin n → Fin d`. This explicit enumeration avoids the additional a
 introduced by the default Fintype instance and provides a
 representation that is more amenable to simplification.
 
+
+# TBD
+
+Finding replacement for `matrix_neq`.
+
 -/
-
-
 
 
 @[expose] public section
@@ -83,7 +89,6 @@ theorem Finset.sum_vecCons {M} [AddCommMonoid M] {n m : ℕ} (f : (Fin n.succ �
   simp [e]
 
 end
-
 
 
 meta section
@@ -143,6 +148,25 @@ macro_rules
       <;> ring_nf
       <;> norm_cast
       <;> norm_num)
+
+
+open Lean.Parser.Tactic in
+/-- This is a hack for proving that a unitary isn't `1`. To be fixed. -/
+syntax (name := matrix_neq) "matrix_neq"
+  (" [" ((simpStar <|> simpErase <|> simpLemma),*,?) "]")? : tactic
+
+-- `Subtype.ext_iff` reduces unitaries to matrices
+-- `ne_eq` reduces `a ≠ b` to `¬a=b`
+macro_rules
+| `(tactic| matrix_neq $[[$rules,*]]? ) => do
+  let rules' := rules.getD ⟨#[]⟩
+  `(tactic|
+    simp only [Subtype.ext_iff, ne_eq, $[$rules'],* ] <;>
+    apply matrix_neq_of_diag_neq <;>
+    simp <;>
+    norm_cast
+  )
+
 
 end Lean.Elab.Tactic
 
