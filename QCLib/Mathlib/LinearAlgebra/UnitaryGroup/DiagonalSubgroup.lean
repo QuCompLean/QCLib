@@ -151,7 +151,17 @@ instance : SMul (diagonalSubgroup n R) (unitaryGroup n R) := Subgroup.instMulAct
 --
 /-- Shortcut instance -/
 instance : SMul (diagonalSubgroup n R) (n → R) := DistribMulAction.toDistribSMul.toSMul
---
+
+instance : SMul (unitary R) (diagonalSubgroup n R) where
+  smul a b := ⟨a • b.val, by
+    apply mem_diagonalSubgroup.mpr
+    have ⟨d, hd⟩ := mem_diagonalSubgroup.mp b.prop
+    use a • d
+    ext
+    simp [← hd]
+  ⟩
+
+
 -- -- TBD: Investigate. Times out w/out shortcuts when Mathlib is imported.
 -- -- set_option synthInstance.maxHeartbeats 100000
 -- #synth SMul (diagonalSubgroup n R) (unitaryGroup n R)
