@@ -11,9 +11,11 @@ public import Mathlib.Data.Matrix.Action
 public import Mathlib.LinearAlgebra.UnitaryGroup
 
 /-!
-# Diagonal unitaries
+# Diagonal unitary matrices
 
 This file defines the diagonal subgroup of the unitary group.
+
+## Implementation Notes
 
 There are two natural models of that group, namely:
 * `unitary (n → R)`

@@ -62,7 +62,8 @@ theorem update_apply_eq_update₂ {α γ : Type*} [DecidableEq α] {l m : α →
 
 end Lemmas.Function
 
-/-- Notation typeclass for `⨂ₒ` -/
+/-- Notation typeclass for `⨂ₒ`. We'll use the spelling `OuterProduct` for
+functions / vectors and `KroneckerProduct` for matrices. -/
 class OuterProduct {ι : Type*} (α : ι → Type*) (β : outParam (Type*)) where
   /-- The outer product of a family of objects -/
   tprod : (Π i, α i) → β
@@ -157,8 +158,7 @@ theorem piOuterProduct_smul_const (a : α) (v : Π i, (l i → α)) :
   simp [piOuterProduct_smul_univ]
 
 theorem piOuterProduct_univ_sum [DecidableEq ι] {κ : Type*} [Fintype κ]
-    (f : (i : ι) → κ → (l i) → α) :
-    (⨂ₒ i, ∑ j : κ , f i j) = ∑ k : (ι → κ), ⨂ₒ i, f i (k i) := by
+    (f : (i : ι) → κ → (l i) → α) : (⨂ₒ i, ∑ j : κ , f i j) = ∑ k : (ι → κ), ⨂ₒ i, f i (k i) := by
   ext x
   simp [Fintype.prod_sum]
 

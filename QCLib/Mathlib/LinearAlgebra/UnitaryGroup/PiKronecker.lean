@@ -14,7 +14,7 @@ public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
 
 ## Main definitions
 
-* `OuterProduct` instance for `Matrix.unitaryGroup`
+* An `OuterProduct` instance for `Matrix.unitaryGroup`
 
 ## Maturity
 
@@ -79,7 +79,7 @@ theorem piKroneckerUnitary_inv (U : Π i, unitaryGroup (n i) R) : (⨂ₒ i, U i
 
 @[simp]
 theorem piKroneckerUnitary_coe_mulVec (U : Π i, unitaryGroup (n i) R) (v : Π i, n i → R) :
-    (⨂ₒ i, U i) *ᵥ (⨂ₒ i, v i) = ⨂ₒ i, (U i : Matrix (n i) (n i) R) *ᵥ (v i) := by
+    ↑(⨂ₒ i, U i) *ᵥ (⨂ₒ i, v i) = ⨂ₒ i, (U i : Matrix (n i) (n i) R) *ᵥ (v i) := by
   simp
 
 end Matrix
