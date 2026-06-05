@@ -322,81 +322,44 @@ determinant of a Kronecker product.
 
 -/
 
-section Equiv
 
 open Equiv Kronecker
 
-theorem reindex_unique_piKronecker [CommSemiring α] [Unique ι]
-    {l m : ι → Type*} (A : Π i, Matrix (l i) (m i) α) :
-    reindex (piUnique l) (piUnique m) (⨂ₒ i, A i) = A default := by
-  ext
-  simp
-
-theorem piKronecker_finInsertEquiv {n} [CommMonoid α] (i : Fin (n + 1)) (l m : Fin (n + 1) → Type*)
-    (A : Π i : Fin (n + 1), Matrix (l i) (m i) α) :
-    (⨂ₒ i, A i) =
-    reindex (Fin.insertNthEquiv l i) (Fin.insertNthEquiv m i)
-      ((A i) ⊗ₖ (⨂ₒ j, A (i.succAbove j))) := by
-  ext a b
-  simp [Fin.prod_univ_succAbove (x := i)]
-  congr
-
+/-- TBD: to be upstreamed to "Mathlib.Data.Finset". -/
 @[simps! apply symm_apply, expose]
 def Finset.univEquiv (α : Type*) [Fintype α] :
     (Finset.univ : Finset α) ≃ α :=
   Equiv.subtypeUnivEquiv (fun x => Finset.mem_univ x)
 
-@[simps! apply symm_apply, expose]
-def piUnivEquiv {ι : Type*} [Fintype ι] {m : ι → Type*} :
+@[simps! apply symm_apply]
+private def piUnivEquiv {ι : Type*} [Fintype ι] {m : ι → Type*} :
     ((i : ↥(Finset.univ : Finset ι)) → m ↑i) ≃ ((i : ι) → m i) :=
   Equiv.piCongrLeft' _ (Finset.univEquiv ι)
 
-theorem reindex_univ_piKronecker [CommSemiring α]
+private theorem reindex_univ_piKronecker [CommSemiring α]
     {l m : ι → Type*} (A : Π i, Matrix (l i) (m i) α) :
   reindex piUnivEquiv.symm piUnivEquiv.symm (⨂ₒ i : ι, A i)
     = (⨂ₒ i : (Finset.univ : Finset ι), A i) := by
   ext
   simp
 
-@[expose]
-def Finset.insertPiProdEquiv' {ι : Type*} [DecidableEq ι] {l : ι → Type*}
+private def insertPiProdEquiv' {ι : Type*} [DecidableEq ι] {l : ι → Type*}
     {a : ι} {s : Finset ι} (ha : a ∉ s) :
     ((i : ↥(insert a s)) → l i) ≃ l a × ((i : ↥s) → l i) :=
   (Equiv.piCongrLeft' _ (Finset.subtypeInsertEquivOption ha)).trans Equiv.piOptionEquivProd
 
-open Finset
-@[simp] lemma Finset.insertPiProdEquiv'_fst {ι : Type*} [DecidableEq ι]
+@[simp] private lemma insertPiProdEquiv'_fst {ι : Type*} [DecidableEq ι]
     (l : ι → Type*) {a : ι} {s : Finset ι} (ha : a ∉ s)
     (f : (i : ↥(insert a s)) → l ↑i) :
     ((insertPiProdEquiv' ha) f).1 = f ⟨a, by simp [ha]⟩ := rfl
 
-@[simp] lemma Finset.insertPiProdEquiv'_snd {ι : Type*} [DecidableEq ι]
+@[simp] private lemma insertPiProdEquiv'_snd {ι : Type*} [DecidableEq ι]
     (l : ι → Type*) {a : ι} {s : Finset ι} (ha : a ∉ s)
     (f : (i : ↥(insert a s)) → l i) (i : ↥s) :
     ((insertPiProdEquiv' ha) f).2 i = f ⟨i, by simp [i.property]⟩ := rfl
 
--- Why does it have to be so hard?
-@[simp] lemma Finset.insertPiProdEquiv'_symm_none {ι : Type*} [DecidableEq ι]
-    (l : ι → Type*) {a : ι} {s : Finset ι} (ha : a ∉ s)
-    (x : l a) (g : (i : ↥s) → l i) :
-    (insertPiProdEquiv' ha).symm (x, g) ⟨a, by simp [ha]⟩ = x := by
-  calc
-    _ = ((insertPiProdEquiv' ha) ((insertPiProdEquiv' ha).symm (x, g))).1 := by
-          rw [insertPiProdEquiv'_fst l ha]
-    _ = (x, g).1 := by rw [(insertPiProdEquiv' ha).apply_symm_apply (x, g)]
-
-@[simp] lemma insertPiProdEquiv'_symm_some {ι : Type*} [DecidableEq ι]
-    (l : ι → Type*) {a : ι} {s : Finset ι} (ha : a ∉ s)
-    (x : l a) (g : (i : ↥s) → l i) (i : ↥s) :
-    (insertPiProdEquiv' ha).symm (x, g) ⟨i, Finset.mem_insert_of_mem i.property⟩ = g i := by
-  calc
-    _ = ((Finset.insertPiProdEquiv' ha) ((Finset.insertPiProdEquiv' ha).symm (x, g))).2 i := by
-        rw [insertPiProdEquiv'_snd l ha]
-    _ = (x, g).2 i := by rw [(Finset.insertPiProdEquiv' ha).apply_symm_apply (x, g)]
-    _ = g i := rfl
-
 omit [Fintype ι] in
-theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableEq ι]
+private theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableEq ι]
     (A : Π i, Matrix (l i) (m i) α) {a : ι} {s : Finset ι} (h : a ∉ s) :
     reindex (insertPiProdEquiv' h) (insertPiProdEquiv' h) (⨂ₒ i : (insert a s : Finset ι), A i) =
       (A a) ⊗ₖ (⨂ₒ i : s, A i.val) := by
@@ -412,17 +375,6 @@ theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableEq ι]
       | some i => A i (p ⟨i, by simp⟩) (q ⟨i, by simp⟩)
     ) (by grind [Finset.subtypeInsertEquivOption])]
   simp
-
-theorem piKronecker_piEquivPiSubtypeProd [CommMonoid α]
-    (p : ι → Prop) [DecidablePred p]
-    (A : Π i, Matrix (l i) (m i) α) :
-    reindex (piEquivPiSubtypeProd p l) (piEquivPiSubtypeProd p m) (⨂ₒ i, A i) =
-      (⨂ₒ i : {i // p i}, A i.val) ⊗ₖ (⨂ₒ i : {i // ¬p i}, A i.val) := by
-  ext
-  simp [← Fintype.prod_subtype_mul_prod_subtype (p := p)]
-  congr <;> grind
-
-end Equiv
 
 open Fintype Finset in
 omit [Fintype ι] in
