@@ -247,21 +247,23 @@ theorem _root_.List.prod_piKronecker [CommSemiring α] [∀ i, Fintype (m i)] [�
     simp_rw [List.map_cons, List.prod_cons, ← mul_piKronecker_mul]
     with_reducible congr
 
-set_option backward.isDefEq.respectTransparency false in -- TBD: investigate
+-- Option seems to be needed to treat `Matrix` as a function. TBD.
+set_option backward.isDefEq.respectTransparency false in
 open Function in
 @[simp]
 theorem PiKronecker_smul [CommSemiring α] [DecidableEq ι] (A : Π i, Matrix (l i) (m i) α)
     (i : ι) (s : α) (x : Matrix (l i) (m i) α) :
-    (⨂ₒ j, (update A i (s • x)) j) = s • ⨂ₒ j, (update A i x) j := by
+    (⨂ₒ j, update A i (s • x) j) = s • ⨂ₒ j, update A i x j := by
   ext
   simp [update_apply_eq_update₂, Finset.prod_update_of_mem, mul_assoc]
 
+-- Option seems to be needed to treat `Matrix` as a function. TBD.
 set_option backward.isDefEq.respectTransparency false in
 open Function in
 @[simp]
 theorem PiKronecker_add [CommSemiring α] [DecidableEq ι] (A : Π i, Matrix (l i) (m i) α)
     (i : ι) (x : Matrix (l i) (m i) α) (y : Matrix (l i) (m i) α) :
-    (⨂ₒ j, (update A i (x + y)) j) = (⨂ₒ j, (update A i x) j) + (⨂ₒ j, (update A i y) j) := by
+    (⨂ₒ j, update A i (x + y) j) = (⨂ₒ j, update A i x j) + (⨂ₒ j, update A i y j) := by
   ext k l
   simp [update_apply_eq_update₂, Finset.prod_update_of_mem, add_mul]
 
