@@ -1,2 +1,3 @@
-import QCLib.Mathlib.LinearAlgebra.Matrix.PiOuterProduct.Basic
-import QCLib.Mathlib.LinearAlgebra.Matrix.PiOuterProduct.UnitaryGroup
+import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
+import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.DiagonalSubgroup
+import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
