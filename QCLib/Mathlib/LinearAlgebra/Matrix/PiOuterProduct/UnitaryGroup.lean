@@ -10,7 +10,15 @@ public import QCLib.Mathlib.LinearAlgebra.Matrix.PiOuterProduct.Basic
 
 /-!
 
-TBD
+# Kronecker products of unitary matrices
+
+## Main definitions
+
+* `OuterProduct` instance for `Matrix.unitaryGroup`
+
+## Maturity
+
+Stable.
 
 -/
 
@@ -26,20 +34,19 @@ variable {R : Type*}
 variable [DecidableEq ι] [∀ i, DecidableEq (n i)] [∀ i, Fintype (n i)] [CommRing R] [StarRing R]
 
 theorem piKronecker_mem_unitaryGroup (U : Π i, Matrix (n i) (n i) R)
-    (hU : ∀ i, U i ∈ unitaryGroup (n i) R) :
-    (⨂ₒ i, U i) ∈ unitaryGroup (Π i, n i) R := by
-  simp only [mem_unitaryGroup_iff, mul_piKronecker_mul, star_piKronecker,
-    fun i ↦ mem_unitaryGroup_iff.mp (hU i), piKronecker_one]
+    (hU : ∀ i, U i ∈ unitaryGroup (n i) R) : (⨂ₒ i, U i) ∈ unitaryGroup (Π i, n i) R := by
+  simp [mem_unitaryGroup_iff, mul_piKronecker_mul, star_piKronecker,
+    fun i ↦ mem_unitaryGroup_iff.mp (hU i)]
 
 /-- Kronecker product of a family of unitaries -/
 def PiKroneckerUnitary (U : Π i, unitaryGroup (n i) R) : (unitaryGroup (Π i, n i) R) :=
-  ⟨⨂ₒ i, (U i).val, by simp [piKronecker_mem_unitaryGroup]⟩
+  ⟨⨂ₒ i, (U i : Matrix (n i) (n i) R), by simp [piKronecker_mem_unitaryGroup]⟩
 
 instance : OuterProduct (fun i ↦ unitaryGroup (n i) R) (unitaryGroup (Π i, n i) R) where
   tprod := PiKroneckerUnitary
 
 theorem piKron_unitary_def (U : Π i, unitaryGroup (n i) R) :
-  (⨂ₒ i, U i) = PiKroneckerUnitary U := rfl
+    (⨂ₒ i, U i) = PiKroneckerUnitary U := rfl
 
 @[simp]
 theorem piKroneckerUnitary_apply (U : Π i, unitaryGroup (n i) R) (r : Π i, n i) (s : Π i, n i) :
@@ -48,11 +55,11 @@ theorem piKroneckerUnitary_apply (U : Π i, unitaryGroup (n i) R) (r : Π i, n i
 
 @[simp, norm_cast]
 theorem coe_piKroneckerUnitary (U : Π i, unitaryGroup (n i) R) :
-    ((⨂ₒ i, U i).val) = ⨂ₒ i, (U i).val := by rfl
+    (⨂ₒ i, U i) = ⨂ₒ i, ((U i) : Matrix (n i) (n i) R) := by rfl
 
 @[simp]
 theorem mul_piKroneckerUnitary_mul (U V : Π i, unitaryGroup (n i) R) :
-    (⨂ₒ i, U i) * (⨂ₒ  i, V i) = ⨂ₒ i, U i * V i := by
+    (⨂ₒ i, U i) * (⨂ₒ i, V i) = ⨂ₒ i, U i * V i := by
   ext
   simp [mul_piKronecker_mul]
 
@@ -68,7 +75,7 @@ theorem piKroneckerUnitary_smul_univ (c : ι → unitary R) (U : Π i, unitaryGr
 
 @[simp]
 theorem piKroneckerUnitary_inv (U : Π i, unitaryGroup (n i) R) : (⨂ₒ i, U i)⁻¹ = ⨂ₒ i, (U i)⁻¹ :=
-    inv_eq_of_mul_eq_one_left (by simp)
+  inv_eq_of_mul_eq_one_left (by simp)
 
 @[simp]
 theorem piKroneckerUnitary_coe_mulVec (U : Π i, unitaryGroup (n i) R) (v : Π i, n i → R) :
