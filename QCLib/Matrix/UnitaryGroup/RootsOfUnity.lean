@@ -81,6 +81,8 @@ lemma ζ_star : star (ζ n) = (ζ n)⁻¹ := by
 
 section QFT
 
+-- TBD: The names in this section don't reflect the functions any more.
+
 lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
     ζ m ^ (m / n) = ζ n := by
   obtain ⟨k, rfl⟩ := hdvd
