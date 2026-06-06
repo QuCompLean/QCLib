@@ -109,16 +109,4 @@ theorem UnitaryGroup.coe_zpow (z : ℤ) (U : unitaryGroup n α) :
 
 end Coe
 
--- TBD: Put in different file.
-section Neg
-
--- TBD: C.f. `orderOf_neg_one`
--- Makes `simp` realize that `(-1 : ℂ) ≠ 1`
-@[simp]
-theorem _root_.Ring.neg_one_ne_one_of_char_zero_class {α : Type*} [Ring α] [CharZero α] :
-    (-1 : α) ≠ 1 := by
-  simp [Ring.neg_one_ne_one_of_char_ne_two]
-
-end Neg
-
 end Matrix
