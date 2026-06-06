@@ -19,6 +19,8 @@ public import QCLib.Misc.IntCast
 
 This file defines the generators of the `n`-qubit Pauli group and proves basic properties.
 
+These will be used in `PauliGroup.lean` to define the full `n`-qubit Pauli group.
+
 ## Main definitions
 
 * `ZZ p` for `p : Fin n → ℤ` is the `n`-qubit `Z`-type Pauli group element

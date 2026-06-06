@@ -72,6 +72,8 @@ theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] 
 
 -- TBD: `_apply_basis` → `_smul`? In any case, make consistent.
 
+-- TBD: Debug this.
+
 -- theorem diagonalSubgroup_apply_basis {α} [DecidableEq α] [Fintype α] (D : 𝐃[α]) (k : α) :
 --     D • δ[k] = D k k • δ[k] := by
 --   obtain ⟨d, hd⟩ := Pi.Unitary.mem_diagonalSubgroup.mp D.prop
