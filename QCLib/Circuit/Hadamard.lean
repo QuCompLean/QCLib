@@ -15,7 +15,7 @@ public import QCLib.Circuit.Qubit
 /-!
 # `n`-qubit Hadamard gate
 
-We define the `n`-qubit Hadamard gate. Its columns are the `ℤ₂ⁿ`-Fourier basis,
+We define the `n`-qubit Hadamard gate. Its columns are the `(ℤ₂)ⁿ`-Fourier basis,
 a.k.a. the Hadamard basis.
 
 ## Main definitions
@@ -49,7 +49,7 @@ theorem HH_isHermitian : Matrix.IsHermitian (HH n).val := by
   generalize ha : i k = a, hb : j k = b
   fin_cases a <;> fin_cases b <;> simp [H_eq]
 
-/-- `ℤ₂ⁿ` Fourier basis vector, aka a Hadamard basis vector. -/
+/-- `(ℤ₂)ⁿ` Fourier basis vector, aka a Hadamard basis vector. -/
 noncomputable def HadamardBasisVector (k : Register n) :=
   (√2 : ℂ)⁻¹ ^ n • ∑ l : Register n, (-1 : ℂ)^(∑ i, (k i) * (l i) : ℕ) • δ[l]
 
