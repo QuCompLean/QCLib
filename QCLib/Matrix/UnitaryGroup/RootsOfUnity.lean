@@ -81,8 +81,6 @@ lemma ζ_star : star (ζ n) = (ζ n)⁻¹ := by
 
 section QFT
 
--- TBD: The names in this section don't reflect the functions any more.
-
 lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
     ζ m ^ (m / n) = ζ n := by
   obtain ⟨k, rfl⟩ := hdvd
@@ -91,7 +89,7 @@ lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
   ring_nf
   simp [mul_comm, ←mul_assoc, hk]
 
-lemma ζ_pow_primepow (a k : ℕ) (ha : a ≠ 0) :
+lemma ζ_pow_succ (a k : ℕ) (ha : a ≠ 0) :
     ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
   simpa [pow_succ', ha] using
     ζ_pow_dvd a (a ^ (k + 1)) ha (pow_ne_zero (k + 1) ha) (dvd_pow_self a (by lia))

@@ -104,4 +104,5 @@ theorem piKroneckerUnitary_smul_vec (U : Π i, unitaryGroup (n i) R) (v : Π i, 
 end OuterProduct
 
 
+
 end

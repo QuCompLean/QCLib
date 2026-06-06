@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Data.Complex.Basic
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
-
+public import QCLib.Matrix.UnitaryGroup.DiagonalSubgroup
 /-!
 
 # Basic setup related to `Matrix.unitaryGroup`

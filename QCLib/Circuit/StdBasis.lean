@@ -74,10 +74,10 @@ theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] 
 
 -- TBD: Debug this.
 
--- theorem diagonalSubgroup_apply_basis {α} [DecidableEq α] [Fintype α] (D : 𝐃[α]) (k : α) :
---     D • δ[k] = D k k • δ[k] := by
---   obtain ⟨d, hd⟩ := Pi.Unitary.mem_diagonalSubgroup.mp D.prop
---   simp [basisVector_def, ← hd, ← Pi.single_smul, Subgroup.smul_def, Submonoid.smul_def]
+theorem diagonalSubgroup_apply_basis {α} [DecidableEq α] [Fintype α] (D : 𝐃[α]) (k : α) :
+    D • δ[k] = D k k • δ[k] := by
+  obtain ⟨d, hd⟩ := Pi.Unitary.mem_diagonalSubgroup.mp D.prop
+  simp [basisVector_def, ← hd, ← Pi.single_smul, Subgroup.smul_def, Submonoid.smul_def]
 --
 -- theorem finset_prod_diagonalSubgroup_apply_basis {ι} (s : Finset ι)
 --     {α} [DecidableEq α] [Fintype α] (D : ι → 𝐃[α]) (k : α) :
