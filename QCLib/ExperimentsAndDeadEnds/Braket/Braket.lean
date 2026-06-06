@@ -16,7 +16,7 @@ module
 
 public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.LinearAlgebra.Matrix.Unique
-public import Qml.Tactic -- Split Tactic to registerSimp and import that instead?
+public import QCLib.Tactic.MatrixExpand -- Split Tactic to registerSimp and import that instead?
 
 public section
 
