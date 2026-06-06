@@ -4,8 +4,8 @@ import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.DiagonalSubgroup
 import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 import QCLib.Matrix.Action
-import QCLib.UnitaryGroup.Action
-import QCLib.UnitaryGroup.Basic
-import QCLib.UnitaryGroup.Kronecker
-import QCLib.UnitaryGroup.RootsOfUnity
+import QCLib.Matrix.UnitaryGroup.Action
+import QCLib.Matrix.UnitaryGroup.Basic
+import QCLib.Matrix.UnitaryGroup.Kronecker
+import QCLib.Matrix.UnitaryGroup.RootsOfUnity
 import QCLib.Tactic.MatrixExpand
