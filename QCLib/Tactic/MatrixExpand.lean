@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Davood Tehrani, David Gross. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Davood Tehrani, David Gross, Andrés Goens
+-/
 module
 
 public import Mathlib.Data.Fin.VecNotation
