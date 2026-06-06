@@ -6,7 +6,7 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.Algebra.CharP.Basic
-public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Lie.OfAssociative -- `#min_imports` suggestions aren't really sensible
 
 /-!
 
@@ -17,6 +17,28 @@ In search of an appropriate home.
 -/
 
 @[expose] public section
+
+/-- Delta functions on tuples factorize: `δ_{k}(l) = Π i, δ_{kᵢ}(lᵢ)` -/
+theorem Pi.single_eq_prod {ι R : Type*} (κ : ι → Type*) [Fintype ι] [∀ i, DecidableEq (κ i)]
+    [CommMonoidWithZero R] [Nontrivial R] [NoZeroDivisors R] [NeZero (1 : R)]
+    (k l : (i : ι) → κ i) :
+    Pi.single (M := fun _ ↦ R) k 1 l = ∏ i : ι, Pi.single (M := fun _ ↦ R) (k i) 1 (l i) := by
+  simp only [Pi.single_apply]
+  symm
+  split_ifs with h
+  · simp [h]
+  · simp [Finset.prod_eq_zero_iff, Function.ne_iff.mp h]
+
+-- Integer power version of `Finset.prod_pow_eq_pow_sum`. Does this exist somehwere?
+theorem Finset.prod_zpow_eq_zpow_sum
+    {ι G : Type} [CommGroup G] (s : Finset ι) (f : ι → ℤ) (a : G) :
+    ∏ i ∈ s, a ^ f i = a ^ ∑ i ∈ s, f i := by
+  classical exact Finset.induction_on s (by simp) (by simp_all [_root_.zpow_add])
+
+theorem Finset.prod_zpow_eq_zpow_sum₀
+    {ι M : Type} [CommGroupWithZero M] (s : Finset ι) (f : ι → ℤ) {a : M} (h : a ≠ 0) :
+    ∏ i ∈ s, a ^ f i = a ^ ∑ i ∈ s, f i := by
+  classical exact Finset.induction_on s (by simp) (by simp_all [_root_.zpow_add₀])
 
 section noncommProd
 
