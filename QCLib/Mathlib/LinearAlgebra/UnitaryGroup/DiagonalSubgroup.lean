@@ -34,7 +34,8 @@ We'll put defs pertaining to these two points of view into the namespaces
 
 ## To do
 
-With the benefit of hindsight, should probably go for the 2nd model.
+With the benefit of hindsight, should probably base the definition on the second
+model. Do this, and remove some code.
 -/
 
 @[expose] public section

@@ -7,7 +7,6 @@ module
 
 public import Mathlib.Data.Fin.VecNotation
 public import Mathlib.Data.Matrix.Mul
--- public import Mathlib.Algebra.Group.Submonoid.MulAction
 public meta import Mathlib.Tactic.FinCases
 public meta import Mathlib.Tactic.FieldSimp
 public meta import Mathlib.Tactic.Ring.RingNF
@@ -31,9 +30,9 @@ definitions in `matrix_expand`.
 
 This tactic was initially taken from `Timeroot/Lean-QuantumInfo` github repo.
 
-The original implementation was able to prove equalities between
+The original implementation is able to prove equalities between
 matrices indexed by `Fin n`. However, when applied to matrices indexed by
-`Fin n → Fin d`, it failed to simplify certain expressions.
+tuples, it fails to simplify certain expressions.
 
 This limitation stems from the construction of the `Fintype` instance ` Pi.instFintype`
 for functions of type `Fin n → Fin d`. Internally, this instance is derived from
