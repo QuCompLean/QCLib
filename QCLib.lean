@@ -7,4 +7,5 @@ import QCLib.Matrix.Action
 import QCLib.UnitaryGroup.Action
 import QCLib.UnitaryGroup.Basic
 import QCLib.UnitaryGroup.Kronecker
+import QCLib.UnitaryGroup.RootsOfUnity
 import QCLib.Tactic.MatrixExpand
