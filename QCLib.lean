@@ -9,6 +9,7 @@ import QCLib.Matrix.UnitaryGroup.Basic
 import QCLib.Matrix.UnitaryGroup.Kronecker
 import QCLib.Matrix.UnitaryGroup.RootsOfUnity
 import QCLib.Matrix.UnitaryGroup.DiagonalSubgroup
+import QCLib.Matrix.PiOuterProduct.Equiv
 import QCLib.Circuit.StdBasis
 import QCLib.Circuit.Qubit
 import QCLib.Circuit.Hadamard
