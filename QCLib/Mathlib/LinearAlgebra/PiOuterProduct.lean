@@ -22,7 +22,7 @@ results are on Kronecker products of matrices.
 
 ## Notation
 
-* `⨂ₒ` Notation typeclass of outer products. We define instances for
+* `⨂` Notation typeclass of outer products. We define instances for
   `PiOuterProduct` and `PiKronecker`.
 
 ## Main results
@@ -62,14 +62,14 @@ theorem update_apply_eq_update₂ {α γ : Type*} [DecidableEq α] {l m : α →
 
 end Lemmas.Function
 
-/-- Notation typeclass for `⨂ₒ`. We'll use the spelling `OuterProduct` for
+/-- Notation typeclass for `⨂`. We'll use the spelling `OuterProduct` for
 functions / vectors and `KroneckerProduct` for matrices. -/
 class OuterProduct {ι : Type*} (α : ι → Type*) (β : outParam (Type*)) where
   /-- The outer product of a family of objects -/
   tprod : (Π i, α i) → β
 
 @[inherit_doc OuterProduct]
-scoped[OuterProduct] notation3:100 "⨂ₒ "(...)", "r:(scoped f => OuterProduct.tprod f) => r
+scoped[OuterProduct] notation3:100 "⨂ "(...)", "r:(scoped f => OuterProduct.tprod f) => r
 
 open scoped OuterProduct
 
@@ -109,16 +109,16 @@ instance [CommMonoid α] : OuterProduct (fun i ↦ (l i → α)) ((Π i, l i) �
   tprod := PiOuterProduct
 
 theorem piOuterProduct_def [CommMonoid α] (v : Π i, (l i → α)) :
-    (⨂ₒ i, v i) = PiOuterProduct v := rfl
+    (⨂ i, v i) = PiOuterProduct v := rfl
 
 @[simp]
 theorem piOuterProduct_apply [CommMonoid α] (v : Π i, (l i → α)) (r : Π i, l i) :
-    (⨂ₒ i, v i) r =  ∏ i, v i (r i) := by
+    (⨂ i, v i) r =  ∏ i, v i (r i) := by
   simp [piOuterProduct_def, PiOuterProduct, ← Multiset.prod_eq_foldr]
 
 @[simp]
 theorem piOuterProduct_zero [CommMonoidWithZero α] (v : Π i, (l i → α)) (h : ∃ i, v i = 0) :
-    (⨂ₒ i, v i) = 0 := by
+    (⨂ i, v i) = 0 := by
   ext r
   obtain ⟨i, hi⟩ := h
   exact Finset.prod_eq_zero (Finset.mem_univ i) (congrFun hi (r i))
@@ -128,14 +128,14 @@ variable [CommSemiring α]
 open Function in
 @[simp]
 theorem piOuterProduct_smul [DecidableEq ι] (v : Π i, (l i → α)) (i : ι) (s : α) (x : l i → α) :
-    (⨂ₒ j, (update v i (s • x)) j) = s • (⨂ₒ j, (update v i x) j) := by
+    (⨂ j, (update v i (s • x)) j) = s • (⨂ j, (update v i x) j) := by
   ext
   simp [Function.update_apply_eq_update, Finset.prod_update_of_mem, mul_assoc]
 
 open Function in
 @[simp]
 theorem piOuterProduct_add [DecidableEq ι] (v : Π i, (l i → α)) (i : ι) (x y : l i → α) :
-    (⨂ₒ j, (update v i (x + y) j)) = (⨂ₒ j, (update v i x) j) + (⨂ₒ j, (update v i y) j) := by
+    (⨂ j, (update v i (x + y) j)) = (⨂ j, (update v i x) j) + (⨂ j, (update v i y) j) := by
   ext
   simp [Function.update_apply_eq_update, Finset.prod_update_of_mem, add_mul]
 
@@ -147,18 +147,18 @@ def PiOuterProduct.toMultilinearMap :
 
 @[simp]
 theorem piOuterProduct.toMultilinearMap_apply (v : Π i, (l i → α)) :
-  PiOuterProduct.toMultilinearMap v = ⨂ₒ i, v i := by rfl
+  PiOuterProduct.toMultilinearMap v = ⨂ i, v i := by rfl
 
 theorem piOuterProduct_smul_univ (c : ι → α) (v : Π i, (l i → α)) :
-    (⨂ₒ i, c i • v i) = (∏ i, c i) • (⨂ₒ i, v i) := by
+    (⨂ i, c i • v i) = (∏ i, c i) • (⨂ i, v i) := by
   simp [← piOuterProduct.toMultilinearMap_apply, MultilinearMap.map_smul_univ]
 
 theorem piOuterProduct_smul_const (a : α) (v : Π i, (l i → α)) :
-    (⨂ₒ i, a • v i) = a^(Fintype.card ι) • (⨂ₒ i, v i) := by
+    (⨂ i, a • v i) = a^(Fintype.card ι) • (⨂ i, v i) := by
   simp [piOuterProduct_smul_univ]
 
 theorem piOuterProduct_univ_sum [DecidableEq ι] {κ : Type*} [Fintype κ]
-    (f : (i : ι) → κ → (l i) → α) : (⨂ₒ i, ∑ j : κ , f i j) = ∑ k : (ι → κ), ⨂ₒ i, f i (k i) := by
+    (f : (i : ι) → κ → (l i) → α) : (⨂ i, ∑ j : κ , f i j) = ∑ k : (ι → κ), ⨂ i, f i (k i) := by
   ext x
   simp [Fintype.prod_sum]
 
@@ -204,15 +204,15 @@ instance [CommMonoid α] :
   tprod := PiKronecker
 
 theorem piKron_matrix_def [CommMonoid α] (A : Π i, Matrix (l i) (m i) α) :
-    (⨂ₒ i, A i) = PiKronecker A := rfl
+    (⨂ i, A i) = PiKronecker A := rfl
 
 @[simp]
 theorem piKronecker_apply [CommMonoid α] (A : Π i, Matrix (l i) (m i) α)
-    (r : Π i, l i) (s : Π i, m i) : (⨂ₒ i, A i) r s =  ∏ i, (A i (r i) (s i)) := by
+    (r : Π i, l i) (s : Π i, m i) : (⨂ i, A i) r s =  ∏ i, (A i (r i) (s i)) := by
   simp [piKron_matrix_def, PiKronecker, ← Multiset.prod_eq_foldr]
 
 theorem piKronecker_diagonal [CommMonoidWithZero α] [∀ i, DecidableEq (m i)] (a : Π i, (m i) → α) :
-    (⨂ₒ i, diagonal (a i)) = diagonal fun rs ↦ ∏ i, (a i (rs i)) := by
+    (⨂ i, diagonal (a i)) = diagonal fun rs ↦ ∏ i, (a i (rs i)) := by
   ext k l
   by_cases h : k = l
   · simp [h]
@@ -221,19 +221,19 @@ theorem piKronecker_diagonal [CommMonoidWithZero α] [∀ i, DecidableEq (m i)] 
 
 @[simp]
 theorem piKronecker_one [CommMonoidWithZero α] [∀ i, DecidableEq (m i)] :
-    (⨂ₒ i, (1 : Matrix (m i) (m i) α)) = (1 : Matrix (Π i, m i) (Π i, m i) α) :=
+    (⨂ i, (1 : Matrix (m i) (m i) α)) = (1 : Matrix (Π i, m i) (Π i, m i) α) :=
     (piKronecker_diagonal (fun i j ↦ 1)).trans <| by simp [diagonal_one]
 
 @[simp]
 theorem piKronecker_zero [CommMonoidWithZero α] (A : Π i, Matrix (l i) (m i) α) (h : ∃ i, A i = 0) :
-    (⨂ₒ i, A i) = 0 := by
+    (⨂ i, A i) = 0 := by
   ext
   obtain ⟨i, hi⟩ := h
   simpa using Finset.prod_eq_zero (Finset.mem_univ i) (by simp [hi])
 
 theorem mul_piKronecker_mul [CommSemiring α] [∀ i, Fintype (m i)] [DecidableEq ι]
     (A : Π i, Matrix (l i) (m i) α) (B : Π i, Matrix (m i) (n i) α) :
-    (⨂ₒ i, A i) * (⨂ₒ i, B i) = ⨂ₒ i, (A i) * (B i) := by
+    (⨂ i, A i) * (⨂ i, B i) = ⨂ i, (A i) * (B i) := by
   ext
   simp only [mul_apply, piKronecker_apply, Fintype.prod_sum, Finset.prod_mul_distrib]
 
@@ -241,7 +241,7 @@ theorem mul_piKronecker_mul [CommSemiring α] [∀ i, Fintype (m i)] [DecidableE
 the product of the `i`th factors. This generalizes `mul_piKronecker_mul`. -/
 theorem _root_.List.prod_piKronecker [CommSemiring α] [∀ i, Fintype (m i)] [∀ i, DecidableEq (m i)]
     [DecidableEq ι] (L : List (Π i, Matrix (m i) (m i) α)) :
-    (L.map (fun A ↦ ⨂ₒ i, A i)).prod = ⨂ₒ i, (L.map (Function.eval i)).prod := by
+    (L.map (fun A ↦ ⨂ i, A i)).prod = ⨂ i, (L.map (Function.eval i)).prod := by
   induction L with
   | nil => simp
   | cons a L ih =>
@@ -254,7 +254,7 @@ open Function in
 @[simp]
 theorem PiKronecker_smul [CommSemiring α] [DecidableEq ι] (A : Π i, Matrix (l i) (m i) α)
     (i : ι) (s : α) (x : Matrix (l i) (m i) α) :
-    (⨂ₒ j, update A i (s • x) j) = s • ⨂ₒ j, update A i x j := by
+    (⨂ j, update A i (s • x) j) = s • ⨂ j, update A i x j := by
   ext
   simp [update_apply_eq_update₂, Finset.prod_update_of_mem, mul_assoc]
 
@@ -264,40 +264,40 @@ open Function in
 @[simp]
 theorem PiKronecker_add [CommSemiring α] [DecidableEq ι] (A : Π i, Matrix (l i) (m i) α)
     (i : ι) (x : Matrix (l i) (m i) α) (y : Matrix (l i) (m i) α) :
-    (⨂ₒ j, update A i (x + y) j) = (⨂ₒ j, update A i x j) + (⨂ₒ j, update A i y j) := by
+    (⨂ j, update A i (x + y) j) = (⨂ j, update A i x j) + (⨂ j, update A i y j) := by
   ext k l
   simp [update_apply_eq_update₂, Finset.prod_update_of_mem, add_mul]
 
 @[simps, expose]
 def toMultilinearMap [CommSemiring α] : MultilinearMap α (fun i ↦ Matrix (l i) (m i) α)
     (Matrix (Π i, l i) (Π i, m i) α) where
-  toFun f := ⨂ₒ i, f i
+  toFun f := ⨂ i, f i
   map_update_smul' := PiKronecker_smul
   map_update_add' := PiKronecker_add
 
 theorem piKronecker_smul_univ [CommSemiring α] (c : ι → α) (A : Π i, Matrix (l i) (m i) α) :
-    (⨂ₒ i, c i • A i) = (∏ i, c i) • (⨂ₒ i, A i) := by
+    (⨂ i, c i • A i) = (∏ i, c i) • (⨂ i, A i) := by
   simp [← toMultilinearMap_apply, MultilinearMap.map_smul_univ]
 
 @[simp]
 theorem piKronecker_trace [CommSemiring α] [DecidableEq ι] [∀ i, Fintype (m i)]
-    (A : Π i, Matrix (m i) (m i) α) : trace (⨂ₒ i, A i) = ∏ i, trace (A i) := by
+    (A : Π i, Matrix (m i) (m i) α) : trace (⨂ i, A i) = ∏ i, trace (A i) := by
   simp_rw [Matrix.trace, Matrix.diag, piKronecker_apply, Fintype.prod_sum]
 
 theorem PiKronecker_smul_const [CommSemiring α] (a : α) (A : Π i, Matrix (l i) (m i) α) :
-    (⨂ₒ i, a • A i) = a^(Fintype.card ι) • (⨂ₒ i, A i) := by
+    (⨂ i, a • A i) = a^(Fintype.card ι) • (⨂ i, A i) := by
   simp [piKronecker_smul_univ]
 
 theorem conjTranspose_piKronecker [CommMonoid α] [StarMul α] (A : Π i, Matrix (l i) (l i) α) :
-    (⨂ₒ i, A i)ᴴ = (⨂ₒ i, (A i)ᴴ) := by
+    (⨂ i, A i)ᴴ = (⨂ i, (A i)ᴴ) := by
   ext; simp
 
 theorem star_piKronecker [CommMonoid α] [StarMul α] (A : Π i, Matrix (l i) (l i) α) :
-    star (⨂ₒ i, A i) = (⨂ₒ i, star (A i)) := by
+    star (⨂ i, A i) = (⨂ i, star (A i)) := by
   ext; simp
 
 theorem piKronecker_isHermitian [CommMonoid α] [StarMul α] (A : Π i, Matrix (l i) (l i) α)
-    (h : ∀ i, IsHermitian (A i)) : IsHermitian (⨂ₒ i, A i) := by
+    (h : ∀ i, IsHermitian (A i)) : IsHermitian (⨂ i, A i) := by
   ext r s
   simp [fun x ↦ IsHermitian.apply (h x) (r x) (s x)]
 
@@ -307,7 +307,7 @@ variable [DecidableEq ι] [∀ i, Fintype (m i)]
 
 @[simp]
 theorem piKronecker_mulVec_piOuterProduct [CommSemiring α] (A : Π i, Matrix (l i) (m i) α)
-    (v : Π i, m i → α) : (⨂ₒ i, A i) *ᵥ (⨂ₒ i, v i) = (⨂ₒ i, (A i) *ᵥ (v i)) := by
+    (v : Π i, m i → α) : (⨂ i, A i) *ᵥ (⨂ i, v i) = (⨂ i, (A i) *ᵥ (v i)) := by
   ext r
   simp [mulVec_eq_sum, Fintype.prod_sum, Finset.prod_mul_distrib]
 
@@ -338,8 +338,8 @@ private def piUnivEquiv {ι : Type*} [Fintype ι] {m : ι → Type*} :
 
 private theorem reindex_univ_piKronecker [CommSemiring α]
     {l m : ι → Type*} (A : Π i, Matrix (l i) (m i) α) :
-  reindex piUnivEquiv.symm piUnivEquiv.symm (⨂ₒ i : ι, A i)
-    = (⨂ₒ i : (Finset.univ : Finset ι), A i) := by
+  reindex piUnivEquiv.symm piUnivEquiv.symm (⨂ i : ι, A i)
+    = (⨂ i : (Finset.univ : Finset ι), A i) := by
   ext
   simp
 
@@ -353,8 +353,8 @@ private def insertPiProdEquiv' {ι : Type*} [DecidableEq ι] {l : ι → Type*}
 omit [Fintype ι] in
 private theorem piKronecker_eq_kronecker_piKronecker [CommMonoid α] [DecidableEq ι]
     (A : Π i, Matrix (l i) (m i) α) {a : ι} {s : Finset ι} (h : a ∉ s) :
-    reindex (insertPiProdEquiv' h) (insertPiProdEquiv' h) (⨂ₒ i : (insert a s : Finset ι), A i) =
-      (A a) ⊗ₖ (⨂ₒ i : s, A i.val) := by
+    reindex (insertPiProdEquiv' h) (insertPiProdEquiv' h) (⨂ i : (insert a s : Finset ι), A i) =
+      (A a) ⊗ₖ (⨂ i : s, A i.val) := by
   rw [←Equiv.eq_symm_apply]
   ext p q
   simp only [piKronecker_apply, Finset.univ_eq_attach, ← Finset.prod_coe_sort_eq_attach,
@@ -372,7 +372,7 @@ open Fintype Finset in
 omit [Fintype ι] in
 theorem PiKronecker_det_dep {α : Type*} [CommRing α] [DecidableEq ι] [∀ i, DecidableEq (m i)]
     [∀ i, Fintype (m i)] (A : Π i, Matrix (m i) (m i) α) (s : Finset ι) :
-    det (⨂ₒ i : s, A i) = ∏ i ∈ s, det (A i) ^ ∏ j ∈ s.erase i, card (m j) := by
+    det (⨂ i : s, A i) = ∏ i ∈ s, det (A i) ^ ∏ j ∈ s.erase i, card (m j) := by
   induction s using Finset.induction_on with
   | empty => simp
   | insert a s ha ih =>
@@ -392,7 +392,7 @@ theorem PiKronecker_det_dep {α : Type*} [CommRing α] [DecidableEq ι] [∀ i, 
 variable {m : Type*} in
 open Fintype in
 theorem PiKronecker_det {α : Type*} [CommRing α] [DecidableEq ι] [DecidableEq m] [Fintype m]
-    (A : ι → Matrix m m α) : det (⨂ₒ i, A i) = ∏ i, det (A i) ^ card m ^ (card ι - 1) := by
+    (A : ι → Matrix m m α) : det (⨂ i, A i) = ∏ i, det (A i) ^ card m ^ (card ι - 1) := by
   rw [← Matrix.det_reindex_self (piUnivEquiv.symm), reindex_univ_piKronecker]
   simp [PiKronecker_det_dep (s := Finset.univ (α := ι)) (A := A)]
 
