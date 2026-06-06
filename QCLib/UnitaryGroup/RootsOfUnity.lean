@@ -56,28 +56,6 @@ noncomputable def ζ (n : ℕ) := cexp (2 * π * I / n)
 
 theorem ζ_def : ζ n = cexp (2 * π * I / n) := by rfl
 
-lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
-    ζ m ^ (m / n) = ζ n := by
-  obtain ⟨k, rfl⟩ := hdvd
-  have hk : k ≠ 0 := by lia
-  simp [hn, ζ_def, ← Complex.exp_nat_mul]
-  ring_nf
-  simp [mul_comm, ←mul_assoc, hk]
-
-lemma ζ_pow_primepow (a k : ℕ) (ha : a ≠ 0) :
-    ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
-  simpa [pow_succ', ha] using
-    ζ_pow_dvd a (a ^ (k + 1)) ha (pow_ne_zero (k + 1) ha) (dvd_pow_self a (by lia))
-
-lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
-    ζ (a ^ (u + 1 : ℕ)) = ζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
-  have h :=
-    (ζ_pow_dvd (a ^ (u + 1 : ℕ)) (a ^ n)
-      (pow_ne_zero _ ha) (pow_ne_zero _ ha)
-      (Nat.pow_dvd_pow _ (Nat.succ_le_of_lt u.is_lt)))
-  rw [Nat.pow_div (by lia) (by lia)] at h
-  simp_all
-
 variable [hnz : NeZero n]
 
 theorem ζ_isPrimitiveRoot : IsPrimitiveRoot (ζ n) n :=
@@ -100,6 +78,29 @@ lemma ζ_star : star (ζ n) = (ζ n)⁻¹ := by
   refine eq_inv_of_mul_eq_one_left ?_
   rw [mul_comm, ζ_mul_star_ζ_eq_one]
 
+section QFT
+
+lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
+    ζ m ^ (m / n) = ζ n := by
+  obtain ⟨k, rfl⟩ := hdvd
+  have hk : k ≠ 0 := by lia
+  simp [hn, ζ_def, ← Complex.exp_nat_mul]
+  ring_nf
+  simp [mul_comm, ←mul_assoc, hk]
+
+lemma ζ_pow_primepow (a k : ℕ) (ha : a ≠ 0) :
+    ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
+  simpa [pow_succ', ha] using
+    ζ_pow_dvd a (a ^ (k + 1)) ha (pow_ne_zero (k + 1) ha) (dvd_pow_self a (by lia))
+
+lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
+    ζ (a ^ (u + 1 : ℕ)) = ζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
+  have h :=
+    (ζ_pow_dvd (a ^ (u + 1 : ℕ)) (a ^ n)
+      (pow_ne_zero _ ha) (pow_ne_zero _ ha)
+      (Nat.pow_dvd_pow _ (Nat.succ_le_of_lt u.is_lt)))
+  rw [Nat.pow_div (by lia) (by lia)] at h
+  simp_all
 
 -- TBD: Feels too manual & complicated. Try to base on general results.
 @[simp]
@@ -116,6 +117,8 @@ theorem ζ_sum_ortho {i j : Fin n} :
     · exact fun h => (show (i : ℤ) ≠ j by grind)
         (sub_eq_zero.mp (Int.eq_zero_of_dvd_of_natAbs_lt_natAbs
           (((ζ_isPrimitiveRoot n).zpow_eq_one_iff_dvd (i - j)).mp h) (by omega)))
+
+end QFT
 
 noncomputable def uζ : (unitary ℂ) :=
     ⟨ζ n, by rw [mul_comm, ζ_mul_star_ζ_eq_one n], ζ_mul_star_ζ_eq_one n⟩
