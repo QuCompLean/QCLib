@@ -8,4 +8,5 @@ import QCLib.Matrix.UnitaryGroup.Basic
 import QCLib.Matrix.UnitaryGroup.Kronecker
 import QCLib.Matrix.UnitaryGroup.RootsOfUnity
 import QCLib.Matrix.UnitaryGroup.DiagonalSubgroup
+import QCLib.Lemmas.OrderOf
 import QCLib.Tactic.MatrixExpand
