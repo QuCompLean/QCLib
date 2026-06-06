@@ -2,6 +2,7 @@ import QCLib.Mathlib.Lemmas
 import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
 import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
+import QCLib.Data.Fin.RevSwap
 import QCLib.Matrix.Action
 import QCLib.Matrix.UnitaryGroup.Action
 import QCLib.Matrix.UnitaryGroup.Basic
@@ -16,3 +17,4 @@ import QCLib.Circuit.PauliGroup
 import QCLib.Misc.OrderOf
 import QCLib.Misc.IntCast
 import QCLib.Tactic.MatrixExpand
+import QCLib.Tactic.AssocRw
