@@ -94,7 +94,7 @@ section OuterProduct
 variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {R : Type*}
 variable [DecidableEq ι] [∀ i, DecidableEq (n i)] [∀ i, Fintype (n i)] [CommRing R] [StarRing R]
 
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 @[simp]
 theorem piKroneckerUnitary_smul_vec (U : Π i, unitaryGroup (n i) R) (v : Π i, n i → R) :

@@ -27,7 +27,7 @@ variable {n : ℕ}
 
 open Matrix Complex
 
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 -- TBD: Could replace by `ᵤI`, but the theory also works for `τ = - ᵤI`.
 /-- Fourth root of unity, bundled as a scalar unitary -/

@@ -26,7 +26,7 @@ public section
 
 namespace Matrix
 
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {α : Type*}
 variable {R : Type*}
@@ -42,7 +42,7 @@ theorem piKronecker_mem_unitaryGroup (U : Π i, Matrix (n i) (n i) R)
 def PiKroneckerUnitary (U : Π i, unitaryGroup (n i) R) : (unitaryGroup (Π i, n i) R) :=
   ⟨⨂ i, (U i : Matrix (n i) (n i) R), by simp [piKronecker_mem_unitaryGroup]⟩
 
-instance : OuterProduct (fun i ↦ unitaryGroup (n i) R) (unitaryGroup (Π i, n i) R) where
+instance : PiOuterProduct (fun i ↦ unitaryGroup (n i) R) (unitaryGroup (Π i, n i) R) where
   tprod := PiKroneckerUnitary
 
 theorem piKron_unitary_def (U : Π i, unitaryGroup (n i) R) :

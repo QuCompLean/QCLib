@@ -40,7 +40,7 @@ public section
 
 open Complex Matrix Qubit
 
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 variable {n}
 
@@ -62,7 +62,7 @@ theorem ZZ_mul (p p' : Fin n → ℤ) : ZZ p * ZZ p' = ZZ (p + p') := by
   ext
   simp [_root_.zpow_add]
 
-open scoped OuterProduct Fin.IntCast
+open scoped PiOuterProduct Fin.IntCast
 
 @[simp]
 theorem XX_apply (q : Fin n → ℤ) (x : Register n) : (XX q) • δ[x] = δ[(x + ↑q)] := by

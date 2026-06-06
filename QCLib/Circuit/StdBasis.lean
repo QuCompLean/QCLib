@@ -100,7 +100,7 @@ abbrev Qubit := Fin 2
 abbrev Register (n : Nat) := (Fin n) → Qubit
 
 open Complex Matrix
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 /-- Computational basis vectors factorize -/
 theorem basisVector_eq_prod {n : ℕ} (k : Register n) : δ[k] = ⨂ i, δ[(k i)] := by

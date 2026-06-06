@@ -64,14 +64,14 @@ end Lemmas.Function
 
 /-- Notation typeclass for `⨂`. We'll use the spelling `OuterProduct` for
 functions / vectors and `KroneckerProduct` for matrices. -/
-class OuterProduct {ι : Type*} (α : ι → Type*) (β : outParam (Type*)) where
+class PiOuterProduct {ι : Type*} (α : ι → Type*) (β : outParam (Type*)) where
   /-- The outer product of a family of objects -/
   tprod : (Π i, α i) → β
 
-@[inherit_doc OuterProduct]
-scoped[OuterProduct] notation3:100 "⨂ "(...)", "r:(scoped f => OuterProduct.tprod f) => r
+@[inherit_doc PiOuterProduct]
+scoped[PiOuterProduct] notation3:100 "⨂ "(...)", "r:(scoped f => PiOuterProduct.tprod f) => r
 
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {α : Type*}
 
@@ -79,7 +79,7 @@ variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {α : Type*}
 # Outer product of vectors
 -/
 
-section OuterProductMap
+section PiOuterProductMap
 
 variable (f : α → α → α) [LeftCommutative f]
 variable (init : α)
@@ -90,31 +90,28 @@ variable {l m : ι → Type*}
 tuples `r : (Π i, l i)`, where the value at `r` is obtained by folding a
 function `f` over `i ↦ v i (r i) `. The usual tensor product of functions is a
 special case, defined in `PiOuterProduct`. -/
-def OuterProductMap (v : Π i, l i → α) : (Π i, l i) → α :=
+def PiOuterProductMap (v : Π i, l i → α) : (Π i, l i) → α :=
   fun r ↦ (Finset.univ.1.map (fun i ↦ v i (r i))).foldr f init
 
 @[simp]
-theorem outerProductMap_apply (v : Π i, l i → α) (r : Π i, l i) :
-  OuterProductMap f init v r = (Finset.univ.1.map (fun i ↦ v i (r i))).foldr f init := by rfl
+theorem piOuterProductMap_apply (v : Π i, l i → α) (r : Π i, l i) :
+  PiOuterProductMap f init v r = (Finset.univ.1.map (fun i ↦ v i (r i))).foldr f init := by rfl
 
-end OuterProductMap
+end PiOuterProductMap
 
-section OuterProduct
+section PiOuterProduct
 
 /-- Tensor product of a family of vectors -/
-def PiOuterProduct [CommMonoid α] : (Π i, l i → α) → (Π i, l i) → α :=
-  OuterProductMap (· * · : α → α → α) 1
-
-instance [CommMonoid α] : OuterProduct (fun i ↦ (l i → α)) ((Π i, l i) → α) where
-  tprod := PiOuterProduct
+instance [CommMonoid α] : PiOuterProduct (fun i ↦ (l i → α)) ((Π i, l i) → α) where
+  tprod := PiOuterProductMap (· * · : α → α → α) 1
 
 theorem piOuterProduct_def [CommMonoid α] (v : Π i, (l i → α)) :
-    (⨂ i, v i) = PiOuterProduct v := rfl
+    (⨂ i, v i) = PiOuterProductMap (· * · : α → α → α) 1 v := rfl
 
 @[simp]
 theorem piOuterProduct_apply [CommMonoid α] (v : Π i, (l i → α)) (r : Π i, l i) :
     (⨂ i, v i) r =  ∏ i, v i (r i) := by
-  simp [piOuterProduct_def, PiOuterProduct, ← Multiset.prod_eq_foldr]
+  simp [piOuterProduct_def, ← Multiset.prod_eq_foldr]
 
 @[simp]
 theorem piOuterProduct_zero [CommMonoidWithZero α] (v : Π i, (l i → α)) (h : ∃ i, v i = 0) :
@@ -141,7 +138,7 @@ theorem piOuterProduct_add [DecidableEq ι] (v : Π i, (l i → α)) (i : ι) (x
 
 def PiOuterProduct.toMultilinearMap :
     MultilinearMap α (fun i ↦ l i → α) ((Π i, l i) → α) where
-  toFun := PiOuterProduct
+  toFun := fun v ↦ ⨂ i, v i
   map_update_smul' := piOuterProduct_smul
   map_update_add' := piOuterProduct_add
 
@@ -162,7 +159,7 @@ theorem piOuterProduct_univ_sum [DecidableEq ι] {κ : Type*} [Fintype κ]
   ext x
   simp [Fintype.prod_sum]
 
-end OuterProduct
+end PiOuterProduct
 
 /-
 # Tensor product of matrices
@@ -200,7 +197,7 @@ def PiKronecker [CommMonoid α] : (A : Π i, Matrix (l i) (m i) α) → Matrix (
     PiKroneckerMap (· * · ) 1
 
 instance [CommMonoid α] :
-    OuterProduct (fun i ↦ Matrix (l i) (m i) α) (Matrix (Π i, l i) (Π i, m i) α) where
+    PiOuterProduct (fun i ↦ Matrix (l i) (m i) α) (Matrix (Π i, l i) (Π i, m i) α) where
   tprod := PiKronecker
 
 theorem piKron_matrix_def [CommMonoid α] (A : Π i, Matrix (l i) (m i) α) :

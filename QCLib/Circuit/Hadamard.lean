@@ -31,7 +31,7 @@ a.k.a. the Hadamard basis.
 @[expose] public section
 
 open Qubit Matrix
-open scoped OuterProduct
+open scoped PiOuterProduct
 
 variable (n : ℕ)
 
