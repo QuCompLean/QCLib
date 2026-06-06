@@ -19,3 +19,4 @@ import QCLib.Misc.OrderOf
 import QCLib.Misc.IntCast
 import QCLib.Tactic.MatrixExpand
 import QCLib.Tactic.AssocRw
+import QCLib.ExperimentsAndDeadEnds.MatrixLike
