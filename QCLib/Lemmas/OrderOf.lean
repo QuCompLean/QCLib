@@ -66,9 +66,9 @@ example {M : Type*} [Group M] {ζ : M} {n : ℕ} (hord : orderOf ζ = n) (y z : 
 
 -- TBD: remove?
 -- TBD: Is this already somewhere in Mathlib? Maybe here?
-#check Function.Periodic.lift
-#check Function.Periodic.smul
-#check AddSubgroup.zmultiples
+-- #check Function.Periodic.lift
+-- #check Function.Periodic.smul
+-- #check AddSubgroup.zmultiples
 --
 /-- Formulas for elements of finite orbits. Does this exist? -/
 theorem zpow_smul_eq_of_periodic {G α : Type*} [Group G] {x : G}
