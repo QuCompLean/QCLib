@@ -8,5 +8,11 @@ import QCLib.Matrix.UnitaryGroup.Basic
 import QCLib.Matrix.UnitaryGroup.Kronecker
 import QCLib.Matrix.UnitaryGroup.RootsOfUnity
 import QCLib.Matrix.UnitaryGroup.DiagonalSubgroup
-import QCLib.Lemmas.OrderOf
+import QCLib.Circuit.StdBasis
+import QCLib.Circuit.Qubit
+import QCLib.Circuit.Hadamard
+import QCLib.Circuit.PauliGenerators
+import QCLib.Circuit.PauliGroup
+import QCLib.Misc.OrderOf
+import QCLib.Misc.IntCast
 import QCLib.Tactic.MatrixExpand

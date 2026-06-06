@@ -116,4 +116,7 @@ theorem Odd.pow_of_sq
   {G : Type*} [Group G] {x : G} {q : ℕ} (h : Odd q) (hsq : x * x = 1) : x ^ q = x :=
   zpow_natCast x q ▸ ((Int.odd_coe_nat q).mpr h).zpow_of_sq hsq
 
+attribute [simp] Even.neg_one_zpow
+attribute [simp] Odd.neg_one_zpow
+
 end Parity

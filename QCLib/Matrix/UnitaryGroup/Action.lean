@@ -6,6 +6,7 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.LinearAlgebra.UnitaryGroup
+public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 public import QCLib.Matrix.Action
 
 /-!
@@ -86,5 +87,21 @@ example (U V : unitaryGroup n α) (z : unitary α) :
 @[simp]
 lemma unitary_smul_mul_nf (U V : unitaryGroup n α) (z : unitary α) :
     (z • U) * V = z • (U * V) := smul_mul_assoc z U V
+
+
+section OuterProduct
+
+variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {R : Type*}
+variable [DecidableEq ι] [∀ i, DecidableEq (n i)] [∀ i, Fintype (n i)] [CommRing R] [StarRing R]
+
+open scoped OuterProduct
+
+@[simp]
+theorem piKroneckerUnitary_smul_vec (U : Π i, unitaryGroup (n i) R) (v : Π i, n i → R) :
+    (⨂ i, U i) • (⨂ i, v i) = (⨂ i, (U i) • (v i)) := by
+  simp [Matrix.unitaryGroup.smul_vec_def]
+
+end OuterProduct
+
 
 end

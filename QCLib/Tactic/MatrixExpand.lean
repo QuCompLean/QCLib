@@ -92,6 +92,11 @@ theorem Finset.sum_vecCons {M} [AddCommMonoid M] {n m : ℕ} (f : (Fin n.succ �
   rw [hb, Finset.sum_biUnion (hdis)]
   simp [e]
 
+-- Used in hack below.
+theorem matrix_neq_of_diag_neq {n α : Type*} (U V : Matrix n n α)
+    (hneq : ∃ i : n, ¬(U i i = V i i)) : ¬U = V := by
+  grind
+
 end
 
 
@@ -154,8 +159,10 @@ macro_rules
       <;> norm_num)
 
 
+/- This is a hack for proving that a unitary isn't `1`. To be fixed. -/
+/- TBD: Sensible implementation. -/
+
 open Lean.Parser.Tactic in
-/-- This is a hack for proving that a unitary isn't `1`. To be fixed. -/
 syntax (name := matrix_neq) "matrix_neq"
   (" [" ((simpStar <|> simpErase <|> simpLemma),*,?) "]")? : tactic
 

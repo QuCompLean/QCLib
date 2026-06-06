@@ -6,6 +6,7 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.RingTheory.RootsOfUnity.Complex
+public import QCLib.Matrix.UnitaryGroup.Action
 public import QCLib.Tactic.MatrixExpand
 
 /-!
@@ -185,3 +186,24 @@ theorem uI_zpow_four : ᵤI^(4 : ℤ) = ᵤ1 := by
   ext; push_cast; simp [u_I_eq_I, field]
 
 example : ¬(-1 : ℤ) = 1 := by simp only [Int.reduceNeg, reduceCtorEq, not_false_eq_true]
+
+open Matrix
+
+variable {n : Type} [Fintype n] [DecidableEq n]
+
+/-- Use `ᵤ-1 • U` as simp normal form for the negation of a unitary. -/
+ @[simp]
+ theorem neg_unitary_eq_one_smul (U : unitaryGroup n ℂ) : -U = ᵤ-1 • U := by
+   ext
+   rw [Unitary.coe_neg, neg_apply, Unitary.coe_smul, smul_apply, Submonoid.smul_def,
+    Unitary.coe_neg, OneMemClass.coe_one, smul_eq_mul, neg_mul, one_mul]
+ -- with small imports, `simp [Submonoid.smul_def]` instead of the `rw` also works.
+ -- But if Mathlib is imported, it istiming out trying to synthesize the
+ -- (non-existing) `SMul ℂ (unitary n ℂ)`.
+ -- Can one have a "shortcut to instance-doesn't-exist"?
+
+theorem neg_vector_eq_one_smul {n : Type*} (v : n → ℂ) : ᵤ-1 • v = -v := by
+  simp [Unitary.coe_neg, Submonoid.smul_def]
+
+theorem neg_scalar_eq_one_smul (s : ℂ) : ᵤ-1 • s = -s := by
+  simp [Unitary.coe_neg, Submonoid.smul_def]
