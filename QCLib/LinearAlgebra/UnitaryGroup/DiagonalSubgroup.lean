@@ -15,9 +15,9 @@ public import Mathlib.LinearAlgebra.UnitaryGroup
 
 This file defines the diagonal subgroup of the unitary group.
 
-**UPDATE**: I no longer think the approach in this file is optimal.
+**UPDATE**: I no longer think the approach that motivated this file is optimal.
 Say I want to analyze a `List.prod` or a `Finset.noncommProd` of elements in
-`𝐔[n]` that happen to be diagonal. The motivation for writing this file was to
+`𝐔[n]` that happen to be diagonal. The motivation for this file was to
 re-express the product as an ordinary `Finset.prod` in the CommMonoid
 `diagonalSubgroup`. Alternatively, given a family `V : ι → 𝐔[n]`, of unitaries
 `V i` that are all known to be diagonal, one can define the family
@@ -30,6 +30,8 @@ re-express the product as an ordinary `Finset.prod` in the CommMonoid
 ```
 where the final `prod` is in the CommMonoid `n → unitary ℂ`. This way, one
 avoids having to define the `Submonoid` of diagonal unitary matrices.
+
+TBD: Clean up with this in mind.
 
 
 ## Implementation Notes
