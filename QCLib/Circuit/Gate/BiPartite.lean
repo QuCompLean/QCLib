@@ -35,3 +35,40 @@ theorem controllize_mul (g₁ g₂ : 𝐔[k]) : C[g₁] * C[g₂] = C[g₁ * g�
 theorem controllize_one : C[(1 : 𝐔[k])] = 1 := by
   ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
   fin_cases i₂, j₂ <;> simp [blockDiagonal_apply, Matrix.one_apply]
+
+@[simp]
+theorem controllize_mul_inv (g : 𝐔[k]) : C[g] * C[g⁻¹] = 1 := by
+  simp
+
+end Controllize
+
+
+
+public section Swap
+
+open Matrix.UnitaryGroup Matrix
+
+def Swap : 𝐔[Qubit × Qubit] :=
+  ⟨Matrix.of fun a b => ite (a = b.swap) 1 0, by
+    rw [mem_unitaryGroup_iff]
+    matrix_expand
+  ⟩
+
+@[matrixExpand]
+theorem swap_eq :
+  Swap.val = Matrix.of fun a b => ite (a = b.swap) 1 0 := by rfl
+
+@[simp] theorem swap_swap : Swap * Swap = 1 := by
+  matrix_expand
+
+@[simp]
+theorem swap_apply {a b} :
+    Swap a b = ite (a = b.swap) 1 0 := by
+  simp [swap_eq]
+
+@[simp]
+theorem swap_apply_basis {v : Qubit × Qubit} :
+    Swap • δ[v] = δ[v.swap] := by
+  matrix_expand
+
+end Swap
