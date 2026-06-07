@@ -7,7 +7,6 @@ module
 
 public import Mathlib.LinearAlgebra.StdBasis
 public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
-public import QCLib.LinearAlgebra.UnitaryGroup.Action
 public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 
 import QCLib.Tactic.MatrixExpand
