@@ -128,19 +128,16 @@ variable {o : Type*} [Fintype o] [DecidableEq o]
 theorem blockDiagonal_mem_unitaryGroup_iff (f : o → Matrix m m α) :
     Matrix.blockDiagonal f ∈ unitaryGroup (m × o) α ↔ ∀ i, f i ∈ unitaryGroup m α := by
   refine Iff.intro (fun h ↦ ?_) (fun h ↦ ?_)
-  · intro k
-    simp_all only [mem_unitaryGroup_iff, star_eq_conjTranspose, blockDiagonal_conjTranspose,
-      ← blockDiagonal_mul]
-    simpa only [blockDiag_one, blockDiag_blockDiagonal, Pi.one_apply] using
-      congrArg (fun M ↦ blockDiag M k) h
-  · simp_all [mem_unitaryGroup_iff, star_eq_conjTranspose, ← blockDiagonal_mul, ← Pi.one_def]
+  all_goals simp_all only [mem_unitaryGroup_iff, star_eq_conjTranspose, blockDiagonal_conjTranspose,
+    ← blockDiagonal_mul, ← Pi.one_def, blockDiagonal_one]
+  simpa only [blockDiag_one, blockDiag_blockDiagonal, Pi.one_apply] using
+    fun k ↦ congrArg (fun M ↦ blockDiag M k) h
 
 @[simps]
 def UnitaryGroup.blockDiagonalMonoidHom : (o → unitaryGroup m α) →* unitaryGroup (m × o) α where
   toFun d := ⟨Matrix.blockDiagonal fun i ↦ d i, by simp ⟩
   map_one' := by simp [← Pi.one_def]
   map_mul' := by simp
-
 
 -- The following are not currently used.
 
