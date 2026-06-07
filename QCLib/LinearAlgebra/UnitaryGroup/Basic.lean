@@ -8,7 +8,6 @@ module
 public import Mathlib.Data.Complex.Basic
 public import QCLib.Mathlib.Lemmas
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
-public import QCLib.LinearAlgebra.UnitaryGroup.Action
 
 /-!
 
@@ -76,5 +75,30 @@ theorem Matrix.UnitaryGroup.commute_diagonal (d₁ d₂ : n → unitary R) :
     Commute (UnitaryGroup.diagonalMonoidHom d₁) (UnitaryGroup.diagonalMonoidHom d₂) := by
   apply Submonoid.coe_commute_iff.mp
   exact Matrix.commute_diagonal _ _
+
+/-
+For square matrices, we've got `Matrix.star_eq_conjTranspose`. However, some
+results are only stated for `star` and some only for `conjTranspose`. We can't
+standardize on `star`, because we need also use non-square matrices. Thus, we
+reprove some `star` theorems for `conjTranspose`, so that one doesn't
+have to switch back and forth.
+-/
+section StarConjTranspose
+
+variable (A : Matrix n n R)
+
+-- #check Unitary.mul_star_self_of_mem
+@[simp]
+theorem UnitaryGroup.conjTranspose_mul_self_of_mem (hU : A ∈ Matrix.unitaryGroup n R) :
+    A * Aᴴ = 1 := by
+  simp [mem_unitaryGroup_iff.mp hU, ← star_eq_conjTranspose]
+
+-- #check Unitary.star_mul_self_of_mem
+@[simp]
+theorem UnitaryGroup.conjTranspose_mul_self_of_mem' (hU : A ∈ Matrix.unitaryGroup n R) :
+    Aᴴ * A = 1 := by
+  simp [mem_unitaryGroup_iff'.mp hU, ← star_eq_conjTranspose]
+
+end StarConjTranspose
 
 end Simp

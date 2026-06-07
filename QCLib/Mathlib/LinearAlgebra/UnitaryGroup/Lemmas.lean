@@ -67,31 +67,6 @@ def reindexMonoidEquiv : (unitaryGroup m α) ≃* unitaryGroup n α where
 
 end Reindex
 
-/-
-For square matrices, we've got `Matrix.star_eq_conjTranspose`. However, some
-results are only stated for `star` and some only for `conjTranspose`. We can't
-standardize on `star`, because we need also use non-square matrices. Thus, we
-reprove re-prove some `star` theorems for `conjTranspose`, so that one doesn't
-have to switch back and forth.
--/
-section StarConjTranspose
-
-variable (A : Matrix n n α)
-
--- #check Unitary.mul_star_self_of_mem
-@[simp]
-theorem UnitaryGroup.conjTranspose_mul_self_of_mem (hU : A ∈ Matrix.unitaryGroup n α) :
-    A * Aᴴ = 1 := by
-  simp [mem_unitaryGroup_iff.mp hU, ← star_eq_conjTranspose]
-
--- #check Unitary.star_mul_self_of_mem
-@[simp]
-theorem UnitaryGroup.conjTranspose_mul_self_of_mem' (hU : A ∈ Matrix.unitaryGroup n α) :
-    Aᴴ * A = 1 := by
-  simp [mem_unitaryGroup_iff'.mp hU, ← star_eq_conjTranspose]
-
-end StarConjTranspose
-
 section Coe
 
 @[norm_cast]
