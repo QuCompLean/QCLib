@@ -8,6 +8,7 @@ module
 public import Mathlib.Data.Complex.Basic
 public import QCLib.Mathlib.Lemmas
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
+public import QCLib.LinearAlgebra.UnitaryGroup.Action
 
 /-!
 

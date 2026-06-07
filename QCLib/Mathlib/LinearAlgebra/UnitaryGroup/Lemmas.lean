@@ -101,6 +101,7 @@ theorem diagonal_mem_unitaryGroup_iff (f : n → α) :
   simp [Unitary.mem_iff, funext_iff, forall_and]
 
 /-- MonoidHom from phase-valued functions to diagonal unitaries -/
+@[simps]
 def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α where
   toFun d := ⟨Matrix.diagonal fun i ↦ (d i : α), by simp⟩
   map_one' := by simp
@@ -111,7 +112,7 @@ end Diagonal
 
 section BlockDiagonal
 
-variable (R : Type*) (m o : Type*)
+variable (R : Type*) {m o : Type*}
     [CommSemiring R] [StarRing R] [DecidableEq o] [DecidableEq m] [Fintype o] [Fintype m]
 
 @[simps!]
@@ -126,15 +127,14 @@ def blockDiagonalAlgHom :
 @[simps!]
 def blockDiagonalStarAlgHom :
     (o → Matrix m m R) →⋆ₐ[R] Matrix (m × o) (m × o) R where
-  toAlgHom := blockDiagonalAlgHom R m o
-  map_star' M := by
-    simp [star_eq_conjTranspose, blockDiagonal_conjTranspose, Pi.star_def]
+  toAlgHom := blockDiagonalAlgHom R
+  map_star' M := by simp [star_eq_conjTranspose, blockDiagonal_conjTranspose, Pi.star_def]
 
 open Matrix in
 @[simps]
-def UnitaryGroup.blockDiagonalStarMonoidHom (R : Type*) [CommRing R] [StarRing R] :
+def UnitaryGroup.blockDiagonalStarMonoidHom {R : Type*} [CommRing R] [StarRing R] :
     (o → unitaryGroup m R) →⋆* unitaryGroup (m × o) R where
-  toFun d := ⟨ blockDiagonalStarAlgHom R m o (fun i : o => ↑(d i)), by
+  toFun d := ⟨ blockDiagonalStarAlgHom R (fun i : o => ↑(d i)), by
     simp only [blockDiagonalStarAlgHom_apply, mem_unitaryGroup_iff, star_eq_conjTranspose,
       blockDiagonal_conjTranspose, ← blockDiagonal_mul, ← blockDiagonal_one, blockDiagonal_inj]
     ext1
