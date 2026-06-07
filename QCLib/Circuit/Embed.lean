@@ -57,7 +57,7 @@ theorem singleQubit_diagonal (d : Qubit → unitary ℂ) (i : Fin n) :
   | Nat.succ n => ext; simp [singleQubit_eq_singleQubitBlock, diagonal_apply]
 
 -- TBD : old proof, use blockDiagonal properties
-theorem singleQubit_apply_basis {n} (v : Register (n + 1)) (j : Fin (n + 1)) (U : 𝐔[Qubit]) :
+theorem singleQubit_apply_basis {n} (v : Register n) (j : Fin n) (U : 𝐔[Qubit]) :
     singleQubit j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext k
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
@@ -66,36 +66,6 @@ theorem singleQubit_apply_basis {n} (v : Register (n + 1)) (j : Fin (n + 1)) (U 
   split_ifs
   · rw [Finset.sum_eq_single (k j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
-
--- @[simp]
--- lemma prod_ind_flatten (i) (a b : Register (n + 1)) :
---     (a i = b i ∧ i.removeNth a = i.removeNth b) ↔ a = b := by
---   refine ⟨fun h => ?_ , fun h => by simp_all⟩
---   rw [← Fin.insertNth_self_removeNth i a, ← Fin.insertNth_self_removeNth i b, h.1, h.2]
-
--- @[simp]
--- theorem singleQubit_diagonal (d : Qubit → unitary ℂ) (i : Fin (n + 1)) :
---     singleQubit i (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i) := by
---   ext
---   simp [diagonal_apply]
-
--- /- No longer a simp lemma. `singleQubit_coe` must be excluded
---   from the simp call before applying this lemma -/
--- theorem singleQubit_apply_apply (U : 𝐔[Qubit]) (i : Fin (n + 1)) (a b : Register (n + 1)) :
---     singleQubit i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
---   simp [blockDiagonal_apply, Fin.removeNth_apply,
---     funext_iff, Fin.succAbove_ne, Fin.forall_iff_succAbove i]
-
--- -- TBD : old proof, use blockDiagonal properties
--- theorem singleQubit_apply_basis {n} (v : Register (n + 1)) (j : Fin (n + 1)) (U : 𝐔[Qubit]) :
---     singleQubit j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
---   ext k
---   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
---     MulOpposite.op_one, Pi.smul_apply, col_apply, singleQubit_apply_apply, one_smul,
---     Finset.sum_apply, Pi.single_apply, smul_eq_mul, funext_iff, update_apply]
---   split_ifs
---   · rw [Finset.sum_eq_single (k j)] <;> grind
---   · rw [Finset.sum_eq_zero]; grind
 
 
 -- @[simp]
