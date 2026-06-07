@@ -39,19 +39,16 @@ theorem piKronecker_mem_unitaryGroup (U : Π i, Matrix (n i) (n i) R)
     fun i ↦ mem_unitaryGroup_iff.mp (hU i)]
 
 /-- Kronecker product of a family of unitaries -/
-def PiKroneckerUnitary (U : Π i, unitaryGroup (n i) R) : (unitaryGroup (Π i, n i) R) :=
-  ⟨⨂ i, (U i : Matrix (n i) (n i) R), by simp [piKronecker_mem_unitaryGroup]⟩
-
 instance : PiOuterProduct (fun i ↦ unitaryGroup (n i) R) (unitaryGroup (Π i, n i) R) where
-  tprod := PiKroneckerUnitary
+  tprod U := ⟨⨂ i, (U i : Matrix (n i) (n i) R), by simp [piKronecker_mem_unitaryGroup]⟩
 
 theorem piKron_unitary_def (U : Π i, unitaryGroup (n i) R) :
-    (⨂ i, U i) = PiKroneckerUnitary U := rfl
+    (⨂ i, U i) = ⟨⨂ i, (U i : Matrix (n i) (n i) R), by simp [piKronecker_mem_unitaryGroup]⟩ := rfl
 
 @[simp]
 theorem piKroneckerUnitary_apply (U : Π i, unitaryGroup (n i) R) (r : Π i, n i) (s : Π i, n i) :
     (⨂ i, U i) r s =  ∏ i, U i (r i) (s i) := by
-  simp [piKron_unitary_def, PiKroneckerUnitary]
+  simp [piKron_unitary_def]
 
 @[simp, norm_cast]
 theorem coe_piKroneckerUnitary (U : Π i, unitaryGroup (n i) R) :
@@ -66,7 +63,7 @@ theorem mul_piKroneckerUnitary_mul (U V : Π i, unitaryGroup (n i) R) :
 @[simp]
 theorem piKroneckerUnitary_one :
     (⨂ i, (1 : unitaryGroup (n i) R)) = (1 : unitaryGroup (Π i, n i) R) := by
-  simp [piKron_unitary_def, PiKroneckerUnitary]
+  simp [piKron_unitary_def]
 
 theorem piKroneckerUnitary_smul_univ (c : ι → unitary R) (U : Π i, unitaryGroup (n i) R) :
     (⨂ i, c i • U i) = (∏ i, c i) • (⨂ i, U i) := by
