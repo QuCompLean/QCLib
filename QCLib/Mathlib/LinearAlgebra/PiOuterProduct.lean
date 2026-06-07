@@ -114,6 +114,9 @@ theorem piOuterProduct_apply [CommMonoid α] (v : Π i, (l i → α)) (r : Π i,
   simp [piOuterProduct_def, ← Multiset.prod_eq_foldr]
 
 @[simp]
+theorem piOuterProduct_one [CommMonoidWithZero α] : (⨂ i, (1 : m i → α)) = 1 := by ext; simp
+
+@[simp]
 theorem piOuterProduct_zero [CommMonoidWithZero α] (v : Π i, (l i → α)) (h : ∃ i, v i = 0) :
     (⨂ i, v i) = 0 := by
   ext r
@@ -209,7 +212,7 @@ theorem piKronecker_apply [CommMonoid α] (A : Π i, Matrix (l i) (m i) α)
   simp [piKron_matrix_def, PiKronecker, ← Multiset.prod_eq_foldr]
 
 theorem piKronecker_diagonal [CommMonoidWithZero α] [∀ i, DecidableEq (m i)] (a : Π i, (m i) → α) :
-    (⨂ i, diagonal (a i)) = diagonal fun rs ↦ ∏ i, (a i (rs i)) := by
+    (⨂ i, diagonal (a i)) = diagonal (⨂ i, a i) := by
   ext k l
   by_cases h : k = l
   · simp [h]
@@ -218,8 +221,8 @@ theorem piKronecker_diagonal [CommMonoidWithZero α] [∀ i, DecidableEq (m i)] 
 
 @[simp]
 theorem piKronecker_one [CommMonoidWithZero α] [∀ i, DecidableEq (m i)] :
-    (⨂ i, (1 : Matrix (m i) (m i) α)) = (1 : Matrix (Π i, m i) (Π i, m i) α) :=
-    (piKronecker_diagonal (fun i j ↦ 1)).trans <| by simp [diagonal_one]
+    (⨂ i, (1 : Matrix (m i) (m i) α)) = 1 :=
+  (piKronecker_diagonal fun i ↦ 1).trans <| by simp [← diagonal_one]
 
 @[simp]
 theorem piKronecker_zero [CommMonoidWithZero α] (A : Π i, Matrix (l i) (m i) α) (h : ∃ i, A i = 0) :

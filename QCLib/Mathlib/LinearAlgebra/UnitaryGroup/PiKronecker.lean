@@ -7,6 +7,8 @@ module
 
 public import Mathlib.LinearAlgebra.UnitaryGroup
 public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
+public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
+
 
 /-!
 
@@ -20,16 +22,34 @@ public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
 
 Obvious compatibility lemmas.
 
+## To do
+
+Put lemmas into `Matrix.UnitaryGroup` namespace and shorten names.
+
 -/
 
 public section
 
-namespace Matrix
+variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {α : Type*}
+variable {R : Type*}
 
 open scoped PiOuterProduct
 
-variable {ι : Type*} [Fintype ι] {l m n : ι → Type*} {α : Type*}
-variable {R : Type*}
+section Pi.Unitary
+
+variable [CommMonoid α] [StarMul α]
+
+/-- Tensor product of functions taking values in the unitaries of a commutative monoid.
+Used for tensor product of diagonal unitaries. -/
+instance : PiOuterProduct (fun i ↦ n i → unitary α) ((Π i, n i) → unitary α) where
+   tprod := PiOuterProductMap (· * · : unitary α → unitary α → unitary α) 1
+
+theorem Pi.Unitary.piOuterProduct_def (v : Π i, n i → unitary α) :
+  (⨂ i, v i) = PiOuterProductMap (· * · : unitary α → unitary α → unitary α) 1 v := rfl
+
+end Pi.Unitary
+
+namespace Matrix
 
 variable [DecidableEq ι] [∀ i, DecidableEq (n i)] [∀ i, Fintype (n i)] [CommRing R] [StarRing R]
 
@@ -78,5 +98,16 @@ theorem piKroneckerUnitary_inv (U : Π i, unitaryGroup (n i) R) : (⨂ i, U i)�
 theorem piKroneckerUnitary_coe_mulVec (U : Π i, unitaryGroup (n i) R) (v : Π i, n i → R) :
     ↑(⨂ i, U i) *ᵥ (⨂ i, v i) = ⨂ i, (U i : Matrix (n i) (n i) R) *ᵥ (v i) := by
   simp
+
+section Diagonal
+
+namespace UnitaryGroup
+
+theorem piKronecker_diagonal (d : Π i, n i → unitary R) :
+    (⨂ i, diagonalMonoidHom (d i)) = diagonalMonoidHom (⨂ i, d i) := by
+  apply Subtype.ext
+  simp [Matrix.piKronecker_diagonal]
+
+end Diagonal.UnitaryGroup
 
 end Matrix
