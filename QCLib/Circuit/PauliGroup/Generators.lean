@@ -73,13 +73,13 @@ theorem ZZ_apply (p : Fin n → ℤ) (x : Register n) :
   simp [ZZ, basisVector_eq_prod, dotProduct, piOuterProduct_smul_univ,
     ← Finset.prod_zpow_eq_zpow_sum₀]
 
-theorem ZZ_diagonal (p : Fin n → ℤ) : ZZ p =
-  Pi.Unitary.diagonal (fun x : Register n ↦ (ᵤ-1) ^ (p ⬝ᵥ ↑x)) := by
-  apply Matrix.UnitaryGroup.ext_smul_basis
-  simp only [ZZ_apply, Matrix.UnitaryGroup.diagonal_smul_basisVector]
-  intro i
-  push_cast [Submonoid.smul_def]
-  with_reducible rfl
+-- theorem ZZ_diagonal (p : Fin n → ℤ) : ZZ p =
+--   Pi.Unitary.diagonal (fun x : Register n ↦ (ᵤ-1) ^ (p ⬝ᵥ ↑x)) := by
+--   apply Matrix.UnitaryGroup.ext_smul_basis
+--   simp only [ZZ_apply, Matrix.UnitaryGroup.diagonal_smul_basisVector]
+--   intro i
+--   push_cast [Submonoid.smul_def]
+--   with_reducible rfl
 
 @[simp]
 theorem ZZ_HH_conj (p : Fin n → ℤ) : (HH n) * (ZZ p) * (HH n)⁻¹ = (XX p) := by

@@ -109,4 +109,22 @@ theorem UnitaryGroup.coe_zpow (z : ℤ) (U : unitaryGroup n α) :
 
 end Coe
 
+section Diagonal
+
+@[simp]
+theorem star_diagonal {ι α : Type*} [NonUnitalNonAssocSemiring α] [DecidableEq ι] [StarRing α]
+    (f : ι → α) : star (Matrix.diagonal f) = Matrix.diagonal (star f) := by
+  ext i j
+  by_cases h : i = j
+  · simp [h]
+  · have : i ≠ j := by grind
+    simp [this, this.symm]
+
+@[simp]
+theorem diagonal_mem_unitaryGroup_iff (f : n → α) :
+    Matrix.diagonal f ∈ unitaryGroup n α ↔ ∀ i, f i ∈ unitary α := by
+  simp [Unitary.mem_iff, funext_iff, forall_and]
+
+end Diagonal
+
 end Matrix

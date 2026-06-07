@@ -9,6 +9,7 @@ public import Mathlib.Algebra.Star.Pi
 public import Mathlib.Algebra.Star.StarAlgHom
 public import Mathlib.Data.Matrix.Action
 public import Mathlib.LinearAlgebra.UnitaryGroup
+public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 
 /-!
 # Diagonal unitary matrices
@@ -63,18 +64,18 @@ section Lemmas
 
 -- Rewrites the membership condition for `unitary` in a way that's compatible
 -- with the one of `unitaryGroup`.
-@[to_additive]
-theorem mul_and_mul_iff_mul {M} [MulOne M] [IsDedekindFiniteMonoid M] {a b : M} :
-    a * b = 1 ∧ b * a = 1 ↔ b * a = 1 := ⟨And.right, fun h ↦ ⟨mul_eq_one_comm.mpr h, h⟩⟩
-
-@[simp]
-theorem star_diagonal {ι α : Type*} [NonUnitalNonAssocSemiring α] [DecidableEq ι] [StarRing α]
-    (f : ι → α) : star (Matrix.diagonal f) = Matrix.diagonal (star f) := by
-  ext i j
-  by_cases h : i = j
-  · simp [h]
-  · have : i ≠ j := by grind
-    simp [this, this.symm]
+-- @[to_additive]
+-- theorem mul_and_mul_iff_mul {M} [MulOne M] [IsDedekindFiniteMonoid M] {a b : M} :
+--     a * b = 1 ∧ b * a = 1 ↔ b * a = 1 := ⟨And.right, fun h ↦ ⟨mul_eq_one_comm.mpr h, h⟩⟩
+--
+-- @[simp]
+-- theorem star_diagonal {ι α : Type*} [NonUnitalNonAssocSemiring α] [DecidableEq ι] [StarRing α]
+--     (f : ι → α) : star (Matrix.diagonal f) = Matrix.diagonal (star f) := by
+--   ext i j
+--   by_cases h : i = j
+--   · simp [h]
+--   · have : i ≠ j := by grind
+--     simp [this, this.symm]
 
 end Lemmas
 

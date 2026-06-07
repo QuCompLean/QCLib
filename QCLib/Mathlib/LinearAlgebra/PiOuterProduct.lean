@@ -39,6 +39,7 @@ public section
 /- Misc lemmas. Put somewhere appropriate.  -/
 section Lemmas
 
+
 namespace Function
 
 /-- Consider a family `(f : ∀ a, β a → γ)` of functions with dependent domain

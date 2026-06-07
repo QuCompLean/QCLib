@@ -5,7 +5,7 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-public import QCLib.LinearAlgebra.UnitaryGroup.DiagonalSubgroup
+public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 
 /-!
 
@@ -36,7 +36,7 @@ variable [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
 
 theorem kron_unitary (a : unitaryGroup α γ) (b : unitaryGroup β γ) :
     ↑a ⊗ₖ ↑b ∈ unitaryGroup (α × β) γ := by
-  simp [Matrix.mem_unitaryGroup_iff, ← Matrix.mul_kronecker_mul]
+  simp [Matrix.mem_unitaryGroup_iff]
 
 def unitary_kron (a : unitaryGroup α γ) (b : unitaryGroup β γ) : unitaryGroup (α × β) γ :=
   ⟨_, kron_unitary a b⟩
