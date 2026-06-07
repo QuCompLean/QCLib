@@ -5,7 +5,7 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-public import QCLib.Matrix.UnitaryGroup.DiagonalSubgroup
+public import QCLib.LinearAlgebra.UnitaryGroup.DiagonalSubgroup
 
 /-!
 

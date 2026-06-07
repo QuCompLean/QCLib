@@ -5,9 +5,8 @@ Authors: David Gross, Davood Tehrani
 -/
 module
 
-public import Mathlib.LinearAlgebra.UnitaryGroup
+public import QCLib.LinearAlgebra.Matrix.Action
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
-public import QCLib.Matrix.Action
 
 /-!
 # Some actions of the `unitaryGroup`
@@ -102,7 +101,6 @@ theorem piKroneckerUnitary_smul_vec (U : Π i, unitaryGroup (n i) R) (v : Π i, 
   simp [Matrix.unitaryGroup.smul_vec_def]
 
 end OuterProduct
-
 
 
 end

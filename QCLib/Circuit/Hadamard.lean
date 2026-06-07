@@ -7,10 +7,9 @@ module
 
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 public import QCLib.Mathlib.Lemmas
-public import QCLib.Matrix.UnitaryGroup.Action
-public import QCLib.Matrix.UnitaryGroup.Basic
+public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 public import QCLib.Misc.IntCast
-public import QCLib.Circuit.Qubit
+public import QCLib.Circuit.Gate.Qubit
 
 /-!
 # `n`-qubit Hadamard gate

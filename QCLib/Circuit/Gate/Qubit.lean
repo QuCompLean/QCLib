@@ -6,12 +6,10 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.LinearAlgebra.Matrix.Hermitian
-public import QCLib.Matrix.UnitaryGroup.Action
-public import QCLib.Matrix.UnitaryGroup.Basic
-public import QCLib.Matrix.UnitaryGroup.RootsOfUnity
-public import QCLib.Matrix.UnitaryGroup.DiagonalSubgroup
+public import QCLib.LinearAlgebra.UnitaryGroup.Basic
+public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
+public import QCLib.LinearAlgebra.StdBasis
 public import QCLib.Misc.OrderOf
-public import QCLib.Circuit.StdBasis
 
 import QCLib.Misc.IntCast
 
@@ -390,3 +388,4 @@ theorem Z_pow_pls (p : ℕ) : Z^p • pls = ((√2)⁻¹ : ℂ) • (δ[(0 : Qub
 end IntCast
 
 end Qubit
+

@@ -6,9 +6,8 @@ Authors: Davood Tehrani, David Gross
 module
 
 public import Mathlib.LinearAlgebra.Matrix.Permutation
-public import QCLib.Matrix.UnitaryGroup.Action
-public import QCLib.Matrix.UnitaryGroup.Basic
-public import QCLib.Circuit.StdBasis
+public import QCLib.LinearAlgebra.UnitaryGroup.Basic
+public import QCLib.LinearAlgebra.StdBasis
 
 /-!
 

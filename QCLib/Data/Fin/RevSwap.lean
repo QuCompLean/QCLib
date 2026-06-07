@@ -9,7 +9,6 @@ public import Mathlib.Algebra.Group.Action.End
 public import Mathlib.Data.Finset.NoncommProd
 public import Mathlib.Data.Int.ConditionallyCompleteOrder
 public import Mathlib.GroupTheory.GroupAction.Defs
-public import Mathlib.Logic.Function.CompTypeclasses
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
 
 /-!

@@ -6,7 +6,7 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.RingTheory.RootsOfUnity.Complex
-public import QCLib.Matrix.UnitaryGroup.Action
+public import QCLib.LinearAlgebra.UnitaryGroup.Action
 public import QCLib.Tactic.MatrixExpand
 
 /-!
