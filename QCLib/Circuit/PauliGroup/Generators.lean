@@ -74,7 +74,7 @@ theorem ZZ_apply (p : Fin n → ℤ) (x : Register n) :
     ← Finset.prod_zpow_eq_zpow_sum₀]
 
 -- theorem ZZ_diagonal (p : Fin n → ℤ) : ZZ p =
---   Pi.Unitary.diagonal (fun x : Register n ↦ (ᵤ-1) ^ (p ⬝ᵥ ↑x)) := by
+--   Matrix.UnitaryGroup.diagonalMonoidHom (fun x : Register n ↦ (ᵤ-1) ^ (p ⬝ᵥ ↑x)) := by
 --   apply Matrix.UnitaryGroup.ext_smul_basis
 --   simp only [ZZ_apply, Matrix.UnitaryGroup.diagonal_smul_basisVector]
 --   intro i

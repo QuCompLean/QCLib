@@ -65,9 +65,10 @@ theorem mul_and_mul_iff_mul {M} [MulOne M] [IsDedekindFiniteMonoid M] {a b : M} 
 variable {R : Type*} [CommRing R] [StarRing R]
 variable {n : Type*} [DecidableEq n] [Fintype n]
 
-@[simp]
-theorem Matrix.UnitaryGroup.diagonal_zpow (d : n → unitary R) (z : ℤ) :
-    (diagonalMonoidHom d) ^ z = diagonalMonoidHom (d ^ z) := (map_zpow _ _ _).symm
+-- Causes `simp` loops
+-- @[simp]
+-- theorem Matrix.UnitaryGroup.diagonal_zpow (d : n → unitary R) (z : ℤ) :
+--     (diagonalMonoidHom d) ^ z = diagonalMonoidHom (d ^ z) := (map_zpow _ _ _).symm
 
 attribute [simp] Matrix.commute_diagonal
 
