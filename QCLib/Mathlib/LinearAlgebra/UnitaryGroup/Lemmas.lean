@@ -133,4 +133,41 @@ def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α w
 
 end Diagonal
 
+
+section BlockDiagonal
+
+variable (R : Type*) (m o : Type*)
+    [CommSemiring R] [StarRing R] [DecidableEq o] [DecidableEq m] [Fintype o] [Fintype m]
+
+@[simps!]
+def blockDiagonalAlgHom :
+    (o → Matrix m m R) →ₐ[R] Matrix (m × o) (m × o) R where
+  toRingHom := blockDiagonalRingHom m o R
+  commutes' r := by
+    ext
+    simp [algebraMap_matrix_apply, blockDiagonal_apply]
+    grind
+
+@[simps!]
+def blockDiagonalStarAlgHom :
+    (o → Matrix m m R) →⋆ₐ[R] Matrix (m × o) (m × o) R where
+  toAlgHom := blockDiagonalAlgHom R m o
+  map_star' M := by
+    simp [star_eq_conjTranspose, blockDiagonal_conjTranspose, Pi.star_def]
+
+open Matrix in
+@[simps]
+def UnitaryGroup.blockDiagonalStarMonoidHom (R : Type*) [CommRing R] [StarRing R] :
+    (o → unitaryGroup m R) →⋆* unitaryGroup (m × o) R where
+  toFun d := ⟨ blockDiagonalStarAlgHom R m o (fun i : o => ↑(d i)), by
+    simp only [blockDiagonalStarAlgHom_apply, mem_unitaryGroup_iff, star_eq_conjTranspose,
+      blockDiagonal_conjTranspose, ← blockDiagonal_mul, ← blockDiagonal_one, blockDiagonal_inj]
+    ext1
+    simp [← star_eq_conjTranspose] ⟩
+  map_one' := by ext1; simp [← Matrix.blockDiagonal_one, blockDiagonal_apply]
+  map_mul' := by simp
+  map_star' d := by apply Subtype.ext; simp [star_eq_conjTranspose, Unitary.coe_star]
+
+end BlockDiagonal
+
 end Matrix
