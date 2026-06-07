@@ -125,6 +125,12 @@ theorem diagonal_mem_unitaryGroup_iff (f : n → α) :
     Matrix.diagonal f ∈ unitaryGroup n α ↔ ∀ i, f i ∈ unitary α := by
   simp [Unitary.mem_iff, funext_iff, forall_and]
 
+/-- MonoidHom from phase-valued functions to diagonal unitaries -/
+def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α where
+  toFun d := ⟨Matrix.diagonal fun i ↦ (d i : α), by simp⟩
+  map_one' := by simp
+  map_mul' := by simp
+
 end Diagonal
 
 end Matrix

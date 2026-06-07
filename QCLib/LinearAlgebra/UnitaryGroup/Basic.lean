@@ -6,8 +6,9 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.Data.Complex.Basic
+public import QCLib.Mathlib.Lemmas
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
-public import QCLib.LinearAlgebra.UnitaryGroup.Action -- always imported along with basic file
+public import QCLib.LinearAlgebra.UnitaryGroup.Action
 
 /-!
 
@@ -54,38 +55,26 @@ theorem Matrix.mul_kronecker_mul_symm
 -- Allows `simp` to prove what's called `Matrix.neg_unitary_val` in Lean-QuantumInfo
 attribute [simp] Unitary.coe_neg
 
+-- TBD: Remove?
 -- Rewrites the membership condition for `unitary` in a way that's compatible
 -- with the one of `unitaryGroup`.
 @[to_additive]
 theorem mul_and_mul_iff_mul {M} [MulOne M] [IsDedekindFiniteMonoid M] {a b : M} :
     a * b = 1 ∧ b * a = 1 ↔ b * a = 1 := ⟨And.right, fun h ↦ ⟨mul_eq_one_comm.mpr h, h⟩⟩
 
-end Simp
+variable {R : Type*} [CommRing R] [StarRing R]
+variable {n : Type*} [DecidableEq n] [Fintype n]
 
--- -- move somehwere
--- section new
---
--- #check Matrix.UnitaryGroup.coeFun
--- #check Matrix.diagonal
--- #check Matrix.diagonalAlgHom
---
--- namespace Matrix.UnitaryGroup
---
--- -- We assume `[CommRing R]` to avoid having to treat left and right inverses separetely.
--- -- TBD: Generalize?
--- variable {R : Type*} [CommRing R] [StarRing R]
--- variable {n : Type*} [DecidableEq n] [Fintype n]
---
--- /-- Star monoid equivalence between unitary-valued functions and unitary functions -/
--- @[simps]
--- def diagonalMonoidHom : (n → unitary R) →* (unitaryGroup n R) where
---   toFun d := ⟨Matrix.diagonalAlgHom R (fun i ↦ ↑(d i)), by
---     simp
---
---     ⟩
---   invFun d := fun i ↦ ⟨d i, (mem_unitary ⇑d).mp (SetLike.coe_mem d) i⟩
---   map_mul' x y := by with_reducible_and_instances rfl
---   map_star' x := by with_reducible_and_instances rfl
---
--- end new
---
+@[simp]
+theorem Matrix.UnitaryGroup.diagonal_zpow (d : n → unitary R) (z : ℤ) :
+    (diagonalMonoidHom d) ^ z = diagonalMonoidHom (d ^ z) := (map_zpow _ _ _).symm
+
+attribute [simp] Matrix.commute_diagonal
+
+@[simp]
+theorem Matrix.UnitaryGroup.commute_diagonal (d₁ d₂ : n → unitary R) :
+    Commute (UnitaryGroup.diagonalMonoidHom d₁) (UnitaryGroup.diagonalMonoidHom d₂) := by
+  apply Submonoid.coe_commute_iff.mp
+  exact Matrix.commute_diagonal _ _
+
+end Simp

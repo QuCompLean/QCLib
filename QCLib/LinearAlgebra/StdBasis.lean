@@ -44,8 +44,7 @@ theorem basisVector_def (ι : Type*) [Finite ι] (i : ι) :
 
 -- TBD: scope
 /-- The computational basis. -/
-notation3:max "δ[" i:90 "] " =>
-  BasisVector i
+notation3:max "δ[" i:90 "] " => BasisVector i
 
 -- `ext` lemma stated for `SMul` action of unitaries on vectors.
 -- TBD: Get rid of this? Formulate in terms of `toLin` and general Bases? State
