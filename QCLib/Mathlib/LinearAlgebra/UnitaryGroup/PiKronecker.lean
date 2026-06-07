@@ -16,9 +16,9 @@ public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
 
 * An `OuterProduct` instance for `Matrix.unitaryGroup`
 
-## Maturity
+## Main results
 
-Stable.
+Obvious compatibility lemmas.
 
 -/
 

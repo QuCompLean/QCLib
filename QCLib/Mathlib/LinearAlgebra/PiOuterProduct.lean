@@ -29,10 +29,9 @@ results are on Kronecker products of matrices.
 
 * `PiKronecker_det_dep` The determinant of a KroneckerProducgt
 
-## Maturity
+## To do
 
-Fairly stable, but needs more results. Exception is the section on determinants,
-which needs golfing.
+The section on determinants needs golfing.
 -/
 
 public section

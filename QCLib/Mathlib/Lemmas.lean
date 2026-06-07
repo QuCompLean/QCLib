@@ -42,6 +42,7 @@ theorem Finset.prod_zpow_eq_zpow_sum₀
 
 section noncommProd
 
+/-- Two elements of a submonoid commute iff their coercions to the ambient monoid commute -/
 @[simp]
 theorem Submonoid.coe_commute_iff {M : Type*} [Monoid M] {S : Submonoid M} {a b : S} :
     (Commute (a : M) (b : M)) ↔ Commute a b := by
