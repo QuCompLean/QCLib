@@ -74,23 +74,23 @@ theorem single_single_commute {i j : ι} (h : i ≠ j) (U V : 𝐔[k]) :
   congr
   grind
 
-theorem singleQubit_mul (i : Fin n) (U V : 𝐔[Qubit]) :
+theorem single_mul (i : ι) (U V : 𝐔[k]) :
     single i (U * V) = single i U * single i V := by
   ext
   simp
 
 @[simp]
-theorem pairwise_commute_singleQubit (f : ι → 𝐔[k]) (s : Set ι) :
+theorem pairwise_commute_single (f : ι → 𝐔[k]) (s : Set ι) :
     s.Pairwise (Function.onFun Commute (fun i ↦ single i (f i))) :=
   (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
 
 @[simp]
-theorem noncommProd_singleQubit (f : Fin n → 𝐔[Qubit]) (s : Finset (Fin n)) :
+theorem noncommProd_single (f : ι → 𝐔[k]) (s : Finset ι) :
     s.noncommProd (fun i ↦ single i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
   induction s using Finset.cons_induction with
   | empty => simp
   | cons a s ha IH =>
-    have (i : Fin n) : (if i = a ∨ i ∈ s then f i else 1) =
+    have (i : ι) : (if i = a ∨ i ∈ s then f i else 1) =
         (if i = a then f a else 1) * (if i ∈ s then f i else 1) := by grind
     simp_rw [Finset.noncommProd_cons, IH, Finset.cons_eq_insert, Finset.mem_insert, this,
     ← mul_piKroneckerUnitary_mul, single_eq_prod]
@@ -112,7 +112,7 @@ theorem bipartite_apply_apply (A : 𝐔[k × k])
   simp [blockDiagonal_apply, funext_iff]
 
 @[simp]
-theorem bipartite_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : i ≠ j) (v : Register n) :
+theorem bipartite_apply_basis (A : 𝐔[k × k]) (i j : ι) (h : i ≠ j) (v : ι → k) :
     bipartite i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
@@ -123,14 +123,14 @@ theorem bipartite_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : i �
   · rw [Finset.sum_eq_zero]; grind
 
 @[simp]
-theorem bipartite_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h : i ≠ j) :
+theorem bipartite_diagonal (d : ι × ι → unitary ℂ) (i j : Fin n) (h : i ≠ j) :
     bipartite i j (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i, k j) := by
   ext
   simp [diagonal_apply, funext_iff]
   grind
 
 set_option backward.isDefEq.respectTransparency false in
-theorem twoQubitGateAt_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j) :
+theorem bipartite_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j) :
     bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
   simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
