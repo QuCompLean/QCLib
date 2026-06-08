@@ -52,6 +52,28 @@ theorem piTensorProductSplitAtEquiv_apply [CommMonoid α] [DecidableEq ι]
   congr
   grind
 
+@[simps]
+def piSplitTwo {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i := by grind) :
+    (∀ k : ι, β k) ≃ (β i × β j) × (∀ k : {k // k ≠ i ∧ k ≠ j}, β k) where
+  toFun f := ((f i, f j), fun ⟨k, hi, hj⟩ => f k)
+  invFun := fun ((a, b), g) k =>
+    if hki : k = i then hki.symm ▸ a
+    else if hkj : k = j then hkj.symm ▸ b
+    else g ⟨k, hki, hkj⟩
+  left_inv := by intro _; grind
+  right_inv := by intro _; aesop
+
+omit [Fintype ι] in
+@[simp]
+lemma flatten_ind'_dep {k : ι → Type*}
+    (i j : ι) (a b : ∀ x, k x) :
+    ((a i = b i ∧ a j = b j) ∧
+      ∀ x : ι, x ≠ i → x ≠ j → a x = b x) ↔
+    a = b := by
+  refine ⟨fun h => ?_, fun h => by simp_all⟩
+  ext k
+  by_cases hi : k = i <;> by_cases hj : k = j <;> grind
+
 /- Should be relocated -/
 @[simps]
 def funSplitTwo [DecidableEq ι] (i j : ι) (_ : j ≠ i := by decide) :

@@ -96,6 +96,7 @@ theorem pairwise_commute_single (f : (i : ι) → 𝐔[k i]) (s : Set ι) :
     s.Pairwise (Function.onFun Commute (fun i ↦ single' i (f i))) :=
   (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
 
+-- TBD : Generalize it to dependent case
 @[simp]
 theorem noncommProd_single {k : Type*} [DecidableEq k] [Fintype k] (f : ι → 𝐔[k]) (s : Finset ι) :
     s.noncommProd (fun i ↦ single i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
@@ -113,23 +114,27 @@ end single
 
 section bipartite
 
--- TBD : Define `Equiv.piSplitTwo`.
-variable {k : Type*} [DecidableEq k] [Fintype k]
-
 @[simps!]
-def bipartite (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
-  (reindexMonoidEquiv (funSplitTwo i j (Ne.symm h) (l := k)).symm)
+def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) :=
+  (reindexMonoidEquiv (piSplitTwo i j (Ne.symm h) (β := k)).symm)
     (blockDiagonalMonoidHom (fun _ => U))
 
-theorem bipartite_apply_apply (A : 𝐔[k × k])
-    (i j : ι) (h : i ≠ j) (a b : ι → k) :
-    bipartite i j A h a b =
+abbrev bipartite {k : Type*}
+    [DecidableEq k] [Fintype k]
+    (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
+  bipartite' (k := fun _ : ι => k) i j U h
+
+theorem bipartite_apply_apply
+    (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (a b : (i : ι) → (k i)) :
+    bipartite' i j A h a b =
       if ∀ k, k ≠ i → k ≠ j → a k = b k then A (a i, a j) (b i, b j) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
+-- TBD : Generalize it to dependent case
 set_option backward.isDefEq.respectTransparency false in
-theorem bipartite_kronecker (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
-    bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
+theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
+    (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
+    bipartite' i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
   simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
   split_ifs with hv
@@ -142,19 +147,20 @@ theorem bipartite_kronecker (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
     simp_all
 
 @[simp]
-theorem bipartite_apply_basis (A : 𝐔[k × k]) (i j : ι) (h : i ≠ j) (v : ι → k) :
-    bipartite i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
+theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v : (i : ι) → (k i)) :
+    bipartite' i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
     MulOpposite.op_one, Pi.smul_apply, col_apply, bipartite_apply_apply, one_smul, Finset.sum_apply,
-    Pi.single_apply, smul_eq_mul, funext_iff, update_apply]
+    Pi.single_apply, smul_eq_mul, funext_iff]
   split_ifs
   · rw [Finset.sum_eq_single (w i, w j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
 @[simp]
-theorem bipartite_diagonal (d : ι × ι → unitary ℂ) (i j : ι) (h : i ≠ j) :
-    bipartite i j (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i, k j) := by
+theorem bipartite_diagonal (d : Π i j, k i → k j → unitary ℂ) (i j : ι) (h : i ≠ j) :
+  bipartite' i j (diagonalMonoidHom (fun p : k i × k j => d i j p.1 p.2)) =
+    diagonalMonoidHom (fun x : (j : ι) → k j => d i j (x i) (x j)) := by
   ext a b
   simp [diagonal_apply, funext_iff]
 
