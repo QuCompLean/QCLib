@@ -23,6 +23,7 @@ variable {k} [Fintype k] [DecidableEq k]
 
 open Matrix.UnitaryGroup Matrix
 
+/-- `U` Control Gate. -/
 @[simps! coe, expose]
 def controllize (U : 𝐔[k]) : 𝐔[k × Qubit] := blockDiagonalStarMonoidHom ![1, U]
 
@@ -60,6 +61,7 @@ public section Swap
 
 open Matrix.UnitaryGroup Matrix
 
+/-- Swap gate as an explicit matrix. -/
 def Swap : 𝐔[Qubit × Qubit] :=
   ⟨of fun a b => ite (a = b.swap) 1 0, by
     rw [mem_unitaryGroup_iff]

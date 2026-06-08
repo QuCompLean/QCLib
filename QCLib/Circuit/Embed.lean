@@ -108,6 +108,7 @@ end single
 
 section two
 
+/-- Two qubit gate acting on register -/
 @[simps!]
 def twoQubit (i j : Fin n) (U : 𝐔[Qubit × Qubit]) (h : i ≠ j := by grind) :=
   (reindexMonoidEquiv (funSplitTwo i j (Ne.symm h) (l := Qubit)).symm)
