@@ -143,8 +143,6 @@ public section Swap
 
 open Matrix.UnitaryGroup Matrix
 
-namespace General
-
 variable {n} [Fintype n] [DecidableEq n]
 
 /-- Swap gate as an explicit matrix. -/
@@ -168,7 +166,7 @@ theorem swap_apply_apply {a b : n × n} : Swap a b = if a = b.swap then 1 else 0
 
 @[matrixExpand]
 theorem swap_coe :
-  (Swap (n := n) : Matrix (n × n) (n × n) ℂ) = of fun a b => ite (a = b.swap) 1 0 := by
+  (Swap (n := n) : Matrix (n × n) (n × n) ℂ) = of fun a b : n × n => ite (a = b.swap) 1 0 := by
   ext
   simp
 
@@ -176,31 +174,6 @@ theorem swap_coe :
 theorem swap_apply_basis {v : n × n} : Swap (n := n) • δ[v] = δ[v.swap] := by
   simp [Swap]
 
-end General
-
-
-/-- Swap gate as an explicit matrix. -/
-def Swap : 𝐔[Qubit × Qubit] :=
-  ⟨of fun a b => ite (a = b.swap) 1 0, by
-    rw [mem_unitaryGroup_iff]
-    matrix_expand
-  ⟩
-
-@[matrixExpand]
-theorem swap_eq :
-  Swap.val = of fun a b => ite (a = b.swap) 1 0 := by rfl
-
-@[simp] theorem swap_swap : Swap * Swap = 1 := by
-  matrix_expand
-
-@[simp]
-theorem swap_apply {a b} :
-    Swap a b = ite (a = b.swap) 1 0 := by
-  simp [swap_eq]
-
-@[simp]
-theorem swap_apply_basis {v : Qubit × Qubit} :
-    Swap • δ[v] = δ[v.swap] := by
-  matrix_expand
+abbrev QSwap := Swap (n := Qubit) -- needed?
 
 end Swap
