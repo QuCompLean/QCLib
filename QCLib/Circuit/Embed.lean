@@ -8,10 +8,15 @@ public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
 # Embedding unitary gates into larger systems
 
+## Main Definitions
+
 `single i U` : Embeds unitary `U[k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
-  Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `single_eq_prod`.
+Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `single_eq_prod`.
 
 `bipartite i j U` : Embeds unitary `U[k × k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
+
+## TBD
+Generalize this file to dependant case.
 
 -/
 
