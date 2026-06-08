@@ -1,18 +1,17 @@
 module
 
-public import QCLib.LinearAlgebra.UnitaryGroup.Basic
-public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
-public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
-public import QCLib.Circuit.Gate.Qubit
-public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
+public import QCLib.Circuit.Gate.BiPartite
 public import QCLib.LinearAlgebra.PiOuterProduct.Equiv
+public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
-@[expose] public section single
+
+@[expose] public section
 
 open Matrix UnitaryGroup Fin Function PiOuterProduct
 
 variable {n}
 
+section single
 
 /-- Single qubit gate acting on register -/
 @[simps!]
@@ -78,6 +77,9 @@ theorem single_single_commute {n : ℕ} {i j : Fin n} (h : i ≠ j) (U V : 𝐔[
   congr
   grind
 
+end single
+
+section two
 
 @[simps!]
 def twoQubit (i j : Fin n) (U : 𝐔[Qubit × Qubit]) (h : j ≠ i := by grind) : 𝐔[Register n] :=
@@ -96,3 +98,39 @@ theorem twoQubit_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h 
   simp [diagonal_apply, funext_iff]
   grind
 
+set_option backward.isDefEq.respectTransparency false in
+theorem twoQubitGateAt_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : j ≠ i) :
+    twoQubit i j (A ⊗ᵤ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
+  ext k l
+  simp only [twoQubit_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
+  split_ifs with h
+  · have (i : Fin n) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
+    push_cast
+    simp_rw [apply_ite Subtype.val, ite_apply _]
+    simp_all [Finset.prod_ite]
+  · obtain ⟨w, hw⟩ := not_forall.mp h
+    refine (Finset.prod_eq_zero (Finset.mem_univ w) ?_).symm
+    simp_all
+
+@[simp]
+theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : j ≠ i)
+    (v : Register n) (hv : v j = 0) : twoQubit i j C[U] h • δ[v] = δ[v] := by
+  ext w
+  by_cases hw : v = w
+  all_goals
+    simp_all [basisVector_def, Submonoid.smul_def, funext_iff, blockDiagonal_apply,
+      Pi.single_apply, Matrix.one_apply]
+    try grind
+
+@[simp]
+theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : j ≠ i)
+    (v : Register n.succ) (hv : v j = 1) :
+    twoQubit i j C[U] h • δ[v] = ∑ q, U q (v i) • δ[(Function.update v i q)] := by
+  ext w
+  by_cases hw : v = w
+  all_goals
+    simp_all [basisVector_def, Submonoid.smul_def, funext_iff, blockDiagonal_apply,
+      Pi.single_apply]
+    grind
+
+end two
