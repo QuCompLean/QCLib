@@ -15,7 +15,9 @@ Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `si
 
 `bipartite i j U` : Embeds unitary `U[k × k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
 If `U = A[k] ⊗ B[k]`, embedding reduces to `I ⊗ I ⊗ ... ⊗ A ⊗ ... ⊗ B ⊗ ...`
-as shown in `bipartite_kronecker`.
+as shown in `bipartite_kronecker`. Requires the proof of `i ≠ j`.
+
+For dependent case, use `single'` and `bipartite'`.
 
 -/
 
