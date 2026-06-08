@@ -8,8 +8,10 @@ public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
 # Embedding unitary gates into larger systems
 
-`single i U` : Takes a single qubit unitary `U` and applies it to position `i`.
-`bipartite i j U` : A unitary gate acting on two qubits is applied to position `i` and `j`.
+`single i U` : Embeds unitary `U[k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
+  Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `single_eq_prod`.
+
+`bipartite i j U` : Embeds unitary `U[k × k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
 
 -/
 
