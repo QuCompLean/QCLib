@@ -116,8 +116,7 @@ def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) :=
   (reindexMonoidEquiv (piSplitTwo i j (Ne.symm h) (β := k)).symm)
     (blockDiagonalMonoidHom (fun _ => U))
 
-abbrev bipartite {k : Type*}
-    [DecidableEq k] [Fintype k]
+abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
     (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
   bipartite' (k := fun _ : ι => k) i j U h
 
@@ -131,7 +130,7 @@ theorem bipartite_apply_apply
 set_option backward.isDefEq.respectTransparency false in
 theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
-    bipartite' i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
+    bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
   simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
   split_ifs with hv
