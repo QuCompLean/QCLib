@@ -47,6 +47,10 @@ def singleQubit (i : Fin n) (U : 𝐔[Qubit]) := ⨂ j, if j = i then U else 1
 theorem singleQubit_def (U : 𝐔[Qubit]) (i : Fin n) :
   singleQubit i U = ⨂ j, if j = i then U else 1 := by rfl
 
+@[simp]
+theorem single_one {i : Fin n} : singleQubit i (1 : 𝐔[Qubit])  = 1 := by
+  simp [singleQubit_def]
+
 @[simps!]
 def singleQubitBlock (i : Fin (n + 1)) (U : 𝐔[Qubit]) : 𝐔[Register (n + 1)] :=
   reindexMonoidEquiv (insertNthEquiv _ i) (blockDiagonalMonoidHom (fun _ => U))
@@ -103,6 +107,29 @@ theorem single_single_commute {n : ℕ} {i j : Fin n} (h : i ≠ j) (U V : 𝐔[
   simp only [singleQubit_def, commute_iff_eq, mul_piKroneckerUnitary_mul]
   congr
   grind
+
+theorem singleQubit_mul (i : Fin n) (U V : 𝐔[Qubit]) :
+    singleQubit i (U * V) = singleQubit i U * singleQubit i V := by
+  cases n with
+  | zero => ext; simp [singleQubit_def]
+  | succ n => ext; simp [singleQubit_eq_singleQubitBlock]
+
+@[simp]
+theorem pairwise_commute_singleQubit (f : Fin n → 𝐔[Qubit]) (s : Set (Fin n)) :
+    s.Pairwise (Function.onFun Commute (fun i ↦ singleQubit i (f i))) :=
+  (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
+
+open Finset in
+@[simp]
+theorem noncommProd_singleQubit (f : Fin n → 𝐔[Qubit]) (s : Finset (Fin n)) :
+    s.noncommProd (fun i ↦ singleQubit i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
+  induction s using cons_induction with
+  | empty => simp
+  | cons a s ha IH =>
+    have (i : Fin n) : (if i = a ∨ i ∈ s then f i else 1) =
+        (if i = a then f a else 1) * (if i ∈ s then f i else 1) := by grind
+    simp_rw [noncommProd_cons, IH, cons_eq_insert, mem_insert, this,
+    ← mul_piKroneckerUnitary_mul, singleQubit_def]
 
 end single
 
