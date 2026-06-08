@@ -162,7 +162,7 @@ theorem bipartite_diagonal (d : Π i j, k i → k j → unitary ℂ) (i j : ι) 
 
 @[simp]
 theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
-    (v : Register n) (hv : v j = 0) : bipartite i j C[U] • δ[v] = δ[v] := by
+    (v : Register n) (hv : v i = 0) : bipartite i j C[U] • δ[v] = δ[v] := by
   ext w
   by_cases hw : v = w
   all_goals
@@ -172,8 +172,8 @@ theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
 
 @[simp]
 theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i ≠ j)
-    (v : Register n.succ) (hv : v j = 1) :
-    bipartite i j C[U] • δ[v] = ∑ q, U q (v i) • δ[update v i q] := by
+    (v : Register n.succ) (hv : v i = 1) :
+    bipartite i j C[U] • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext w
   by_cases hw : v = w
   all_goals
