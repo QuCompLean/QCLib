@@ -20,6 +20,7 @@ as shown in `bipartite_kronecker`.
 ## TBD
 Generalize this file to dependant case.
 
+
 -/
 
 @[expose] public section
