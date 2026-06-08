@@ -120,7 +120,7 @@ theorem twoQubit_apply_apply (A : 𝐔[Qubit × Qubit])
 
 @[simp]
 theorem twoQubit_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : j ≠ i) (v : Register n) :
-    twoQubit i j A h • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
+    twoQubit i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
     MulOpposite.op_one, Pi.smul_apply, col_apply, twoQubit_apply_apply, one_smul, Finset.sum_apply,
@@ -131,14 +131,14 @@ theorem twoQubit_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : j ≠
 
 @[simp]
 theorem twoQubit_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h : j ≠ i) :
-    twoQubit i j (diagonalMonoidHom d) h = diagonalMonoidHom fun k ↦ d (k i, k j) := by
+    twoQubit i j (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i, k j) := by
   ext
   simp [diagonal_apply, funext_iff]
   grind
 
 set_option backward.isDefEq.respectTransparency false in
 theorem twoQubitGateAt_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : j ≠ i) :
-    twoQubit i j (A ⊗ᵤ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
+    twoQubit i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
   simp only [twoQubit_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
   split_ifs with h
@@ -152,7 +152,7 @@ theorem twoQubitGateAt_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : j ≠ i)
 
 @[simp]
 theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : j ≠ i)
-    (v : Register n) (hv : v j = 0) : twoQubit i j C[U] h • δ[v] = δ[v] := by
+    (v : Register n) (hv : v j = 0) : twoQubit i j C[U] • δ[v] = δ[v] := by
   ext w
   by_cases hw : v = w
   all_goals
@@ -163,7 +163,7 @@ theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : j ≠ i)
 @[simp]
 theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : j ≠ i)
     (v : Register n.succ) (hv : v j = 1) :
-    twoQubit i j C[U] h • δ[v] = ∑ q, U q (v i) • δ[(Function.update v i q)] := by
+    twoQubit i j C[U] • δ[v] = ∑ q, U q (v i) • δ[(Function.update v i q)] := by
   ext w
   by_cases hw : v = w
   all_goals
