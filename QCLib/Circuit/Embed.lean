@@ -14,6 +14,8 @@ public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `single_eq_prod`.
 
 `bipartite i j U` : Embeds unitary `U[k × k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
+If `U = A[k] ⊗ B[k]`, embedding reduces to `I ⊗ I ⊗ ... ⊗ A ⊗ ... ⊗ B ⊗ ...`
+as shown in `bipartite_kronecker`.
 
 ## TBD
 Generalize this file to dependant case.
@@ -118,6 +120,20 @@ theorem bipartite_apply_apply (A : 𝐔[k × k])
       if ∀ k, k ≠ i → k ≠ j → a k = b k then A (a i, a j) (b i, b j) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
+set_option backward.isDefEq.respectTransparency false in
+theorem bipartite_kronecker (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
+    bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
+  ext k l
+  simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
+  split_ifs with hv
+  · have (i : ι) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
+    push_cast
+    simp_rw [apply_ite Subtype.val, ite_apply _]
+    simp_all [Finset.prod_ite, Ne.symm h]
+  · obtain ⟨w, hw⟩ := not_forall.mp hv
+    refine (Finset.prod_eq_zero (Finset.mem_univ w) ?_).symm
+    simp_all
+
 @[simp]
 theorem bipartite_apply_basis (A : 𝐔[k × k]) (i j : ι) (h : i ≠ j) (v : ι → k) :
     bipartite i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
@@ -135,20 +151,6 @@ theorem bipartite_diagonal (d : ι × ι → unitary ℂ) (i j : Fin n) (h : i �
   ext
   simp [diagonal_apply, funext_iff]
   grind
-
-set_option backward.isDefEq.respectTransparency false in
-theorem bipartite_kronecker (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
-    bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
-  ext k l
-  simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
-  split_ifs with hv
-  · have (i : ι) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
-    push_cast
-    simp_rw [apply_ite Subtype.val, ite_apply _]
-    simp_all [Finset.prod_ite, Ne.symm h]
-  · obtain ⟨w, hw⟩ := not_forall.mp hv
-    refine (Finset.prod_eq_zero (Finset.mem_univ w) ?_).symm
-    simp_all
 
 @[simp]
 theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
