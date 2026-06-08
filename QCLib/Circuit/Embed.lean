@@ -55,6 +55,11 @@ theorem single_eq_prod (i : ι) (U : 𝐔[k]) :
   · obtain ⟨w, hw⟩ := not_forall.mp h
     rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
 
+@[simp]
+theorem single_one (i : ι) : single i (1 : 𝐔[k]) = 1 := by
+  ext
+  simp [single_eq_prod]
+  
 theorem single_apply_apply (i : ι) (U : 𝐔[k]) (a b : ι → k) :
     single i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
