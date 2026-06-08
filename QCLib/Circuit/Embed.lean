@@ -164,7 +164,7 @@ theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
 @[simp]
 theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i ≠ j)
     (v : Register n.succ) (hv : v j = 1) :
-    twoQubit i j C[U] • δ[v] = ∑ q, U q (v i) • δ[(Function.update v i q)] := by
+    twoQubit i j C[U] • δ[v] = ∑ q, U q (v i) • δ[update v i q] := by
   ext w
   by_cases hw : v = w
   all_goals
