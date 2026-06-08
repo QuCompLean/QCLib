@@ -130,12 +130,12 @@ theorem bipartite_diagonal (d : ι × ι → unitary ℂ) (i j : Fin n) (h : i �
   grind
 
 set_option backward.isDefEq.respectTransparency false in
-theorem bipartite_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j) :
+theorem bipartite_kronecker (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
     bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
   simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
   split_ifs with hv
-  · have (i : Fin n) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
+  · have (i : ι) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
     push_cast
     simp_rw [apply_ite Subtype.val, ite_apply _]
     simp_all [Finset.prod_ite, Ne.symm h]
