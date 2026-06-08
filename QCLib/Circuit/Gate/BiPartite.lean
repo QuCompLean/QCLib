@@ -37,10 +37,6 @@ to define in terms of `Matrix.blockDiagonal`. Hence we start with
 `controllizeRight` and derive properties of `controllize` from those of
 `controllizeRight` where possible.
 
-## To do
-
-Restore the `ite` lemmas.
-
 -/
 
 public section Controllize
