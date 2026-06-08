@@ -92,6 +92,17 @@ theorem twoQubit_apply_apply (A : 𝐔[Qubit × Qubit])
   simp [blockDiagonal_apply, funext_iff]
 
 @[simp]
+theorem twoQubit_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : j ≠ i) (v : Register n) :
+    twoQubit i j A h • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
+  ext w
+  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
+    MulOpposite.op_one, Pi.smul_apply, col_apply, twoQubit_apply_apply, one_smul, Finset.sum_apply,
+    Pi.single_apply, smul_eq_mul, funext_iff, update_apply]
+  split_ifs
+  · rw [Finset.sum_eq_single (w i, w j)] <;> grind
+  · rw [Finset.sum_eq_zero]; grind
+
+@[simp]
 theorem twoQubit_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h : j ≠ i) :
     twoQubit i j (diagonalMonoidHom d) h = diagonalMonoidHom fun k ↦ d (k i, k j) := by
   ext
