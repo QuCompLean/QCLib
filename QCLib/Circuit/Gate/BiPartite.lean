@@ -71,6 +71,17 @@ theorem controllizeRight_one : [(1 : 𝐔[k])]C = 1 := by
 theorem controllizeRight_mul_inv (g : 𝐔[k]) : [g]C * [g⁻¹]C = 1 := by
   simp
 
+theorem controllizeRight_apply (U : 𝐔[k]) (a b : k × Qubit) :
+   [U]C a b =
+    if a.2 = b.2 then
+      if a.2 = 0 then
+        (1 : 𝐔[k]) (a.1) (b.1)
+      else
+        U (a.1) (b.1)
+    else 0 := by
+  simp only [controllizeRight_coe, blockDiagonal_apply, Fin.isValue, OneMemClass.coe_one]
+  generalize h : a.2 = c
+  fin_cases c <;> simp
 
 /-- The controlled-`U` gate. -/
 @[expose]
@@ -103,6 +114,20 @@ theorem controllize_one : C[(1 : 𝐔[k])] = 1 := by
 @[simp]
 theorem controllize_mul_inv (g : 𝐔[k]) : C[g] * C[g⁻¹] = 1 := by
   simp [← map_mul]
+
+theorem controllize_apply (U : 𝐔[k]) (a b : Qubit × k) :
+    C[U] a b =
+    if a.1 = b.1 then
+      if a.1 = 0 then
+        (1 : 𝐔[k]) (a.2) (b.2)
+      else
+        U (a.2) (b.2)
+    else 0 := by
+  simp only [controllize_def, reindexMonoidEquiv_apply_coe, controllizeRight_coe,
+    Equiv.prodComm_symm, Equiv.coe_prodComm, submatrix_apply, blockDiagonal_apply, Prod.snd_swap,
+    Prod.fst_swap, Fin.isValue, OneMemClass.coe_one]
+  generalize h : a.1 = c
+  fin_cases c <;> simp
 
 end Controllize
 
