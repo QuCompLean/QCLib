@@ -4,172 +4,136 @@ public import QCLib.Circuit.Gate.BiPartite
 public import QCLib.LinearAlgebra.PiOuterProduct.Equiv
 public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
-
 /-!
 
 # Embedding unitary gates into larger systems
 
-`singleQubit i U` : Takes a single qubit unitary `U` and applies it to position `i`.
-`twoQubit i j U` : A unitary gate acting on two qubits is applied to position `i` and `j`.
-
-## Notes
-
-Defining embeddings as block matrices simplifies several proofs by enabling reasoning at the level
-of matrix blocks rather than individual entries. This approach is particularly useful in proofs
-such as `singleQubit_diagonal`, where block-wise analysis leads to a more concise argument.
-
-For `singleQubit`, however, a purely block-matrix definition is not sufficient.
-When `n = 0`, there is no meaningful way to partition the indices into the qubit on
-which the gate acts and the remaining qubits on which the identity acts.
-Consequently, a block-matrix construction cannot be applied directly in this case.
-
-To accommodate all values of `n`, including `n = 0`, `singleQubit` is defined using
-a more explicit formulation. The theorem `singleQubit_eq_singleQubitBlock` then establishes that
-this definition coincides with the block-matrix version whenever the latter is applicable.
-This allows subsequent proofs to take advantage of the structural properties of block matrices
-while retaining a definition that is valid in all cases.
+`single i U` : Takes a single qubit unitary `U` and applies it to position `i`.
+`bipartite i j U` : A unitary gate acting on two qubits is applied to position `i` and `j`.
 
 -/
 
-
 @[expose] public section
 
-open Matrix UnitaryGroup Fin Function PiOuterProduct
+open Matrix UnitaryGroup Function PiOuterProduct
 
-variable {n}
+variable {n} {k ι : Type*}
+
+/-- `Equiv.finSplitAt` helper. -/
+@[simp]
+lemma flatten_ind (i) (a b : ι → k) :
+    a i = b i ∧ ((fun j : { j // ¬j = i } ↦ a j) = fun j : { j // ¬j = i } ↦ b j) ↔ a = b := by
+  simp [funext_iff]
+  grind
+
+variable [DecidableEq k] [DecidableEq ι] [Fintype k] [Fintype ι]
+
+namespace Matrix.UnitaryGroup
 
 section single
 
-/-- Single qubit gate acting on register -/
-@[simps!]
-def singleQubit (i : Fin n) (U : 𝐔[Qubit]) := ⨂ j, if j = i then U else 1
+@[simps! coe]
+def single (i : ι) (U : 𝐔[k]) : 𝐔[ι → k] :=
+  reindexMonoidEquiv (Equiv.funSplitAt i k).symm (blockDiagonalMonoidHom (fun _ => U))
 
-theorem singleQubit_def (U : 𝐔[Qubit]) (i : Fin n) :
-  singleQubit i U = ⨂ j, if j = i then U else 1 := by rfl
-
-@[simp]
-theorem single_one {i : Fin n} : singleQubit i (1 : 𝐔[Qubit])  = 1 := by
-  simp [singleQubit_def]
-
-@[simps!]
-def singleQubitBlock (i : Fin (n + 1)) (U : 𝐔[Qubit]) : 𝐔[Register (n + 1)] :=
-  reindexMonoidEquiv (insertNthEquiv _ i) (blockDiagonalMonoidHom (fun _ => U))
-
-@[simp]
-lemma prod_ind_flatten (i) (a b : Register (n + 1)) :
-    (a i = b i ∧ i.removeNth a = i.removeNth b) ↔ a = b := by
-  refine ⟨fun h => ?_ , fun h => by simp_all⟩
-  rw [← Fin.insertNth_self_removeNth i a, ← Fin.insertNth_self_removeNth i b, h.1, h.2]
-
-theorem singleQubitBlock_apply_apply (U : 𝐔[Qubit]) (i : Fin (n + 1)) (a b : Register (n + 1)) :
-    singleQubitBlock i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
-  simp [blockDiagonal_apply, Fin.removeNth_apply,
-    funext_iff, Fin.succAbove_ne, Fin.forall_iff_succAbove i]
-
-theorem singleQubit_eq_singleQubitBlock (U) (i : Fin (n + 1)) :
-    singleQubit i U = singleQubitBlock i U := by
-  ext a b
-  simp only [singleQubit_coe, piKronecker_apply, singleQubitBlock_apply_apply]
+theorem single_eq_prod (i : ι) (U : 𝐔[k]) :
+    single i U = ⨂ j, if j = i then U else 1 := by
+  ext
+  simp only [single_coe, submatrix_apply, Equiv.funSplitAt_apply, blockDiagonal_apply, funext_iff,
+    Subtype.forall, piKroneckerUnitary_apply]
   split_ifs with h
   · rw [Finset.prod_eq_single i] <;> aesop
   · obtain ⟨w, hw⟩ := not_forall.mp h
-    exact Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)
+    rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
+
+theorem single_apply_apply (i : ι) (U : 𝐔[k]) (a b : ι → k) :
+    single i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
+  simp [blockDiagonal_apply, funext_iff]
 
 @[simp]
-theorem singleQubit_apply_apply (U : 𝐔[Qubit]) (i : Fin n) (a b : Register n) :
-    singleQubit i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
-  cases n with
-  | zero => exact Fin.elim0 i
-  | succ n => rw [singleQubit_eq_singleQubitBlock, singleQubitBlock_apply_apply]
+theorem single_diagonal (d : k → unitary ℂ) (i : ι) :
+    single i (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i) := by
+  ext
+  simp [diagonal_apply]
 
-@[simp]
-theorem singleQubit_diagonal (d : Qubit → unitary ℂ) (i : Fin n) :
-    singleQubit i (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i) := by
-  cases n with
-  | zero => exact Fin.elim0 i
-  | succ n => ext; simp [singleQubit_eq_singleQubitBlock, diagonal_apply]
-
--- TBD: old proof, use blockDiagonal properties
-theorem singleQubit_apply_basis {n} (v : Register n) (j : Fin n) (U : 𝐔[Qubit]) :
-    singleQubit j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
+-- TBD : Old proof, clean up
+theorem single_apply_basis (v : ι → k) (j : ι) (U : 𝐔[k]) :
+    single j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext k
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-    MulOpposite.op_one, Pi.smul_apply, col_apply, singleQubit_apply_apply, one_smul,
-    Finset.sum_apply, Pi.single_apply, smul_eq_mul, funext_iff, update_apply]
+    MulOpposite.op_one, Pi.smul_apply, col_apply, single_apply_apply, one_smul,
+    Finset.sum_apply, Pi.single_apply, smul_eq_mul, funext_iff]
   split_ifs
   · rw [Finset.sum_eq_single (k j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
--- TBD: Maybe define a general notion of `support`? State for more general situations
 @[simp]
-theorem single_single_commute {n : ℕ} {i j : Fin n} (h : i ≠ j) (U V : 𝐔[Qubit]) :
-    Commute (singleQubit i U) (singleQubit j V) := by
-  simp only [singleQubit_def, commute_iff_eq, mul_piKroneckerUnitary_mul]
+theorem single_single_commute {i j : ι} (h : i ≠ j) (U V : 𝐔[k]) :
+    Commute (single i U) (single j V) := by
+  simp only [single_eq_prod, commute_iff_eq, mul_piKroneckerUnitary_mul]
   congr
   grind
 
 theorem singleQubit_mul (i : Fin n) (U V : 𝐔[Qubit]) :
-    singleQubit i (U * V) = singleQubit i U * singleQubit i V := by
-  cases n with
-  | zero => ext; simp [singleQubit_def]
-  | succ n => ext; simp [singleQubit_eq_singleQubitBlock]
+    single i (U * V) = single i U * single i V := by
+  ext
+  simp
 
 @[simp]
-theorem pairwise_commute_singleQubit (f : Fin n → 𝐔[Qubit]) (s : Set (Fin n)) :
-    s.Pairwise (Function.onFun Commute (fun i ↦ singleQubit i (f i))) :=
+theorem pairwise_commute_singleQubit (f : ι → 𝐔[k]) (s : Set ι) :
+    s.Pairwise (Function.onFun Commute (fun i ↦ single i (f i))) :=
   (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
 
-open Finset in
 @[simp]
 theorem noncommProd_singleQubit (f : Fin n → 𝐔[Qubit]) (s : Finset (Fin n)) :
-    s.noncommProd (fun i ↦ singleQubit i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
-  induction s using cons_induction with
+    s.noncommProd (fun i ↦ single i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
+  induction s using Finset.cons_induction with
   | empty => simp
   | cons a s ha IH =>
     have (i : Fin n) : (if i = a ∨ i ∈ s then f i else 1) =
         (if i = a then f a else 1) * (if i ∈ s then f i else 1) := by grind
-    simp_rw [noncommProd_cons, IH, cons_eq_insert, mem_insert, this,
-    ← mul_piKroneckerUnitary_mul, singleQubit_def]
+    simp_rw [Finset.noncommProd_cons, IH, Finset.cons_eq_insert, Finset.mem_insert, this,
+    ← mul_piKroneckerUnitary_mul, single_eq_prod]
 
 end single
 
-section two
 
-/-- Two qubit gate acting on register -/
+section bipartite
+
 @[simps!]
-def twoQubit (i j : Fin n) (U : 𝐔[Qubit × Qubit]) (h : i ≠ j := by grind) :=
-  (reindexMonoidEquiv (funSplitTwo i j (Ne.symm h) (l := Qubit)).symm)
+def bipartite (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
+  (reindexMonoidEquiv (funSplitTwo i j (Ne.symm h) (l := k)).symm)
     (blockDiagonalMonoidHom (fun _ => U))
 
-theorem twoQubit_apply_apply (A : 𝐔[Qubit × Qubit])
-    (i j : Fin n) (h : i ≠ j) (a b : Register n) :
-    twoQubit i j A h a b =
+theorem bipartite_apply_apply (A : 𝐔[k × k])
+    (i j : ι) (h : i ≠ j) (a b : ι → k) :
+    bipartite i j A h a b =
       if ∀ k, k ≠ i → k ≠ j → a k = b k then A (a i, a j) (b i, b j) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
 @[simp]
-theorem twoQubit_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : i ≠ j) (v : Register n) :
-    twoQubit i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
+theorem bipartite_apply_basis (A : 𝐔[Qubit × Qubit]) (i j : Fin n) (h : i ≠ j) (v : Register n) :
+    bipartite i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-    MulOpposite.op_one, Pi.smul_apply, col_apply, twoQubit_apply_apply, one_smul, Finset.sum_apply,
+    MulOpposite.op_one, Pi.smul_apply, col_apply, bipartite_apply_apply, one_smul, Finset.sum_apply,
     Pi.single_apply, smul_eq_mul, funext_iff, update_apply]
   split_ifs
   · rw [Finset.sum_eq_single (w i, w j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
 @[simp]
-theorem twoQubit_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h : i ≠ j) :
-    twoQubit i j (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i, k j) := by
+theorem bipartite_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h : i ≠ j) :
+    bipartite i j (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i, k j) := by
   ext
   simp [diagonal_apply, funext_iff]
   grind
 
 set_option backward.isDefEq.respectTransparency false in
 theorem twoQubitGateAt_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j) :
-    twoQubit i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
+    bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
-  simp only [twoQubit_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
+  simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
   split_ifs with hv
   · have (i : Fin n) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
     push_cast
@@ -181,7 +145,7 @@ theorem twoQubitGateAt_kronecker (A B : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
 
 @[simp]
 theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
-    (v : Register n) (hv : v j = 0) : twoQubit i j C[U] • δ[v] = δ[v] := by
+    (v : Register n) (hv : v j = 0) : bipartite i j C[U] • δ[v] = δ[v] := by
   ext w
   by_cases hw : v = w
   all_goals
@@ -192,7 +156,7 @@ theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
 @[simp]
 theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i ≠ j)
     (v : Register n.succ) (hv : v j = 1) :
-    twoQubit i j C[U] • δ[v] = ∑ q, U q (v i) • δ[update v i q] := by
+    bipartite i j C[U] • δ[v] = ∑ q, U q (v i) • δ[update v i q] := by
   ext w
   by_cases hw : v = w
   all_goals
@@ -200,4 +164,6 @@ theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i
       Pi.single_apply]
     grind
 
-end two
+end bipartite
+
+end Matrix.UnitaryGroup
