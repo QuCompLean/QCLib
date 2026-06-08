@@ -38,7 +38,7 @@ abbrev single {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔[k]) :=
   single' (k := fun _ : ι => k) i U
 
 theorem single_eq_prod (i : ι) (U : 𝐔[k i]) :
-    single' i U = ⨂ j : ι, (if h : j = i then h ▸ U else (1 : 𝐔[k j])) := by
+    single' i U = ⨂ j : ι, if h : j = i then h ▸ U else (1 : 𝐔[k j]) := by
   ext
   simp only [single'_coe, submatrix_apply, blockDiagonal_apply, funext_iff,
     Subtype.forall, piKroneckerUnitary_apply]
