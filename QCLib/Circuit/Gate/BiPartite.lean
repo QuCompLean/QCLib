@@ -1,11 +1,8 @@
 module
 
-public import QCLib.LinearAlgebra.UnitaryGroup.Basic
-public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
-public import QCLib.Circuit.Gate.Qubit
-public import QCLib.LinearAlgebra.UnitaryGroup.Permutation -- needed?
+public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
+public import QCLib.Tactic.MatrixExpand
 
-public import Mathlib.Algebra.Group.End
 
 /-!
 
@@ -173,3 +170,4 @@ theorem swap_apply_basis {v : n × n} : Swap (n := n) • δ[v] = δ[v.swap] := 
 abbrev QSwap := Swap (n := Qubit) -- needed?
 
 end Swap
+
