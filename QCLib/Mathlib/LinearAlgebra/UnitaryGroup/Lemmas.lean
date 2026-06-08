@@ -67,8 +67,8 @@ def reindexMonoidEquiv : (unitaryGroup m α) ≃* unitaryGroup n α where
     rw [mem_unitaryGroup_iff, ← map_star]
     simp⟩
   map_mul' := by simp
-  left_inv := fun U ↦ by simp
-  right_inv := fun U ↦ by simp
+  left_inv U := by simp
+  right_inv U := by simp
 
 end Reindex
 
@@ -139,7 +139,7 @@ def UnitaryGroup.blockDiagonalMonoidHom : (o → unitaryGroup m α) →* unitary
   map_mul' := by simp
 
 
--- The following are not currently used.
+-- TBD: Are all these combinations needed?
 
 @[simps!]
 def UnitaryGroup.blockDiagonalStarMonoidHom :
