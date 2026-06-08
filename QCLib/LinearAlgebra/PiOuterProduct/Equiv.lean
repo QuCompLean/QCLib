@@ -72,6 +72,18 @@ lemma flatten_ind {k} (i) (a b : ι → k) :
   simp [funext_iff]
   grind
 
+omit [Fintype ι] in
+@[simp]
+lemma flatten_ind' {k} (i j) (a b : ι → k) :
+    ((a i = b i ∧ a j = b j) ∧ ∀ (x : ι), ¬x = i → ¬x = j → a x = b x) ↔ a = b := by
+  refine ⟨fun h => ?_, fun h => by simp_all⟩
+  ext k
+  by_cases hi : k = i
+  · simp_all
+  · by_cases hj : k = j
+    · simp_all
+    · simp_all
+
 def piTensorProductSplitTwo [DecidableEq ι] (i j : ι) (h : j ≠ i := by decide) :
     ((ι → l) → α) ≃ ((l × l) × ({k // k ≠ i ∧ k ≠ j} → l) → α) :=
   arrowCongr (funSplitTwo i j h) (Equiv.refl α)

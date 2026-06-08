@@ -143,11 +143,10 @@ theorem bipartite_apply_basis (A : 𝐔[k × k]) (i j : ι) (h : i ≠ j) (v : �
   · rw [Finset.sum_eq_zero]; grind
 
 @[simp]
-theorem bipartite_diagonal (d : ι × ι → unitary ℂ) (i j : Fin n) (h : i ≠ j) :
+theorem bipartite_diagonal (d : ι × ι → unitary ℂ) (i j : ι) (h : i ≠ j) :
     bipartite i j (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i, k j) := by
-  ext
+  ext a b
   simp [diagonal_apply, funext_iff]
-  grind
 
 @[simp]
 theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
