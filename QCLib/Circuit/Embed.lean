@@ -17,9 +17,6 @@ Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `si
 If `U = A[k] ⊗ B[k]`, embedding reduces to `I ⊗ I ⊗ ... ⊗ A ⊗ ... ⊗ B ⊗ ...`
 as shown in `bipartite_kronecker`.
 
-## TBD
-Generalize this file to dependant case.
-
 -/
 
 @[expose] public section
