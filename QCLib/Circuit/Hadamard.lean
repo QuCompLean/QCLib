@@ -12,14 +12,14 @@ public import QCLib.Misc.IntCast
 public import QCLib.Circuit.Gate.Qubit
 
 /-!
-# `n`-qubit Hadamard gate
+# `n`-qubit Hadamard circuit
 
-We define the `n`-qubit Hadamard gate. Its columns are the `(ℤ₂)ⁿ`-Fourier basis,
+We define the `n`-qubit Hadamard circuit. Its columns are the `(ℤ₂)ⁿ`-Fourier basis,
 a.k.a. the Hadamard basis.
 
 ## Main definitions
 
-* `HH`: The `n`-qubit Hadamard gate
+* `HH`: The `n`-qubit Hadamard circuit
 * `HadamardBasisVector`: Elements of the Hadamard basis
 
 ## Main result
