@@ -27,15 +27,7 @@ Generalize this file to dependant case.
 open Matrix UnitaryGroup Function PiOuterProduct
 
 variable {n} {k ι : Type*}
-
-/-- `Equiv.finSplitAt` helper. -/
-@[simp]
-lemma flatten_ind (i) (a b : ι → k) :
-    a i = b i ∧ ((fun j : { j // ¬j = i } ↦ a j) = fun j : { j // ¬j = i } ↦ b j) ↔ a = b := by
-  simp [funext_iff]
-  grind
-
-variable [DecidableEq k] [DecidableEq ι] [Fintype k] [Fintype ι]
+  [DecidableEq k] [DecidableEq ι] [Fintype k] [Fintype ι]
 
 namespace Matrix.UnitaryGroup
 
@@ -59,7 +51,7 @@ theorem single_eq_prod (i : ι) (U : 𝐔[k]) :
 theorem single_one (i : ι) : single i (1 : 𝐔[k]) = 1 := by
   ext
   simp [single_eq_prod]
-  
+
 theorem single_apply_apply (i : ι) (U : 𝐔[k]) (a b : ι → k) :
     single i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
   simp [blockDiagonal_apply, funext_iff]

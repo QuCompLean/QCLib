@@ -64,6 +64,14 @@ def funSplitTwo [DecidableEq ι] (i j : ι) (_ : j ≠ i := by decide) :
   left_inv := by intro _; grind
   right_inv := by intro _; aesop
 
+omit [Fintype ι] in
+/-- `Equiv.finSplitAt` helper. -/
+@[simp]
+lemma flatten_ind {k} (i) (a b : ι → k) :
+    a i = b i ∧ ((fun j : { j // ¬j = i } ↦ a j) = fun j : { j // ¬j = i } ↦ b j) ↔ a = b := by
+  simp [funext_iff]
+  grind
+
 def piTensorProductSplitTwo [DecidableEq ι] (i j : ι) (h : j ≠ i := by decide) :
     ((ι → l) → α) ≃ ((l × l) × ({k // k ≠ i ∧ k ≠ j} → l) → α) :=
   arrowCongr (funSplitTwo i j h) (Equiv.refl α)
