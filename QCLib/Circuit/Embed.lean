@@ -5,6 +5,33 @@ public import QCLib.LinearAlgebra.PiOuterProduct.Equiv
 public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
 
+/-!
+
+# Embedding unitary gates into larger systems
+
+`singleQubit i U` : Takes a single qubit unitary `U` and applies it to position `i`.
+`twoQubit i j U` : A unitary gate acting on two qubits is applied to position `i` and `j`.
+
+## Notes
+
+Defining embeddings as block matrices simplifies several proofs by enabling reasoning at the level
+of matrix blocks rather than individual entries. This approach is particularly useful in proofs
+such as `singleQubit_diagonal`, where block-wise analysis leads to a more concise argument.
+
+For `singleQubit`, however, a purely block-matrix definition is not sufficient.
+When `n = 0`, there is no meaningful way to partition the indices into the qubit on
+which the gate acts and the remaining qubits on which the identity acts.
+Consequently, a block-matrix construction cannot be applied directly in this case.
+
+To accommodate all values of `n`, including `n = 0`, `singleQubit` is defined using
+a more explicit formulation. The theorem `singleQubit_eq_singleQubitBlock` then establishes that
+this definition coincides with the block-matrix version whenever the latter is applicable.
+This allows subsequent proofs to take advantage of the structural properties of block matrices
+while retaining a definition that is valid in all cases.
+
+-/
+
+
 @[expose] public section
 
 open Matrix UnitaryGroup Fin Function PiOuterProduct

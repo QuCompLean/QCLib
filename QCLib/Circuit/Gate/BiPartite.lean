@@ -4,6 +4,18 @@ public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.Circuit.Gate.Qubit
 
+/-!
+
+# Bipartite Qubit gates
+
+Gates acting on two subsystems.
+
+`controllize U` : Applies unitary gate `U` to the first subsytem, if the second subsytem (a `Qubit`)
+is in `1` state. Otherwise it applies identity.
+
+`Swap` : Exchanges two subsytems.
+
+-/
 
 public section Controllize
 
@@ -49,14 +61,14 @@ public section Swap
 open Matrix.UnitaryGroup Matrix
 
 def Swap : 𝐔[Qubit × Qubit] :=
-  ⟨Matrix.of fun a b => ite (a = b.swap) 1 0, by
+  ⟨of fun a b => ite (a = b.swap) 1 0, by
     rw [mem_unitaryGroup_iff]
     matrix_expand
   ⟩
 
 @[matrixExpand]
 theorem swap_eq :
-  Swap.val = Matrix.of fun a b => ite (a = b.swap) 1 0 := by rfl
+  Swap.val = of fun a b => ite (a = b.swap) 1 0 := by rfl
 
 @[simp] theorem swap_swap : Swap * Swap = 1 := by
   matrix_expand
