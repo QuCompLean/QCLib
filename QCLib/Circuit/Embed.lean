@@ -24,7 +24,7 @@ Generalize this file to dependant case.
 
 @[expose] public section
 
-open Matrix UnitaryGroup Function PiOuterProduct
+open Function PiOuterProduct
 
 variable {n} {k ι : Type*}
   [DecidableEq k] [DecidableEq ι] [Fintype k] [Fintype ι]
