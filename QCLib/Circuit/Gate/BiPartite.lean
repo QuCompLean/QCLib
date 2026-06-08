@@ -5,6 +5,8 @@ public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.Circuit.Gate.Qubit
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation -- needed?
 
+public import Mathlib.Algebra.Group.End
+
 /-!
 
 # Bipartite Qubit gates
@@ -23,7 +25,10 @@ Gates acting on two subsystems.
 
 * `Swap` : Exchanges two subsytems.
 
-## Main results
+## Notation
+
+* `C[U]` for `controllize U`
+* `[U]C` for `controllizeRight U`
 
 ## Implementation notes
 
@@ -31,6 +36,10 @@ The order used by `controllize` is more common, but `controllizeRight` is easier
 to define in terms of `Matrix.blockDiagonal`. Hence we start with
 `controllizeRight` and derive properties of `controllize` from those of
 `controllizeRight` where possible.
+
+## To do
+
+Restore the `ite` lemmas.
 
 -/
 
@@ -67,7 +76,6 @@ theorem controllizeRight_one : [(1 : 𝐔[k])]C = 1 := by
   ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
   fin_cases i₂, j₂ <;> simp [blockDiagonal_apply, Matrix.one_apply]
 
--- remove?
 theorem controllizeRight_mul_inv (g : 𝐔[k]) : [g]C * [g⁻¹]C = 1 := by
   simp
 
@@ -134,6 +142,42 @@ end Controllize
 public section Swap
 
 open Matrix.UnitaryGroup Matrix
+
+namespace General
+
+variable {n} [Fintype n] [DecidableEq n]
+
+/-- Swap gate as an explicit matrix. -/
+def Swap : 𝐔[n × n] := permHom ℂ (Equiv.prodComm n n)
+
+open Equiv
+
+-- Missing simp lemma?
+@[simp]
+theorem Equiv.prodComm_prodComm {n : Type*} : (Equiv.prodComm n n) * (Equiv.prodComm n n) = 1 := by
+  ext <;> simp
+
+@[simp]
+theorem swap_swap : Swap * Swap = (1 : 𝐔[n × n]) := by
+  simp [Swap, ← map_mul]
+
+@[simp]
+theorem swap_apply_apply {a b : n × n} : Swap a b = if a = b.swap then 1 else 0 := by
+  simp [Swap]
+  grind
+
+@[matrixExpand]
+theorem swap_coe :
+  (Swap (n := n) : Matrix (n × n) (n × n) ℂ) = of fun a b => ite (a = b.swap) 1 0 := by
+  ext
+  simp
+
+@[simp]
+theorem swap_apply_basis {v : n × n} : Swap (n := n) • δ[v] = δ[v.swap] := by
+  simp [Swap]
+
+end General
+
 
 /-- Swap gate as an explicit matrix. -/
 def Swap : 𝐔[Qubit × Qubit] :=
