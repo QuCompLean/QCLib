@@ -1,10 +1,11 @@
 module
 
 public import QCLib.LinearAlgebra.UnitaryGroup.Basic
+public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
-
+public import QCLib.LinearAlgebra.PiOuterProduct.Equiv
 
 @[expose] public section single
 
@@ -22,8 +23,7 @@ theorem singleQubit_def (U : 𝐔[Qubit]) (i : Fin n) :
 
 @[simps!]
 def singleQubitBlock (i : Fin (n + 1)) (U : 𝐔[Qubit]) : 𝐔[Register (n + 1)] :=
-  reindexMonoidEquiv (insertNthEquiv _ i)
-    (UnitaryGroup.blockDiagonalMonoidHom (fun _ => U))
+  reindexMonoidEquiv (insertNthEquiv _ i) (blockDiagonalMonoidHom (fun _ => U))
 
 @[simp]
 lemma prod_ind_flatten (i) (a b : Register (n + 1)) :
@@ -77,3 +77,22 @@ theorem single_single_commute {n : ℕ} {i j : Fin n} (h : i ≠ j) (U V : 𝐔[
   simp only [singleQubit_def, commute_iff_eq, mul_piKroneckerUnitary_mul]
   congr
   grind
+
+
+@[simps!]
+def twoQubit (i j : Fin n) (U : 𝐔[Qubit × Qubit]) (h : j ≠ i := by grind) : 𝐔[Register n] :=
+  (reindexMonoidEquiv (funSplitTwo i j h (l := Qubit)).symm) (blockDiagonalMonoidHom (fun _ => U))
+
+theorem twoQubit_apply_apply (A : 𝐔[Qubit × Qubit])
+    (i j : Fin n) (h : j ≠ i := by decide) (a b : Register n) :
+    twoQubit i j A h a b =
+      if ∀ k, k ≠ i → k ≠ j → a k = b k then A (a i, a j) (b i, b j) else 0 := by
+  simp [blockDiagonal_apply, funext_iff]
+
+@[simp]
+theorem twoQubit_diagonal (d : Qubit × Qubit → unitary ℂ) (i j : Fin n) (h : j ≠ i) :
+    twoQubit i j (diagonalMonoidHom d) h = diagonalMonoidHom fun k ↦ d (k i, k j) := by
+  ext
+  simp [diagonal_apply, funext_iff]
+  grind
+
