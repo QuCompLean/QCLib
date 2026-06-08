@@ -20,28 +20,30 @@ as shown in `bipartite_kronecker`.
 ## TBD
 Generalize this file to dependant case.
 
-
 -/
 
 @[expose] public section
 
 open Function PiOuterProduct
 
-variable {n} {k ι : Type*}
-  [DecidableEq k] [DecidableEq ι] [Fintype k] [Fintype ι]
+variable {n} {ι : Type*} {k : ι → Type*}
+  [∀ i, DecidableEq (k i)] [DecidableEq ι] [∀ i, Fintype (k i)] [Fintype ι]
 
 namespace Matrix.UnitaryGroup
 
 section single
 
 @[simps! coe]
-def single (i : ι) (U : 𝐔[k]) : 𝐔[ι → k] :=
-  reindexMonoidEquiv (Equiv.funSplitAt i k).symm (blockDiagonalMonoidHom (fun _ => U))
+def single' (i : ι) (U : 𝐔[k i]) : 𝐔[(i : ι) → (k i)] :=
+  reindexMonoidEquiv (Equiv.piSplitAt i k).symm (blockDiagonalMonoidHom (fun _ => U))
 
-theorem single_eq_prod (i : ι) (U : 𝐔[k]) :
-    single i U = ⨂ j, if j = i then U else 1 := by
+abbrev single {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔[k]) :=
+  single' (k := fun _ : ι => k) i U
+
+theorem single_eq_prod (i : ι) (U : 𝐔[k i]) :
+    single' i U = ⨂ j : ι, (if h : j = i then h ▸ U else (1 : 𝐔[k j])) := by
   ext
-  simp only [single_coe, submatrix_apply, Equiv.funSplitAt_apply, blockDiagonal_apply, funext_iff,
+  simp only [single'_coe, submatrix_apply, blockDiagonal_apply, funext_iff,
     Subtype.forall, piKroneckerUnitary_apply]
   split_ifs with h
   · rw [Finset.prod_eq_single i] <;> aesop
@@ -49,23 +51,26 @@ theorem single_eq_prod (i : ι) (U : 𝐔[k]) :
     rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
 
 @[simp]
-theorem single_one (i : ι) : single i (1 : 𝐔[k]) = 1 := by
+theorem single_one (i : ι) : single' i (1 : 𝐔[k i]) = 1 := by
   ext
-  simp [single_eq_prod]
+  simp [blockDiagonal_apply, funext_iff, Matrix.one_apply]
+  grind
 
-theorem single_apply_apply (i : ι) (U : 𝐔[k]) (a b : ι → k) :
-    single i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
+theorem single_apply_apply (i : ι) (U : 𝐔[k i]) (a b : (i : ι) → k i) :
+    single' i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
 @[simp]
-theorem single_diagonal (d : k → unitary ℂ) (i : ι) :
-    single i (diagonalMonoidHom d) = diagonalMonoidHom fun k ↦ d (k i) := by
+theorem single_diagonal (d : Π j, k j → unitary ℂ) (i : ι) :
+    single' i (diagonalMonoidHom (d i)) =
+      diagonalMonoidHom (fun x : (j : ι) → k j => d i (x i)) := by
   ext
-  simp [diagonal_apply]
+  simp [diagonal_apply, funext_iff]
+  grind
 
 -- TBD : Old proof, clean up
-theorem single_apply_basis (v : ι → k) (j : ι) (U : 𝐔[k]) :
-    single j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
+theorem single_apply_basis (v : (i : ι) → (k i)) (j : ι) (U : 𝐔[k j]) :
+    single' j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext k
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
     MulOpposite.op_one, Pi.smul_apply, col_apply, single_apply_apply, one_smul,
@@ -75,24 +80,24 @@ theorem single_apply_basis (v : ι → k) (j : ι) (U : 𝐔[k]) :
   · rw [Finset.sum_eq_zero]; grind
 
 @[simp]
-theorem single_single_commute {i j : ι} (h : i ≠ j) (U V : 𝐔[k]) :
-    Commute (single i U) (single j V) := by
+theorem single_single_commute {i j : ι} (h : i ≠ j) (U : 𝐔[k i]) (V : 𝐔[k j]) :
+    Commute (single' i U) (single' j V) := by
   simp only [single_eq_prod, commute_iff_eq, mul_piKroneckerUnitary_mul]
   congr
   grind
 
-theorem single_mul (i : ι) (U V : 𝐔[k]) :
-    single i (U * V) = single i U * single i V := by
+theorem single_mul (i : ι) (U V : 𝐔[k i]) :
+    single' i (U * V) = single' i U * single' i V := by
   ext
   simp
 
 @[simp]
-theorem pairwise_commute_single (f : ι → 𝐔[k]) (s : Set ι) :
-    s.Pairwise (Function.onFun Commute (fun i ↦ single i (f i))) :=
+theorem pairwise_commute_single (f : (i : ι) → 𝐔[k i]) (s : Set ι) :
+    s.Pairwise (Function.onFun Commute (fun i ↦ single' i (f i))) :=
   (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
 
 @[simp]
-theorem noncommProd_single (f : ι → 𝐔[k]) (s : Finset ι) :
+theorem noncommProd_single {k : Type*} [DecidableEq k] [Fintype k] (f : ι → 𝐔[k]) (s : Finset ι) :
     s.noncommProd (fun i ↦ single i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
   induction s using Finset.cons_induction with
   | empty => simp
@@ -101,11 +106,15 @@ theorem noncommProd_single (f : ι → 𝐔[k]) (s : Finset ι) :
         (if i = a then f a else 1) * (if i ∈ s then f i else 1) := by grind
     simp_rw [Finset.noncommProd_cons, IH, Finset.cons_eq_insert, Finset.mem_insert, this,
     ← mul_piKroneckerUnitary_mul, single_eq_prod]
+    simp
 
 end single
 
 
 section bipartite
+
+-- TBD : Define `Equiv.piSplitTwo`.
+variable {k : Type*} [DecidableEq k] [Fintype k]
 
 @[simps!]
 def bipartite (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
