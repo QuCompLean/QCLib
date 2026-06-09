@@ -12,20 +12,18 @@ Gates acting on two subsystems.
 
 ## Main definitions
 
-* `controllize U` : The controlled-`U` gate. Applies the unitary gate `U` to the
-  second subsytem, if the first subsytem (which must be a `Qubit`) is in the `1` state.
-  Otherwise it applies identity.
+* `controllize n U` : The controlled-`U` gate. For `U : 𝐔[k]`, return the unitary in `𝐔[Fin n × k]`
+that applies `U ^ x` to the second subsystem if the first system is in state `x`.
 
-* `controllizeRight U` : Applies the unitary gate `U` to the
-  first subsytem, if the second subsytem (which must be a `Qubit`) is in the `1` state.
-  Otherwise it applies identity.
+* `controllizeRight n U` : For `U : 𝐔[k]`, return the unitary in `𝐔[k × Fin n]` that
+applies `U ^ x` to the first subsystem if the second system is in state `x`.
 
 * `Swap` : Exchanges two subsytems.
 
 ## Notation
 
-* `C[U]` for `controllize U`
-* `[U]C` for `controllizeRight U`
+* `C[U]` for `controllize 2 U`
+* `[U]C` for `controllizeRight 2 U`
 
 ## Implementation notes
 
@@ -44,11 +42,15 @@ variable (n : ℕ)
 
 open Matrix.UnitaryGroup Matrix
 
+/-- For `U : 𝐔[k]`, return the unitary in `𝐔[k × Fin n]` that
+applies `U ^ x` to the first subsystem if the second system is in state `x`.  -/
+@[simps! coe, expose]
 def controllizeRight (U : 𝐔[k]) : 𝐔[k × Fin n] := blockDiagonalStarMonoidHom fun k ↦ U ^ (k.toNat)
 
 theorem controllizeRight_def (U : 𝐔[k]) :
   controllizeRight n U = blockDiagonalStarMonoidHom fun k ↦ U ^ (k.toNat) := by rfl
 
+@[simp]
 theorem controllizeRight_one : controllizeRight n (1 : 𝐔[k]) = 1 := by
   simp [controllizeRight_def, ← Pi.one_def]
 
@@ -67,75 +69,46 @@ theorem controllizeRight_diagonal (d : k → unitary ℂ) :
   apply Subtype.ext
   simp [controllizeRight_def, diagonal_pow]
 
-
-theorem controllizeRight'_eq_controllizeRight (U : 𝐔[Qubit]) : controllizeRight' U = [U]C := by
-  simp only [controllizeRight', Fin.toNat_eq_val, controllizeRight]
-  congr
-  ext k
-  fin_cases k <;> simp
-
-@[simp]
-theorem controllizeRight'_mul (g₁ g₂ : 𝐔[k]) :
-  (controllizeRight' (n := n) g₁) * controllizeRight' g₂ = controllizeRight' (g₁ * g₂) := by
-  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
-  fin_cases i₂, j₂ <;>
-  · simp [controllizeRight']
-    simp [← blockDiagonal_mul]
-    congr
-    ext l
-    simp [← mul_pow]
-    simp [← pow_mul]
-
-
-
-
-
-
-
-    simp [controllizeRight', ← blockDiagonal_mul, blockDiagonal_apply]
-
-@[simp]
-theorem controllizeRight_one : [(1 : 𝐔[k])]C = 1 := by
-  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
-  fin_cases i₂, j₂ <;> simp [blockDiagonal_apply, Matrix.one_apply]
-
-
-
-
-end ControllizeTest
-
-
-/-- The controlled-`U` gate, with the second factor controlling the application
-of `U` on the first factor . -/
+/-- The controlled-`U` gate. For `U : 𝐔[k]`, return the unitary in `𝐔[Fin n × k]` that
+applies `U ^ x` to the second subsystem if the first system is in state `x`. -/
 @[simps! coe, expose]
-def controllizeRight (U : 𝐔[k]) : 𝐔[k × Qubit] := blockDiagonalStarMonoidHom ![1, U]
+def controllize (U : 𝐔[k]) : 𝐔[Fin n × k] :=
+  (reindexMonoidEquiv (Equiv.prodComm k (Fin n))) (controllizeRight n U)
 
-notation "[" g "]C" => controllizeRight g
+theorem controllize_def (U : 𝐔[k]) :
+    controllize n U  = (reindexMonoidEquiv (Equiv.prodComm k (Fin n))) (controllizeRight n U) := by
+  rfl
 
-@[simp]
+-- TBD: Intro def for `reindexMonoidEquiv (Equiv.prodComm k n))` and state more generally?
+theorem controllize_eq_controllizeRight_swap (U : 𝐔[k]) (a b : Fin n × k) :
+    controllize n U a b = controllizeRight n U a.swap b.swap := by
+  simp [controllize_def]
+
+theorem controllize_one : controllize n (1 : 𝐔[k]) = 1 := by
+  simp [controllize_def]
+
+theorem controllize_zpow (U : 𝐔[k]) (p : ℤ) : (controllize n U) ^ p =  controllize n (U ^ p) := by
+  simp_rw [controllize_def, ← map_zpow, controllizeRight_zpow]
+
+theorem controllize_diagonal (d : k → unitary ℂ) :
+    controllize n (diagonalMonoidHom d) = diagonalMonoidHom fun x ↦ (d x.2) ^ (x.1.toNat) := by
+  ext
+  simp [controllize_def, controllizeRight_diagonal, diagonal_apply]
+
+namespace Qubit
+
+/- Notation for controllized gates where the controlling system is a qubit -/
+notation "[" g "]C" => controllizeRight 2 g
+notation "C[" g "]" => controllize 2 g
+
 theorem controllizeRight_mul (g₁ g₂ : 𝐔[k]) : [g₁]C * [g₂]C = [g₁ * g₂]C := by
   ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
-  fin_cases i₂, j₂ <;> simp [← blockDiagonal_mul, blockDiagonal_apply]
+  fin_cases i₂, j₂ <;> simp [controllizeRight, ← blockDiagonal_mul, blockDiagonal_apply]
 
-theorem controllizeRight_diagonal (d : Qubit → unitary ℂ) :
-    [diagonalMonoidHom d]C = diagonalMonoidHom fun k ↦ if k.2 = 1 then d k.1 else 1 := by
-  ext i j
-  fin_cases i, j <;> simp [blockDiagonal_apply]
-
-theorem controllizeRight_diagonal_pow (d : Qubit → unitary ℂ) :
-    [diagonalMonoidHom d]C = diagonalMonoidHom fun k ↦ (d k.1) ^ (k.2 : ℕ) := by
-  ext i j
-  fin_cases i, j <;> simp [blockDiagonal_apply]
-
+theorem controllize_mul (g₁ g₂ : 𝐔[k]) : C[g₁] * C[g₂] = C[g₁ * g₂] := by
+  simp [controllize, ← map_mul, controllizeRight_mul]
 
 @[simp]
-theorem controllizeRight_one : [(1 : 𝐔[k])]C = 1 := by
-  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
-  fin_cases i₂, j₂ <;> simp [blockDiagonal_apply, Matrix.one_apply]
-
-theorem controllizeRight_mul_inv (g : 𝐔[k]) : [g]C * [g⁻¹]C = 1 := by
-  simp
-
 theorem controllizeRight_apply (U : 𝐔[k]) (a b : k × Qubit) :
    [U]C a b =
     if a.2 = b.2 then
@@ -148,38 +121,7 @@ theorem controllizeRight_apply (U : 𝐔[k]) (a b : k × Qubit) :
   generalize h : a.2 = c
   fin_cases c <;> simp
 
-/-- The controlled-`U` gate. -/
-@[expose]
-def controllize (U : 𝐔[k]) : 𝐔[Qubit × k] := (reindexMonoidEquiv (Equiv.prodComm k Qubit)) [U]C
-
-notation "C[" g "]" => controllize g
-
 @[simp]
-theorem controllize_def (U : 𝐔[k]) :
-  C[U] = (reindexMonoidEquiv (Equiv.prodComm k Qubit)) [U]C := rfl
-
-theorem controllize_diagonal (d : Qubit → unitary ℂ) : C[diagonalMonoidHom d] =
-    diagonalMonoidHom fun k ↦ if k.1 = 1 then d k.2 else 1 := by
-  ext i j
-  fin_cases i, j <;> simp [blockDiagonal_apply]
-
-theorem controllize_diagonal_pow (d : Qubit → unitary ℂ) :
-    C[diagonalMonoidHom d] = diagonalMonoidHom fun k ↦ (d k.2) ^ (k.1 : ℕ) := by
-  ext i j
-  fin_cases i, j <;> simp [blockDiagonal_apply]
-
-@[simp]
-theorem controllize_mul (g₁ g₂ : 𝐔[k]) : C[g₁] * C[g₂] = C[g₁ * g₂] := by
-  simp [← map_mul]
-
-@[simp]
-theorem controllize_one : C[(1 : 𝐔[k])] = 1 := by
-  simp
-
-@[simp]
-theorem controllize_mul_inv (g : 𝐔[k]) : C[g] * C[g⁻¹] = 1 := by
-  simp [← map_mul]
-
 theorem controllize_apply (U : 𝐔[k]) (a b : Qubit × k) :
     C[U] a b =
     if a.1 = b.1 then
@@ -188,11 +130,9 @@ theorem controllize_apply (U : 𝐔[k]) (a b : Qubit × k) :
       else
         U (a.2) (b.2)
     else 0 := by
-  simp only [controllize_def, reindexMonoidEquiv_apply_coe, controllizeRight_coe,
-    Equiv.prodComm_symm, Equiv.coe_prodComm, submatrix_apply, blockDiagonal_apply, Prod.snd_swap,
-    Prod.fst_swap, Fin.isValue, OneMemClass.coe_one]
-  generalize h : a.1 = c
-  fin_cases c <;> simp
+  simp [controllize_eq_controllizeRight_swap]
+
+end Qubit
 
 end Controllize
 
@@ -204,7 +144,6 @@ variable {n} [Fintype n] [DecidableEq n]
 
 /-- The swap gate. -/
 def Swap : 𝐔[n × n] := permHom ℂ (Equiv.prodComm n n)
-
 
 -- Missing simp lemma?
 @[simp]
