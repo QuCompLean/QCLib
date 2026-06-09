@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Davood Tehrani, David Gross
+-/
 module
 
 public import QCLib.Circuit.Gate.Bipartite

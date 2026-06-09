@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Davood Tehrani, David Gross
+-/
 module
 
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
@@ -42,8 +47,8 @@ variable (n : ℕ)
 
 open Matrix.UnitaryGroup Matrix
 
-/-- For `U : 𝐔[k]`, return the unitary in `𝐔[k × Fin n]` that
-applies `U ^ x` to the first subsystem if the second system is in state `x`.  -/
+/-- For `U : 𝐔[k]`, return the unitary in `𝐔[k × Fin n]` that applies `U ^ x` to the first
+subsystem if the second system is in state `x`. -/
 @[simps! coe, expose]
 def controllizeRight (U : 𝐔[k]) : 𝐔[k × Fin n] := blockDiagonalStarMonoidHom fun k ↦ U ^ (k.toNat)
 
