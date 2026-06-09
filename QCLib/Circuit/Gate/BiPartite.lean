@@ -138,10 +138,9 @@ open Matrix.UnitaryGroup Matrix
 
 variable {n} [Fintype n] [DecidableEq n]
 
-/-- Swap gate as an explicit matrix. -/
+/-- The swap gate. -/
 def Swap : 𝐔[n × n] := permHom ℂ (Equiv.prodComm n n)
 
-open Equiv
 
 -- Missing simp lemma?
 @[simp]
@@ -159,7 +158,7 @@ theorem swap_apply_apply {a b : n × n} : Swap a b = if a = b.swap then 1 else 0
 
 @[matrixExpand]
 theorem swap_coe :
-  (Swap (n := n) : Matrix (n × n) (n × n) ℂ) = of fun a b : n × n => ite (a = b.swap) 1 0 := by
+  (Swap (n := n) : Matrix (n × n) (n × n) ℂ) = of fun a b : n × n ↦ ite (a = b.swap) 1 0 := by
   ext
   simp
 
@@ -167,7 +166,7 @@ theorem swap_coe :
 theorem swap_apply_basis {v : n × n} : Swap (n := n) • δ[v] = δ[v.swap] := by
   simp [Swap]
 
-abbrev QSwap := Swap (n := Qubit) -- needed?
+-- needed?
+abbrev QubitSwap := Swap (n := Qubit)
 
 end Swap
-
