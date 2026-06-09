@@ -6,6 +6,7 @@ Authors: Davood Tehrani, David Gross
 module
 
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
+public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 public import QCLib.Tactic.MatrixExpand
 
 
@@ -73,6 +74,12 @@ theorem controllizeRight_diagonal (d : k → unitary ℂ) :
     controllizeRight n (diagonalMonoidHom d) = diagonalMonoidHom fun x ↦ (d x.1) ^ (x.2.toNat) := by
   apply Subtype.ext
   simp [controllizeRight_def, diagonal_pow]
+
+-- TBD: Left version
+theorem controllizeRight_conj (U V : 𝐔[k]) :
+    controllizeRight n (V * U * V⁻¹) = (V ⊗ᵤ 1) * controllizeRight n U * (V ⊗ᵤ 1)⁻¹  := by
+  ext
+  simp [controllizeRight_def, ← diagonal_one, kronecker_diagonal]
 
 /-- The controlled-`U` gate. For `U : 𝐔[k]`, return the unitary in `𝐔[Fin n × k]` that
 applies `U ^ x` to the second subsystem if the first system is in state `x`. -/
