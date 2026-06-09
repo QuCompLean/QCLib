@@ -11,6 +11,15 @@ public import QCLib.Data.Fin.RevSwap
 
 /-!
 
+# Actions of permutations on `n` qubit systems
+
+For now, this file only says that the "antitone" permutation `i ↦ n - (i + 1)`
+of `Fin n` acting on subsytems has a circuit decompostion.
+
+## To do
+
+* Make independent of local dimension.
+* Add more results.
 
 -/
 
@@ -30,6 +39,8 @@ theorem bipartite_swap_eq_perm {n : ℕ} {i j : Fin n} (h : i ≠ j) :
   ext a
   simp
   grind
+
+section RevCircuit
 
 open List Fin
 
@@ -72,3 +83,5 @@ open scoped PiOuterProduct
 theorem revCircuit_apply_prod {n : ℕ} (v : Register n) (f : Fin n → ℂ) :
     revCircuit n • (⨂ i, f i • δ[v i]) = ⨂ i, f i • δ[v i.rev] := by
   simp [piOuterProduct_smul_univ, smul_comm, ←basisVector_eq_prod, revRegister_eq]
+
+end RevCircuit
