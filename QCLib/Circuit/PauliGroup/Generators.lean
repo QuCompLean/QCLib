@@ -7,6 +7,7 @@ module
 
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 public import QCLib.Mathlib.Lemmas
+public import QCLib.LinearAlgebra.StdBasis
 public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Hadamard
@@ -73,13 +74,13 @@ theorem ZZ_apply (p : Fin n → ℤ) (x : Register n) :
   simp [ZZ, basisVector_eq_prod, dotProduct, piOuterProduct_smul_univ,
     ← Finset.prod_zpow_eq_zpow_sum₀]
 
--- theorem ZZ_diagonal (p : Fin n → ℤ) : ZZ p =
---   Matrix.UnitaryGroup.diagonalMonoidHom (fun x : Register n ↦ (ᵤ-1) ^ (p ⬝ᵥ ↑x)) := by
---   apply Matrix.UnitaryGroup.ext_smul_basis
---   simp only [ZZ_apply, Matrix.UnitaryGroup.diagonal_smul_basisVector]
---   intro i
---   push_cast [Submonoid.smul_def]
---   with_reducible rfl
+theorem ZZ_diagonal (p : Fin n → ℤ) : ZZ p =
+  Matrix.UnitaryGroup.diagonalMonoidHom (fun x : Register n ↦ (ᵤ-1) ^ (p ⬝ᵥ ↑x)) := by
+  apply Matrix.UnitaryGroup.ext_smul_basis
+  simp only [ZZ_apply, UnitaryGroup.diagonal_smul_basisVector]
+  intro i
+  push_cast [Submonoid.smul_def]
+  with_reducible rfl
 
 @[simp]
 theorem ZZ_HH_conj (p : Fin n → ℤ) : (HH n) * (ZZ p) * (HH n)⁻¹ = (XX p) := by
