@@ -23,7 +23,7 @@ that applies `U ^ x` to the second subsystem if the first system is in state `x`
 * `controllizeRight n U` : For `U : 𝐔[k]`, return the unitary in `𝐔[k × Fin n]` that
 applies `U ^ x` to the first subsystem if the second system is in state `x`.
 
-* `Swap` : Exchanges two subsytems.
+* `Swap` : The unitary that exchanges two subsytems.
 
 ## Notation
 
@@ -32,10 +32,10 @@ applies `U ^ x` to the first subsystem if the second system is in state `x`.
 
 ## Implementation notes
 
-The order used by `controllize` is more common, but `controllizeRight` is easier
-to define in terms of `Matrix.blockDiagonal`. Hence we start with
-`controllizeRight` and derive properties of `controllize` from those of
-`controllizeRight` where possible.
+The order used by `controllize` is more common in quantum information applications, but
+`controllizeRight` is easier to define in terms of `Matrix.blockDiagonal`. Hence we start
+with `controllizeRight` and derive properties of `controllize` from those of `controllizeRight`
+where possible.
 
 -/
 
