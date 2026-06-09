@@ -40,7 +40,70 @@ public section Controllize
 
 variable {k} [Fintype k] [DecidableEq k]
 
+variable (n : ℕ)
+
 open Matrix.UnitaryGroup Matrix
+
+def controllizeRight (U : 𝐔[k]) : 𝐔[k × Fin n] := blockDiagonalStarMonoidHom fun k ↦ U ^ (k.toNat)
+
+theorem controllizeRight_def (U : 𝐔[k]) :
+  controllizeRight n U = blockDiagonalStarMonoidHom fun k ↦ U ^ (k.toNat) := by rfl
+
+theorem controllizeRight_one : controllizeRight n (1 : 𝐔[k]) = 1 := by
+  simp [controllizeRight_def, ← Pi.one_def]
+
+theorem controllizeRight_zpow (U : 𝐔[k]) (p : ℤ) :
+    (controllizeRight n U) ^ p =  controllizeRight n (U ^ p) := by
+  simp only [controllizeRight_def, ← map_zpow, Fin.toNat_eq_val]
+  congr
+  ext1
+  rw [Pi.pow_apply, ← zpow_natCast, ← _root_.zpow_mul, mul_comm, _root_.zpow_mul, zpow_natCast]
+
+theorem controllizeRight_inv (U : 𝐔[k]) : (controllizeRight n U)⁻¹ =  controllizeRight n (U⁻¹) := by
+  simp_rw [← _root_.zpow_neg_one, controllizeRight_zpow]
+
+theorem controllizeRight_diagonal (d : k → unitary ℂ) :
+    controllizeRight n (diagonalMonoidHom d) = diagonalMonoidHom fun x ↦ (d x.1) ^ (x.2.toNat) := by
+  apply Subtype.ext
+  simp [controllizeRight_def, diagonal_pow]
+
+
+theorem controllizeRight'_eq_controllizeRight (U : 𝐔[Qubit]) : controllizeRight' U = [U]C := by
+  simp only [controllizeRight', Fin.toNat_eq_val, controllizeRight]
+  congr
+  ext k
+  fin_cases k <;> simp
+
+@[simp]
+theorem controllizeRight'_mul (g₁ g₂ : 𝐔[k]) :
+  (controllizeRight' (n := n) g₁) * controllizeRight' g₂ = controllizeRight' (g₁ * g₂) := by
+  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
+  fin_cases i₂, j₂ <;>
+  · simp [controllizeRight']
+    simp [← blockDiagonal_mul]
+    congr
+    ext l
+    simp [← mul_pow]
+    simp [← pow_mul]
+
+
+
+
+
+
+
+    simp [controllizeRight', ← blockDiagonal_mul, blockDiagonal_apply]
+
+@[simp]
+theorem controllizeRight_one : [(1 : 𝐔[k])]C = 1 := by
+  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
+  fin_cases i₂, j₂ <;> simp [blockDiagonal_apply, Matrix.one_apply]
+
+
+
+
+end ControllizeTest
+
 
 /-- The controlled-`U` gate, with the second factor controlling the application
 of `U` on the first factor . -/
@@ -49,8 +112,13 @@ def controllizeRight (U : 𝐔[k]) : 𝐔[k × Qubit] := blockDiagonalStarMonoid
 
 notation "[" g "]C" => controllizeRight g
 
-theorem controllizeRight_diagonal (d : Qubit → unitary ℂ) : [diagonalMonoidHom d]C =
-    diagonalMonoidHom fun k ↦ if k.2 = 1 then d k.1 else 1 := by
+@[simp]
+theorem controllizeRight_mul (g₁ g₂ : 𝐔[k]) : [g₁]C * [g₂]C = [g₁ * g₂]C := by
+  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
+  fin_cases i₂, j₂ <;> simp [← blockDiagonal_mul, blockDiagonal_apply]
+
+theorem controllizeRight_diagonal (d : Qubit → unitary ℂ) :
+    [diagonalMonoidHom d]C = diagonalMonoidHom fun k ↦ if k.2 = 1 then d k.1 else 1 := by
   ext i j
   fin_cases i, j <;> simp [blockDiagonal_apply]
 
@@ -59,10 +127,6 @@ theorem controllizeRight_diagonal_pow (d : Qubit → unitary ℂ) :
   ext i j
   fin_cases i, j <;> simp [blockDiagonal_apply]
 
-@[simp]
-theorem controllizeRight_mul (g₁ g₂ : 𝐔[k]) : [g₁]C * [g₂]C = [g₁ * g₂]C := by
-  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
-  fin_cases i₂, j₂ <;> simp [← blockDiagonal_mul, blockDiagonal_apply]
 
 @[simp]
 theorem controllizeRight_one : [(1 : 𝐔[k])]C = 1 := by
