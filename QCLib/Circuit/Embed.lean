@@ -28,8 +28,8 @@ TBD
 
 open Function PiOuterProduct
 
-variable {n} {ι : Type*} {k : ι → Type*}
-  [∀ i, DecidableEq (k i)] [DecidableEq ι] [∀ i, Fintype (k i)] [Fintype ι]
+variable {ι : Type*} [DecidableEq ι] [Fintype ι]
+variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
 
 namespace Matrix.UnitaryGroup
 
@@ -66,7 +66,7 @@ theorem single_one (i : ι) : single' i (1 : 𝐔[k i]) = 1 := by
   simp [blockDiagonal_apply, funext_iff, Matrix.one_apply]
   grind
 
-theorem single_apply_apply (i : ι) (U : 𝐔[k i]) (a b : (i : ι) → k i) :
+theorem single_apply_apply (i : ι) (U : 𝐔[k i]) (a b : Π i, k i) :
     single' i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
@@ -77,7 +77,7 @@ theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
   grind
 
 -- TBD: Old proof, clean up
-theorem single_apply_basis (v : (i : ι) → (k i)) (j : ι) (U : 𝐔[k j]) :
+theorem single_apply_basis (v : Π i, k i) (j : ι) (U : 𝐔[k j]) :
     single' j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext k
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
@@ -100,7 +100,7 @@ theorem single_mul (i : ι) (U V : 𝐔[k i]) :
   simp
 
 @[simp]
-theorem pairwise_commute_single (f : (i : ι) → 𝐔[k i]) (s : Set ι) :
+theorem pairwise_commute_single (f : Π i, 𝐔[k i]) (s : Set ι) :
     s.Pairwise (Function.onFun Commute (fun i ↦ single' i (f i))) :=
   (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
 
