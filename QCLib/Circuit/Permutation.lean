@@ -51,8 +51,7 @@ noncomputable def revCircuit (n : ℕ) : 𝐔[Register n] :=
       simp only [Finset.coe_univ, bipartite_swap_eq_perm, ← revSwap_def]
       intro i _ j _ hij
       exact (Fin.pairwise_commute_on_revSwap
-        (Set.mem_univ i) (Set.mem_univ j) (by simpa using hij)).map (permSubsystemsHom ℂ (Fin 2))
-    )
+        (Set.mem_univ i) (Set.mem_univ j) (by simpa using hij)).map (permSubsystemsHom ℂ (Fin 2)) )
 
 theorem revCircuit_eq_revPermSubsystems (n : ℕ) :
     (revCircuit n) = permSubsystemsHom ℂ (Fin 2) revPerm := by
@@ -62,7 +61,7 @@ theorem revCircuit_eq_revPermSubsystems (n : ℕ) :
 @[simps! apply symm_apply]
 def revRegister {n} : Equiv.Perm (Register n) := (arrowCongr revPerm (Equiv.refl (Fin 2)))
 
-theorem revRegister_eq {n} (v : Register n) : revRegister v = fun i => v i.rev := rfl
+theorem revRegister_eq {n} (v : Register n) : revRegister v = fun i ↦ v i.rev := rfl
 
 open Function
 

@@ -135,8 +135,12 @@ realized by acting with `U` on the `i`th and the `j`th index, and trivially on
 all other indices. -/
 @[simps!]
 def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) : 𝐔[Π i, k i] :=
-  (reindexMonoidEquiv (piSplitTwo i j (Ne.symm h) (β := k)).symm)
-    (blockDiagonalMonoidHom (fun _ ↦ U))
+  (reindexMonoidEquiv (piSplitTwo i j h.symm).symm) (blockDiagonalMonoidHom (fun _ ↦ U))
+
+-- TBD: Maybe base theory on this instead? Also, write `single` version.
+@[simps!]
+def bipartiteMonoidHom' (i j : ι) (h : i ≠ j := by grind) : 𝐔[k i × k j] →* 𝐔[Π i, k i] :=
+  (reindexMonoidEquiv (piSplitTwo i j h.symm).symm).toMonoidHom.comp rTensorHom
 
 /-! The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]` realized
 by acting with `U` on the `i`th and the `j`th index, and trivially on all other
