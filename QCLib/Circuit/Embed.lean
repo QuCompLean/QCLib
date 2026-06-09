@@ -10,14 +10,17 @@ public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
 ## Main Definitions
 
-`single i U` : Embeds unitary `U[k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
-Alternatively, it can be seen as `I ⊗ I ⊗ ... ⊗ U ⊗ ...` as shown in `single_eq_prod`.
+* `single i U` : The embedding of a unitary matrix `U : 𝐔[k]` into `𝐔[ι → k]` realized by
+acting with `U` on the `i`-th factor, and trivially on all other indices.
 
-`bipartite i j U` : Embeds unitary `U[k × k]` to `𝐔[ι → k]` as `diag (U, U, ...)`.
-If `U = A[k] ⊗ B[k]`, embedding reduces to `I ⊗ I ⊗ ... ⊗ A ⊗ ... ⊗ B ⊗ ...`
-as shown in `bipartite_kronecker`. Requires the proof of `i ≠ j`.
+* `bipartite i j U` : The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]`
+realized by acting with `U` on the `i`th and the `j`th index, and trivially on all other indices.
 
-For dependent case, use `single'` and `bipartite'`.
+For the dependent case, use `single'` and `bipartite'`.
+
+## Main results
+
+TBD
 
 -/
 
@@ -32,10 +35,14 @@ namespace Matrix.UnitaryGroup
 
 section single
 
+/-- The embedding of a unitary matrix `U : 𝐔[k i]` into `𝐔[Π i, k i]` realized by
+acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 @[simps! coe]
-def single' (i : ι) (U : 𝐔[k i]) : 𝐔[(i : ι) → (k i)] :=
+def single' (i : ι) (U : 𝐔[k i]) : 𝐔[Π i, k i] :=
   reindexMonoidEquiv (Equiv.piSplitAt i k).symm (blockDiagonalMonoidHom (fun _ ↦ U))
 
+/-- The embedding of a unitary matrix `U : 𝐔[k]` into `𝐔[ι → k]` realized by
+acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 abbrev single {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔[k]) :=
   single' (k := fun _ ↦ k) i U
 
@@ -118,11 +125,17 @@ end single
 
 section bipartite
 
+/-! The embedding of a unitary matrix `U : U[k i × k j]` into `𝐔[Π i, k i]`
+realized by acting with `U` on the `i`th and the `j`th index, and trivially on
+all other indices. -/
 @[simps!]
-def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) :=
+def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) : 𝐔[Π i, k i] :=
   (reindexMonoidEquiv (piSplitTwo i j (Ne.symm h) (β := k)).symm)
     (blockDiagonalMonoidHom (fun _ ↦ U))
 
+/-! The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]` realized
+by acting with `U` on the `i`th and the `j`th index, and trivially on all other
+indices. -/
 abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
     (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
   bipartite' (k := fun _ : ι => k) i j U h
