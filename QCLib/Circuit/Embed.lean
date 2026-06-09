@@ -154,7 +154,7 @@ theorem bipartite_apply_apply (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (a
 set_option backward.isDefEq.respectTransparency false in
 theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     (A B : 𝐔[k]) (i j : ι) (h : i ≠ j) :
-    bipartite i j (A ⊗ᵤ B) = ⨂ k, if k = i then A else if k = j then B else 1 := by
+    bipartite i j (A ⊗ᵤ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext k l
   simp only [bipartite_apply_apply, ne_eq, coe_piKroneckerUnitary, piKronecker_apply]
   split_ifs with hv
@@ -168,7 +168,7 @@ theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
 
 @[simp]
 theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
-    bipartite' i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
+    bipartite' i j A h • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
     MulOpposite.op_one, Pi.smul_apply, col_apply, bipartite_apply_apply, one_smul, Finset.sum_apply,
@@ -179,14 +179,14 @@ theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v
 
 @[simp]
 theorem bipartite_diagonal (d : Π i j, k i → k j → unitary ℂ) (i j : ι) (h : i ≠ j) :
-  bipartite' i j (diagonalMonoidHom (fun p : k i × k j => d i j p.1 p.2)) =
+  bipartite' i j (diagonalMonoidHom (fun p : k i × k j => d i j p.1 p.2)) h =
     diagonalMonoidHom (fun x : (j : ι) → k j => d i j (x i) (x j)) := by
   ext a b
   simp [diagonal_apply, funext_iff]
 
 @[simp]
 theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
-    (v : Register n) (hv : v i = 0) : bipartite i j C[U] • δ[v] = δ[v] := by
+    (v : Register n) (hv : v i = 0) : bipartite i j C[U] h • δ[v] = δ[v] := by
   ext w
   by_cases hw : v = w
   all_goals
@@ -197,7 +197,7 @@ theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
 @[simp]
 theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i ≠ j)
     (v : Register n.succ) (hv : v i = 1) :
-    bipartite i j C[U] • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
+    bipartite i j C[U] h • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext w
   by_cases hw : v = w
   all_goals
