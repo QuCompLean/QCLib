@@ -54,16 +54,12 @@ def revRegister {n} : Equiv.Perm (Register n) := (arrowCongr revPerm (Equiv.refl
 theorem revRegister_eq {n} (v : Register n) : revRegister v = fun i => v i.rev := rfl
 
 open Function
+
 theorem revRegister_comm_update {n} (v : Register n) (i m) :
   revRegister (update v i m) = update (revRegister v) i.rev m := by
   ext
   simp [update_apply]
   grind
-
-theorem revRegister_comm_update' {n} (v : Register n) (i m) :
-  revRegister (update v i.rev m) = update (revRegister v) i m := by
-  ext
-  simp [update_apply]
 
 @[simp]
 theorem revCircuit_apply {n : ℕ} (v : Register n) :
