@@ -144,6 +144,7 @@ theorem controllize_apply (U : 𝐔[k]) (a b : Qubit × k) :
     else 0 := by
   simp [controllize_eq_controllizeRight_swap]
 
+
 end Qubit
 
 end Controllize

@@ -56,13 +56,20 @@ open Finset
 
 variable [Monoid β] [Monoid γ]
 
-/-- Write a `noncommProd` that factors through a commutative monoid as an ordinary product. -/
-theorem noncommProd_comp_eq_prod {α β γ F : Type*} [Monoid α] [CommMonoid β] [Monoid γ]
+open scoped Function
+
+@[simp]
+theorem pairwise_commute_of_comp {α β γ F : Type*} [CommMonoid β] [Monoid γ]
     [FunLike F β γ] [MonoidHomClass F β γ] (s : Finset α) (f : α → β) (g : F) :
-    s.noncommProd (g ∘ f) (fun x _ y _ _ ↦ (Commute.all (f x) (f y)).map g) = g (s.prod f) := by
+    (s : Set α).Pairwise (Commute on fun a ↦ g (f a)) :=
+  (fun x _ y _ _ ↦ (Commute.all (f x) (f y)).map g)
+
+/-- Write a `noncommProd` that factors through a commutative monoid as an ordinary product. -/
+theorem noncommProd_comp_eq_prod {α β γ F : Type*} [CommMonoid β] [Monoid γ]
+    [FunLike F β γ] [MonoidHomClass F β γ] (s : Finset α) (f : α → β) (g : F) :
+    s.noncommProd (fun a ↦ g (f a)) (by simp) = g (s.prod f) := by
   simp [← map_noncommProd s f fun x _ y _ _ ↦ Commute.all (f x) (f y), noncommProd_eq_prod]
 
-open scoped Function in
 theorem noncommProd_lemma' (s : Finset α) (f : α → β) (comm : (s : Set α).Pairwise (Commute on f)) :
     Set.Pairwise {x | x ∈ s.toList.map f} Commute := by
   have h : { x | x ∈ s.val.map f } = {x | x ∈ s.toList.map f}  := by simp

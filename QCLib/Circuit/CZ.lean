@@ -5,7 +5,7 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-
+public import Mathlib.Data.ZMod.Basic
 public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Gate.Bipartite
 public import QCLib.Circuit.Embed
@@ -31,11 +31,20 @@ open Matrix
 
 variable {n : ℕ} (i j : Fin n)
 
+theorem CZ_diagonal : C[Z] = diagonalMonoidHom (fun k ↦ (ᵤ-1) ^ (k.2 * k.1 : ℕ)) := by
+  simp [Z_diagonal, controllize_diagonal, pow_mul]
+
+theorem CZ_diagonal' : C[Z] = diagonalMonoidHom (fun k ↦ (ᵤ-1) ^ (k.2 * k.1 : ℤ)) := by
+  simp only [CZ_diagonal, Int.ofNat_mul_ofNat, zpow_natCast]
 
 /-- The main diagonal of the controlled-`Z` gate. Degenerates to a `Z` gate for `i=j`. -/
-def CZFun (k : Register n) : unitary ℂ := (ᵤ-1) ^ (k i * k j : ℕ)
+def CZFun : (k : Register n) → unitary ℂ := fun k ↦ (ᵤ-1) ^ (k j * k i : ℤ)
 
-theorem CZFun_def : CZFun i j = fun k ↦ (ᵤ-1) ^ (k i * k j : ℕ) := rfl
+@[simp]
+theorem CZFun_def : CZFun i j = fun k ↦ (ᵤ-1) ^ (k j * k i : ℤ) := rfl
+
+@[simp]
+theorem CZFun_symm : CZFun i j = CZFun j i := by simp [mul_comm]
 
 /-- The controlled-Z gate between qubits `i` and `j`. Degenerates to a Z gate if `i=j`. -/
 noncomputable def CZ : 𝐔[Register n] := diagonalMonoidHom (CZFun i j)
@@ -43,18 +52,29 @@ noncomputable def CZ : 𝐔[Register n] := diagonalMonoidHom (CZFun i j)
 theorem CZ_def : CZ i j = diagonalMonoidHom (CZFun i j) := rfl
 
 theorem CZ_eq_controlled_of_neq (h : i ≠ j) : CZ i j = bipartite i j C[Z] := by
-  simp only [Z_diagonal, CZ_def, CZFun_def, controllize_diagonal, bipartite_diagonal]
-  congr
-  ext k
-  simp only [SubmonoidClass.coe_pow, Fin.toNat_eq_val]
-  ring_nf
+  simp only [CZ_def, CZFun_def, bipartite_diagonal, CZ_diagonal']
 
 theorem CZ_eq_Z_of_eq (h : i = j) : CZ i j = single i Z := by
-  simp only [Z_diagonal, CZ_def, CZFun_def, single_diagonal]
+  simp only [Z_diagonal', CZ_def, CZFun_def, single_diagonal, h]
   congr
   ext k
-  generalize heq : k j = x
-  fin_cases x  <;> simp [h, heq]
+  generalize k j = x
+  fin_cases x  <;> simp
 
-@[simp]
-theorem CZ_symm : CZ i j = CZ j i := by simp [CZ_def, CZFun_def, mul_comm]
+variable (s : Finset {e : (Fin n) × (Fin n) // e.1 ≠ e.2})
+
+noncomputable def graphStateFun : (Register n → unitary ℂ) :=
+  fun k ↦ (ᵤ-1) ^ (∑ e ∈ s, ((k e.val.2) * k (e.val.1)) : ℤ)
+
+theorem graphStateFun_eq_prod' :
+    graphStateFun s = ∏ e ∈ s, CZFun e.val.1 e.val.2 := by
+  ext k
+  simp [graphStateFun, Finset.prod_zpow_eq_zpow_sum]
+
+noncomputable def graphGate : 𝐔[Register n] := diagonalMonoidHom (graphStateFun s)
+
+theorem graphGate_eq_prod : graphGate s = s.noncommProd
+      (fun e ↦ bipartite e.val.1 e.val.2 C[Z])
+      (by simp [CZ_diagonal, bipartite_diagonal]) := by
+  simp [graphGate, CZ_diagonal', bipartite_diagonal, ← CZFun_def,
+    noncommProd_comp_eq_prod, graphStateFun_eq_prod']
