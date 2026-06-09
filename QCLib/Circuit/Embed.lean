@@ -137,7 +137,7 @@ all other indices. -/
 def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) : 𝐔[Π i, k i] :=
   (reindexMonoidEquiv (piSplitTwo i j h.symm).symm) (blockDiagonalMonoidHom (fun _ ↦ U))
 
--- TBD: Maybe base theory on this instead? Also, write `single` version.
+-- TBD: Maybe base theory on this instead? Also, provide a bundled version of `single`.
 @[simps!]
 def bipartiteMonoidHom' (i j : ι) (h : i ≠ j := by grind) : 𝐔[k i × k j] →* 𝐔[Π i, k i] :=
   (reindexMonoidEquiv (piSplitTwo i j h.symm).symm).toMonoidHom.comp rTensorHom
@@ -147,7 +147,7 @@ by acting with `U` on the `i`th and the `j`th index, and trivially on all other
 indices. -/
 abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
     (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
-  bipartite' (k := fun _ : ι => k) i j U h
+  bipartite' (k := fun _ : ι ↦ k) i j U h
 
 theorem bipartite_apply_apply (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (a b : Π i, k i) :
     bipartite' i j A h a b =
@@ -182,9 +182,8 @@ theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v
   · rw [Finset.sum_eq_zero]; grind
 
 @[simp]
-theorem bipartite_diagonal (d : Π i j, k i → k j → unitary ℂ) (i j : ι) (h : i ≠ j) :
-  bipartite' i j (diagonalMonoidHom (fun p : k i × k j => d i j p.1 p.2)) h =
-    diagonalMonoidHom (fun x : (j : ι) → k j => d i j (x i) (x j)) := by
+theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i ≠ j) :
+    bipartite' i j (diagonalMonoidHom d) h = diagonalMonoidHom (fun x ↦ d (x i, x j)) := by
   ext a b
   simp [diagonal_apply, funext_iff]
 
