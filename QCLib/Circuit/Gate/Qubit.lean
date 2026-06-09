@@ -269,10 +269,10 @@ theorem X_zpow_Z_zpow_trace (p q : ℤ) : trace ((X ^ q * Z ^ p) : Matrix Qubit 
     simp only [Matrix.UnitaryGroup.coe_zpow] at hZ hX -- push_cast is very slow
     simp_all
 
-theorem Z_diagonal : Z = Matrix.UnitaryGroup.diagonalMonoidHom fun k : Qubit ↦ (-1) ^ (k : ℕ) := by
+theorem Z_diagonal : Z = UnitaryGroup.diagonalMonoidHom fun k : Qubit ↦ (-1) ^ (k : ℕ) := by
   matrix_expand
 -- TBD: keep one?
-theorem Z_diagonal' : Z = Matrix.UnitaryGroup.diagonalMonoidHom fun k : Qubit ↦ (-1) ^ (k : ℤ) := by
+theorem Z_diagonal' : Z = UnitaryGroup.diagonalMonoidHom fun k : Qubit ↦ (-1) ^ (k : ℤ) := by
   matrix_expand
 
 -- ## Some single-qubit states
