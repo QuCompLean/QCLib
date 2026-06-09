@@ -1,6 +1,6 @@
 module
 
-public import QCLib.Circuit.Gate.BiPartite
+public import QCLib.Circuit.Gate.Bipartite
 public import QCLib.LinearAlgebra.PiOuterProduct.Equiv
 public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
@@ -140,7 +140,7 @@ abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
     (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
   bipartite' (k := fun _ : ι => k) i j U h
 
-theorem bipartite_apply_apply (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (a b : (i : ι) → (k i)) :
+theorem bipartite_apply_apply (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (a b : Π i, k i) :
     bipartite' i j A h a b =
       if ∀ k, k ≠ i → k ≠ j → a k = b k then A (a i, a j) (b i, b j) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
@@ -162,7 +162,7 @@ theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     simp_all
 
 @[simp]
-theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v : (i : ι) → (k i)) :
+theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j A • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
