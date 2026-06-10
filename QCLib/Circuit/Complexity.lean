@@ -15,7 +15,7 @@ public import QCLib.Circuit.Embed
 
 # Experimental file
 
-Incomplete and note used anywhere. Currently stated only for `n` qubit circuits with `n > 1`.
+Incomplete and experimental. Currently stated only for `n` qubit circuits with `n > 1`.
 
 --
 
@@ -116,16 +116,15 @@ instance : GroupSeminormClass (ComplexityMeasure α β) α β where
 
 end GroupSeminorm
 
-open Matrix Qubit
+open Matrix Matrix.UnitaryGroup Qubit
 
 public section
 
---Currently, we only talk about two-qubit gates. This means in particular that
---non-trivial single-qubit circuits formally have complexity `∞`. TBD:
---Generalize to `k`-local gates.
+-- Currently, we only talk about two-qubit gates. This means in particular that
+-- non-trivial single-qubit circuits formally have complexity `∞`. TBD:
+-- Generalize to `k`-local gates.
 
-/-- A two-qubit gate is a bipartite unitary together with the information of
-where in the circuit it is applied -/
+/-- Structure that bundles the information where and how a two-qubit gate acts. -/
 structure TwoQubitGate (n : ℕ) where
   i : Fin n
   j : Fin n
@@ -140,7 +139,7 @@ variable {n : ℕ}
 /-- The unitary realizing the two-qubit gate. -/
 @[simp]
 noncomputable def TwoQubitGate.Unitary (g : TwoQubitGate n) : 𝐔[Register n] :=
-  UnitaryGroup.bipartiteMonoidHom' g.i g.j g.hneq g.U
+  bipartiteMonoidHom' g.i g.j g.hneq g.U
 
 /--
 The set of all circuit decompositions of a unitary.
@@ -167,8 +166,13 @@ theorem twoQubitGate_inv_inv : TwoQubitGate.inv ∘ TwoQubitGate.inv = @id (TwoQ
 example (g : TwoQubitGate n) : g.inv.Unitary = (g.Unitary)⁻¹ := by simp
 
 @[simp]
-theorem nil_elem_circuitDecompositions_one : [] ∈ Circuits (1 : 𝐔[Register n]) := by
+theorem nil_elem_circuits_one : [] ∈ Circuits (1 : 𝐔[Register n]) := by
   simp
+
+@[simp]
+theorem self_elem_circuits_biparite {i j : Fin n} (h : i ≠ j) (U : 𝐔[Qubit × Qubit]) :
+    [⟨i, j, h, U⟩] ∈ Circuits (bipartite i j U h) := by
+  simp [bipartiteMonoidHom_apply]
 
 theorem circuit_rev_inv (U : 𝐔[Register n]) : ∀ (L : Circuit n),
     (L ∈ Circuits U) → ((L.reverse.map TwoQubitGate.inv) ∈ Circuits U⁻¹) := fun L hL ↦ by
@@ -183,9 +187,11 @@ open ENat
 
 -- This functional actually attains only finite values, though this isn't proven.
 /-- The minimal length of a circuit decomposition of `U` in terms of two-qubit gates -/
-@[simp]
 noncomputable def GateComplexityFun₂ (U : 𝐔[Register n]) : ℕ∞ :=
   sInf ((fun L ↦ L.length) '' (Circuits U))
+
+theorem GateComplexityFun₂_apply (U : 𝐔[Register n]) :
+    GateComplexityFun₂ U = ((sInf ((fun L ↦ L.length) '' (Circuits U))) : ℕ∞) := rfl
 
 -- Why does `ENat.sInf_eq_zero` not have `@simp` (unlike `Nat` version?)
 theorem gateComplexity₂_one : GateComplexityFun₂ (1 : 𝐔[Register n]) = 0 := by
@@ -200,7 +206,7 @@ theorem exists_circuit_of_ne_top {U : 𝐔[Register n]} (h : GateComplexityFun�
     ∃ L ∈ Circuits U, GateComplexityFun₂ U = L.length := by
   have h2 : (((fun L ↦ L.length) '' Circuits U) : Set ℕ∞).Nonempty := by
     contrapose! h
-    simp_all
+    simp_all [GateComplexityFun₂_apply]
   simp only [GateComplexityFun₂]
   grind [csInf_mem h2]
 
@@ -225,12 +231,20 @@ theorem gateComplexity₂_inv (U : 𝐔[Register n]) :
       (sInf_le_sInf (by apply circuit_inv_aux))
       (sInf_le_sInf (by
         have := circuit_inv_aux (U := U⁻¹)
-        simpa only [inv_inv]))
+        simpa only [inv_inv])) -- `simpa using` doesn't work for some reason.
 
-noncomputable def GateComplexity : ComplexityMeasure 𝐔[Register n] ℕ∞ where
+@[simps] -- TBD: Remove attribute
+noncomputable def GateComplexity₂ : ComplexityMeasure 𝐔[Register n] ℕ∞ where
   toFun := GateComplexityFun₂
   map_one_eq_zero := gateComplexity₂_one
   map_mul_le_add := gateComplexity₂_mul
   map_inv_eq_map := gateComplexity₂_inv
+
+@[simp]
+theorem gateComplexity₂_bipartite_le {i j : Fin n} (h : i ≠ j) (U : 𝐔[Qubit × Qubit]) :
+    GateComplexity₂ (bipartite i j U h) ≤ 1 := by
+  grw [GateComplexity₂_toFun,
+    gateComplexity₂_le (bipartite i j U h) [⟨i, j, h, U⟩] (self_elem_circuits_biparite h U)]
+  simp
 
 end

@@ -130,24 +130,33 @@ end single
 
 section bipartite
 
+-- TBD: Revisit argument order
 /-! The embedding of a unitary matrix `U : U[k i × k j]` into `𝐔[Π i, k i]`
 realized by acting with `U` on the `i`th and the `j`th index, and trivially on
 all other indices. -/
 @[simps!]
 def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) : 𝐔[Π i, k i] :=
-  (reindexMonoidEquiv (piSplitTwo i j h.symm).symm) (blockDiagonalMonoidHom (fun _ ↦ U))
+  reindexMonoidEquiv (piSplitTwo i j h.symm).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
--- TBD: Maybe base theory on this instead? Also, provide a bundled version of `single`.
+/-! `Matrix.UnitaryGroup.bipartite'` bundled as a monoid homomorphism. -/
 @[simps!]
 def bipartiteMonoidHom' (i j : ι) (h : i ≠ j := by grind) : 𝐔[k i × k j] →* 𝐔[Π i, k i] :=
-  (reindexMonoidEquiv (piSplitTwo i j h.symm).symm).toMonoidHom.comp rTensorHom
+  (reindexMonoidEquiv (piSplitTwo i j h.symm).symm).toMonoidHom.comp
+    <| blockDiagonalMonoidHom.comp
+      <| Pi.monoidHom fun _ ↦ MonoidHom.id 𝐔[k i × k j]
+
+theorem bipartiteMonoidHom_apply (i j : ι) (h : i ≠ j) (U : 𝐔[k i × k j]) :
+    bipartiteMonoidHom' i j h U = bipartite' i j U h := by
+  simp only [bipartiteMonoidHom', ne_eq, MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_comp,
+    MonoidHom.coe_coe, Function.comp_apply, bipartite', EmbeddingLike.apply_eq_iff_eq]
+  ext
+  simp
 
 /-! The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]` realized
 by acting with `U` on the `i`th and the `j`th index, and trivially on all other
 indices. -/
 abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
-    (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) :=
-  bipartite' (k := fun _ : ι ↦ k) i j U h
+    (i j : ι) (U : 𝐔[k × k]) (h : i ≠ j := by grind) := bipartite' (k := fun _ : ι ↦ k) i j U h
 
 theorem bipartite_apply_apply (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (a b : Π i, k i) :
     bipartite' i j A h a b =

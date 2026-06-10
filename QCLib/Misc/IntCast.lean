@@ -12,7 +12,6 @@ public import Mathlib.Data.ZMod.Defs
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
 
 /-!
-
 # Results on `ℤ → Fin 2` coercions
 
 In the context of the qubit Pauli group, it's convenient to interconvert
@@ -56,7 +55,6 @@ theorem Fin.piIntCast_apply {ι : Type*} {n : ℕ} [NeZero n] (v : ι → ℤ) (
 example {ι : Type*} {n : ℕ} [NeZero n] (v : ι → ℤ) (i : ι) :
     ((v : ι → Fin n) i).val = (v i % n).toNat := by simp
 
--- For scalars, this direction is generally available
 @[coe]
 def Int.piFinCast {ι : Type*} {n : ℕ} [NeZero n] : (ι → Fin n) → (ι → ℤ) := fun v ↦ fun i ↦ ↑(v i)
 
