@@ -2,7 +2,6 @@ module
 
 public import Mathlib.Analysis.Fourier.ZMod
 
-
 @[expose] public section
 
 open Complex Real AddChar Function Fin.CommRing
