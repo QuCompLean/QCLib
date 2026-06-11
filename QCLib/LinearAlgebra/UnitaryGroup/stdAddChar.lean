@@ -16,7 +16,7 @@ lemma ZMod.finEquiv_ne_zero (x : Fin n) : (ZMod.finEquiv n x).val = x := by
 
 namespace Fin
 
-/-- The additive character from `Fin N` to `ℂ`, sending `x : Fin n` to `exp (2 * π * I * x / n)`. -/
+/-- The additive character from `Fin n` to `ℂ`, sending `x : Fin n` to `exp (2 * π * I * x / n)`. -/
 noncomputable def stdAddChar : AddChar (Fin n) ℂ :=
   ZMod.stdAddChar.compAddMonoidHom (ZMod.finEquiv n).toAddEquiv.toAddMonoidHom
 
