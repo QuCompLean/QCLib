@@ -8,12 +8,6 @@ open Complex Real AddChar Fin.CommRing
 
 variable {n : ℕ} [hn : NeZero n]
 
--- TBD : Is there anyway to prove it without defeq abuse?
-@[simp]
-lemma ZMod.finEquiv_ne_zero (x : Fin n) : (ZMod.finEquiv n x).val = x := by
-  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne n)
-  rfl
-
 namespace Fin
 
 section stdAddChar
@@ -25,8 +19,11 @@ noncomputable def stdAddChar : AddChar (Fin n) ℂ :=
 notation3 "ζ(" x ")" => stdAddChar x
 notation3 "ζ[" n "]" => stdAddChar (1 : Fin n)
 
+-- TBD : Is there anyway to prove it without defeq abuse?
 theorem stdAddChar_apply (x : Fin n) : ζ(x) = cexp (2 * π * I * x / n) := by
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne n)
   simp [stdAddChar, ZMod.stdAddChar_apply, ZMod.toCircle_apply]
+  rfl
 
 lemma injective_stdAddChar : Function.Injective (stdAddChar : AddChar (Fin n) ℂ) := by
   simpa [stdAddChar] using ZMod.injective_stdAddChar
