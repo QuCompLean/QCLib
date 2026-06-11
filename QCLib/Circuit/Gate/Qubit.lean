@@ -6,10 +6,9 @@ Authors: David Gross, Davood Tehrani
 module
 
 public import Mathlib.LinearAlgebra.Matrix.Hermitian
+public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 public import QCLib.LinearAlgebra.StdBasis
 public import QCLib.Misc.OrderOf
-public import QCLib.LinearAlgebra.UnitaryGroup.stdAddChar
-public import QCLib.Tactic.MatrixExpand
 
 import QCLib.Misc.IntCast
 
@@ -76,7 +75,7 @@ example (c : ℂ) : 1/√2 = c := by
 noncomputable def T : 𝐔[Qubit] :=
   ⟨!![1, 0; 0, (√2)⁻¹ * (1 + I)], by rw [Matrix.mem_unitaryGroup_iff]; matrix_expand⟩
 
-noncomputable def R (k : ℕ) : 𝐔[Qubit] := ⟨!![1, 0; 0, ζ[2^k]], by
+noncomputable def R (k : ℕ) : 𝐔[Qubit] := ⟨!![1, 0; 0, ζ (2^k)], by
   rw [Matrix.mem_unitaryGroup_iff]
   matrix_expand
   ⟩
@@ -91,7 +90,7 @@ theorem S_eq : S.val = !![1, 0; 0, I] := by rfl
 theorem T_eq : T.val = !![1, 0; 0, (√2)⁻¹ * (1 + I)] := by rfl
 
 @[matrixExpand]
-theorem R_eq (k : ℕ) : R k = !![1, 0; 0, ζ[2^k]] := by rfl
+theorem R_eq (k : ℕ) : R k = !![1, 0; 0, ζ (2^k)] := by rfl
 
 @[simp]
 theorem Z_sq : Z * Z = 1 := by
@@ -337,7 +336,7 @@ theorem T_apply :
   fin_cases k <;> matrix_expand
 
 @[simp]
-theorem R_apply (n) (k : Qubit) : R n • δ[k] = (ζ[2 ^ n]) ^ (k : ℕ) • δ[k] := by
+theorem R_apply (n) (k : Qubit) : R n • δ[k] = (ζ (2 ^ n)) ^ (k : ℕ) • δ[k] := by
   fin_cases k <;> matrix_expand
 
 end ActionOnBasis
