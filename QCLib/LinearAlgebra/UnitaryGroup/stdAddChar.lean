@@ -60,6 +60,7 @@ end Fin
 
 open Fin
 
+-- TBD: upgrade it to AddChar (Fin n) (unitary ℂ)
 @[simps coe]
 noncomputable def uζ (x : Fin n) : unitary ℂ :=
   ⟨stdAddChar x, by simp [Unitary.mem_iff_self_mul_star]⟩

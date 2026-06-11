@@ -8,8 +8,6 @@ public import QCLib.Circuit.Permutation
 
 open Matrix Qubit Fin PiOuterProduct
 
-section explicitDef
-
 /-
   A `Register` is first converted to `Fin (2 ^ n)` before being casted to `Int`.
   This preserves the information that the value is bounded by `2 ^ n`.
