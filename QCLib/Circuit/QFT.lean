@@ -6,7 +6,7 @@ public import QCLib.Circuit.Embed
 
 @[expose] public noncomputable section
 
-open Matrix Fin
+open Matrix Fin ComplexConjugate
 
 /- move out. -/
 theorem Fin.sum_univ_eq_sum_Iic_add_sum_Ioi
@@ -54,12 +54,11 @@ section QFT
 
 open Register
 
-
 def QFTInv (n : ℕ) : 𝐔[Register n] :=
-  ⟨√(2^n)⁻¹ • of fun a b => (starRingEnd ℂ) (ζ (2^n) ^ (equivFin a * equivFin b : ℤ)), by
+  ⟨√(2^n)⁻¹ • of fun a b => conj (ζ (2^n) ^ (equivFin a * equivFin b : ℤ)), by
     rw [mem_unitaryGroup_iff, star_smul, star_trivial, smul_mul_smul]
     ext i j
-    have (x : Fin (2^n)) (y) := mul_comm ((starRingEnd ℂ) (ζ (2^n) ^ (equivFin i * x : ℤ))) y
+    have (x : Fin (2^n)) (y) := mul_comm (conj (ζ (2^n) ^ (equivFin i * x : ℤ))) y
     simp_all [← mul_inv, mul_apply, one_apply,
       sum_register_univ_eq, show i = j ↔ j = i from Eq.comm]
   ⟩
