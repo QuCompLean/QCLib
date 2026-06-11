@@ -75,9 +75,9 @@ theorem ζ_mul_star_ζ_eq_one : ζ n * star (ζ n) = 1 := by
 theorem ζ_mul_star_ζ_eq_one' : ζ n * (starRingEnd ℂ) (ζ n) = 1 := by
   apply ζ_mul_star_ζ_eq_one
 
-lemma ζ_star : star (ζ n) = (ζ n)⁻¹ := by
+lemma ζ_star : (starRingEnd ℂ) (ζ n) = (ζ n)⁻¹ := by
   refine eq_inv_of_mul_eq_one_left ?_
-  rw [mul_comm, ζ_mul_star_ζ_eq_one]
+  rw [mul_comm, ζ_mul_star_ζ_eq_one']
 
 section QFT
 
@@ -105,8 +105,8 @@ lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
 
 -- TBD: Feels too manual & complicated. Try to base on general results.
 @[simp]
-theorem ζ_sum_ortho {i j : Fin n} :
-    ∑ x : Fin n, (ζ n) ^ ((i : ℤ) * x) * star (ζ n) ^ ((j : ℤ) * x)
+theorem ζ_sum_ortho {n : ℕ} [NeZero n] (i j : Fin n) :
+    ∑ x : Fin n, (ζ n) ^ ((i : ℤ) * x) * starRingEnd ℂ (ζ n) ^ ((j : ℤ) * x)
       = n * ite (i = j) 1 0 := by
   simp_rw [ζ_star, inv_zpow', ← zpow_add₀ (a := (ζ n)) (by simp [ζ_def]),
     ← sub_eq_add_neg, ← mul_sub_right_distrib, zpow_mul, zpow_natCast, ← Finset.sum_range]
