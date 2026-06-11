@@ -60,5 +60,6 @@ def QFTInv (n : ℕ) : 𝐔[Register n] :=
     rw [mem_unitaryGroup_iff, star_smul, star_trivial, smul_mul_smul]
     ext i j
     have (x : Fin (2^n)) (y) := mul_comm ((starRingEnd ℂ) (ζ (2^n) ^ (equivFin i * x : ℤ))) y
-    simp_all [← mul_inv, mul_apply, one_apply, sum_register_univ_eq, show i = j ↔ j = i from Eq.comm]
+    simp_all [← mul_inv, mul_apply, one_apply,
+      sum_register_univ_eq, show i = j ↔ j = i from Eq.comm]
   ⟩
