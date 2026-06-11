@@ -40,10 +40,13 @@ theorem stdAddChar_orth (i j : Fin n) :
   simp [← inv_apply_eq_conj, ← inv_apply', ← map_add_eq_mul, ← sub_eq_add_neg, ← sub_mul, mul_comm,
     AddChar.sum_mulShift _ isPrimitive_stdAddChar, sub_eq_zero]
 
+theorem stdAddChar_ne_zero (x : Fin n) : ζ(x) ≠ 0 := by
+  simp [stdAddChar_apply]
+
 @[simp]
 theorem stdAddChar_mul_self_conj (x : Fin n) :
     ζ(x) * (starRingEnd ℂ) ζ(x) = 1 := by
-  simp [stdAddChar_apply, Complex.mul_conj, Complex.normSq_eq_norm_sq, Complex.norm_exp]
+  simp [← map_neg_eq_conj, ← map_add_eq_mul]
 
 theorem stdAddChar_isPrimitiveRoot : IsPrimitiveRoot ζ[n] n := by
   by_cases h : n = 1
