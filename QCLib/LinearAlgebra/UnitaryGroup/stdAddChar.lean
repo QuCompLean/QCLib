@@ -58,8 +58,37 @@ theorem stdAddChar_isPrimitiveRoot : IsPrimitiveRoot ζ[n] n := by
 theorem orderOf_stdAddChar : orderOf ζ[n] = n :=
   IsPrimitiveRoot.iff_orderOf.mp stdAddChar_isPrimitiveRoot
 
-end stdAddChar
 
+namespace pow
+
+@[instance_reducible]
+def instComplexPowFin : HPow ℂ (Fin n) ℂ where
+  hPow a b := a ^ (b : ℕ)
+
+attribute [scoped instance] instComplexPowFin
+
+omit hn in
+@[simp]
+theorem cpow_fin_def (a : ℂ) (b : Fin n) : a ^ b = a ^ (b : ℕ) := rfl
+
+-- TBD: remove defeq abuse
+theorem stdAddChar_pow (n) (a : ℕ)
+    [ha : NeZero a] (x : Fin (a ^ n)) (h : 2 ≤ a := by decide) :
+    ζ[a ^ n] ^ x = ζ(x) := by
+  cases n with
+  | zero =>
+    simp_rw [stdAddChar_apply]
+    simp [show x = 1 by lia]
+    rfl
+  | succ n =>
+    simp [stdAddChar_apply, ← Complex.exp_nat_mul, mul_comm,
+      show 1 % a ^ (n + 1) = 1 by simp [Nat.one_mod_eq_one]; lia]
+    ring_nf
+
+end pow
+
+
+end stdAddChar
 
 noncomputable def stdAddCharUnitary : AddChar (Fin n) (unitary ℂ) :=
   AddChar.toMonoidHomEquiv.symm <|
