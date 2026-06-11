@@ -8,14 +8,6 @@ public import QCLib.Circuit.Permutation
 
 open Matrix Qubit Fin PiOuterProduct
 
-/-
-  A `Register` is first converted to `Fin (2 ^ n)` before being casted to `Int`.
-  This preserves the information that the value is bounded by `2 ^ n`.
-
-  This distinction matters because certain lemmas, such as `ζ_sum_ortho`, can be formulated
-  only for Fin types and therefore cannot be applied directly to arbitrary integers.
--/
-
 /-- Identifies a binary tuple as a number. Unlike `finFunctionFinEquiv`,
   in the `equivFin` the most significant bit is at 0-th position. -/
 @[simps! -isSimp apply symm_apply]
