@@ -46,10 +46,6 @@ theorem stdAddChar_mul_self_conj (x : Fin n) :
     ζ(x) * (starRingEnd ℂ) ζ(x) = 1 := by
   simp [stdAddChar_apply, Complex.mul_conj, Complex.normSq_eq_norm_sq, Complex.norm_exp]
 
--- Isn't used, remove?
-lemma stdAddChar_finmul_eq_zpow (x y : Fin n) : ζ(x * y) = ζ(y) ^ (x : ℤ) := by
-  rw [ ← AddChar.map_zsmul_eq_zpow, zsmul_eq_mul, Int.cast_natCast, cast_val_eq_self]
-
 theorem stdAddChar_one_isPrimitiveRoot : IsPrimitiveRoot ζ[n] n := by
   by_cases h : n = 1
   · subst h; simp

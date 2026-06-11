@@ -6,7 +6,7 @@ public import QCLib.Circuit.Permutation
 
 @[expose] public noncomputable section
 
-open Matrix Qubit Fin
+open Matrix Qubit Fin PiOuterProduct
 
 section explicitDef
 
@@ -37,12 +37,28 @@ lemma Finset.sum_register_univ_eq {n} {M : Type*} [AddCommMonoid M] (f : Registe
     ∑ r : Register n, f r = ∑ i, f (Register.equivFin.symm i) :=
   Finset.sum_equiv Register.equivFin (by simp) (by simp)
 
+
+section QFT
+
 open Register
+
+variable {n : ℕ}
 
 /-- Quantum fourier transformation as a unitary matrix. -/
 def QFT (n : ℕ) : 𝐔[Register n] :=
   ⟨√(2 ^ n)⁻¹ • of fun a b => ζ(equivFin a * equivFin b), by
     rw [mem_unitaryGroup_iff, star_smul, star_trivial, smul_mul_smul]
     ext
-    simp_all [← mul_inv, Matrix.mul_apply, Matrix.one_apply, Finset.sum_register_univ_eq]
+    simp_all [← mul_inv, mul_apply, one_apply, Finset.sum_register_univ_eq]
   ⟩
+
+@[simp]
+theorem QFT_apply (a b : Register n) :
+    QFT n a b = √(2 ^ n)⁻¹ * ζ(equivFin a * equivFin b) := by
+  simp [QFT]
+
+theorem QFT_apply_basis (v : Register n) :
+    QFT n • δ[v] = ∑ k, (√(2 ^ n)⁻¹ * ζ(equivFin v * equivFin k)) • δ[k] := by
+  ext a
+  by_cases ha : a = v <;>
+    simp [basisVector_def, ha, Pi.single_apply, QFT, mul_comm]
