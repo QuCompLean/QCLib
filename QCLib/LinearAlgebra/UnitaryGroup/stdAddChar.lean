@@ -4,7 +4,7 @@ public import Mathlib.Analysis.Fourier.ZMod
 
 @[expose] public section
 
-open Complex Real AddChar Function Fin.CommRing
+open Complex Real AddChar Fin.CommRing
 
 variable {n : ℕ} [hn : NeZero n]
 
@@ -16,6 +16,8 @@ lemma ZMod.finEquiv_ne_zero (x : Fin n) : (ZMod.finEquiv n x).val = x := by
 
 namespace Fin
 
+section stdAddChar
+
 /-- The additive character from `Fin n` to `ℂ`, sending `x : Fin n` to `exp (2 * π * I * x / n)`. -/
 noncomputable def stdAddChar : AddChar (Fin n) ℂ :=
   ZMod.stdAddChar.compAddMonoidHom (ZMod.finEquiv n).toAddEquiv.toAddMonoidHom
@@ -26,7 +28,7 @@ notation3 "ζ[" n "]" => stdAddChar (1 : Fin n)
 theorem stdAddChar_apply (x : Fin n) : ζ(x) = cexp (2 * π * I * x / n) := by
   simp [stdAddChar, ZMod.stdAddChar_apply, ZMod.toCircle_apply]
 
-lemma injective_stdAddChar : Injective (stdAddChar : AddChar (Fin n) ℂ) := by
+lemma injective_stdAddChar : Function.Injective (stdAddChar : AddChar (Fin n) ℂ) := by
   simpa [stdAddChar] using ZMod.injective_stdAddChar
 
 theorem isPrimitive_stdAddChar : (stdAddChar (n := n)).IsPrimitive := by
@@ -46,44 +48,51 @@ theorem stdAddChar_mul_self_conj (x : Fin n) :
     ζ(x) * (starRingEnd ℂ) ζ(x) = 1 := by
   simp [stdAddChar_apply, Complex.mul_conj, Complex.normSq_eq_norm_sq, Complex.norm_exp]
 
-theorem stdAddChar_one_isPrimitiveRoot : IsPrimitiveRoot ζ[n] n := by
+theorem stdAddChar_isPrimitiveRoot : IsPrimitiveRoot ζ[n] n := by
   by_cases h : n = 1
   · subst h; simp
   · simp_rw [stdAddChar_apply, show ((1 : Fin n) : ℕ) = 1 by simp [Nat.one_mod_eq_one, h],
       Nat.cast_one, mul_one, isPrimitiveRoot_exp n (NeZero.ne n)]
 
 @[simp]
-theorem orderOf_stdAddChar_one : orderOf (ζ[n]) = n :=
-  IsPrimitiveRoot.iff_orderOf.mp stdAddChar_one_isPrimitiveRoot
+theorem orderOf_stdAddChar : orderOf ζ[n] = n :=
+  IsPrimitiveRoot.iff_orderOf.mp stdAddChar_isPrimitiveRoot
+
+end stdAddChar
+
+
+noncomputable def stdAddCharUnitary : AddChar (Fin n) (unitary ℂ) :=
+  AddChar.toMonoidHomEquiv.symm <|
+    (stdAddChar.toMonoidHom).codRestrict (unitary ℂ)
+      (by simp [Unitary.mem_iff_self_mul_star] )
+
+notation "uζ("x")" => stdAddCharUnitary x
+notation "uζ["n"]" => stdAddCharUnitary (1 : Fin n)
+notation "ᵤ1" => (1 : unitary ℂ)
+notation "ᵤ-1" => (-1 : unitary ℂ)
+notation "ᵤI" => uζ[4]
+
+theorem stdAddCharUnitary_apply (x : Fin n) : uζ(x) = cexp (2 * π * I * x / n) := by
+  simp [stdAddCharUnitary, stdAddChar_apply]
+
+@[simp]
+theorem orderOf_stdAddCharUnitary : orderOf uζ[n] = n := by
+  rw [(orderOf_submonoid (uζ[n])).symm]
+  simp [stdAddCharUnitary]
+
+theorem stdAddCharUnitar_two_eq_neg_one : uζ[2] = (-1 : unitary ℂ) := by
+  ext
+  simp [stdAddCharUnitary_apply]
+  ring_nf
+  exact exp_pi_mul_I
 
 end Fin
 
 open Fin
 
--- TBD: upgrade it to AddChar (Fin n) (unitary ℂ)
-@[simps coe]
-noncomputable def uζ (x : Fin n) : unitary ℂ :=
-  ⟨stdAddChar x, by simp [Unitary.mem_iff_self_mul_star]⟩
-
-notation "uζ("x")" => uζ x -- For consistency
-notation "uζ["n"]" => uζ (1 : Fin n)
-notation "ᵤ1" => (1 : unitary ℂ)
-notation "ᵤ-1" => (-1 : unitary ℂ)
-notation "ᵤI" => uζ[4]
-
-@[simp]
-theorem orderOf_uζ : orderOf (uζ[n]) = n := by
-  simp [(orderOf_submonoid (uζ (1 : Fin n))).symm]
-
-theorem uζ_two_eq_neg_one : uζ[2] = (-1 : unitary ℂ) := by
-  ext
-  simp [stdAddChar_apply]
-  ring_nf
-  exact exp_pi_mul_I
-
 theorem u_I_eq_I : ᵤI = (⟨I, by simp, by simp⟩ : unitary ℂ) := by
   ext
-  simp [stdAddChar_apply]
+  simp [stdAddCharUnitary_apply]
   ring_nf
   grind [mul_comm, mul_assoc, exp_pi_div_two_mul_I]
 
@@ -103,7 +112,7 @@ theorem u_neg_one_zpow_two : ᵤ-1^(2 : ℤ) = ᵤ1 := by
 
 @[simp]
 theorem orderOf_neg_one_eq_two : orderOf ᵤ-1 = 2 := by
-  simp [← uζ_two_eq_neg_one]
+  simp [← stdAddCharUnitar_two_eq_neg_one]
 
 @[simp]
 theorem u_I_zpow_two : ᵤI^(2 : ℤ) = ᵤ-1 := by
