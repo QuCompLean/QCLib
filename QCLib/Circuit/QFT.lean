@@ -6,12 +6,12 @@ public import QCLib.Circuit.Embed
 
 @[expose] public noncomputable section
 
-open Matrix Fin ComplexConjugate PiOuterProduct
+open Matrix Fin ComplexConjugate PiOuterProduct Qubit
 
 /- move out. -/
 theorem Fin.sum_univ_eq_sum_Iic_add_sum_Ioi
-  {α} [Fintype α] [LinearOrder α] [LocallyFiniteOrderBot α]
-  [LocallyFiniteOrderTop α] {β : Type*} [AddCommMonoid β] (x : α) (f : α → β) :
+    {α} [Fintype α] [LinearOrder α] [LocallyFiniteOrderBot α]
+    [LocallyFiniteOrderTop α] {β : Type*} [AddCommMonoid β] (x : α) (f : α → β) :
     ∑ i : α, f i = (∑ i ∈ Finset.Iic x, f i) + (∑ i ∈ Finset.Ioi x, f i) := by
   classical
   rw [← Finset.sum_filter_add_sum_filter_not Finset.univ (fun i => i ≤ x)]
@@ -109,7 +109,7 @@ theorem QFTInv_apply_basis'' {n} (v : Register n) :
   · rw [QFTInv_apply_basis']
     congr! with y
     apply (starRingEnd ℂ).injective
-    simp only [← coe_uζ, conj_coe_μζ, zpow_natCast, map_pow, RingHomCompTriple.comp_apply,
+    simp only [← coe_uζ, zpow_natCast, map_pow, RingHomCompTriple.comp_apply,
       RingHom.id_apply, revRegister_apply, Finset.prod_pow_eq_pow_sum]
     norm_cast
     apply pow_eq_pow_iff_modEq.mpr
@@ -121,3 +121,27 @@ theorem QFTInv_apply_basis'' {n} (v : Register n) :
     fin_cases a <;> simp_all [Nat.pow_dvd_pow]
 
 end QFTInv
+
+section CQFTInv
+
+public section CR
+
+open UnitaryGroup
+
+theorem R_diagonal (k) :
+    R k = diagonalMonoidHom fun a : Qubit ↦ (uζ (2 ^ k)) ^ (a : ℕ) := by
+  matrix_expand
+
+theorem CR_diagonal (k) :
+    C[R k] = diagonalMonoidHom (fun a ↦ (uζ (2 ^ k)) ^ (a.2 * a.1 : ℕ)) := by
+  simp [R_diagonal, controllize_diagonal, pow_mul]
+
+variable {n : ℕ} (i j : Fin n) (k : ℕ)
+
+def CR : 𝐔[Register n] :=
+  diagonalMonoidHom (fun a : Register n ↦ (uζ (2 ^ k)) ^ (a j * a i : ℕ))
+
+theorem CR_eq_controlled (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
+  simp [CR, CR_diagonal, bipartite_diagonal]
+
+end CR
