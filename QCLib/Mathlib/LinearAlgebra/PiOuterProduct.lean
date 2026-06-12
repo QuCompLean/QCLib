@@ -10,8 +10,16 @@ public import Mathlib.LinearAlgebra.Matrix.Hermitian
 /-!
 # Outer product of indexed families of functions and matrices
 
-For now, put all results in one file under the `Matrix` directory, as the main
-results are on Kronecker products of matrices.
+Mathlib defines the following notions of a "tensor product":
+1. `TensorProduct.tmul` for the binary tensor product of vectors
+2. `TensorProduct.map` for the binary tensor product of linear maps
+3. `PiTensorProduct.tprod` for the tensor product of an indexed family of vectors
+4. `PiTensorProduct.map` for the tensor product of an indexed family of linear maps
+
+For concrete vectors (i.e. functions into a Monoid) and for matrices, only
+`Matrix.kronecker`, the analogue of 2. above, seems to be covered.
+
+In this file, we define the analogues of 3. and 4.
 
 ## Main defintions
 
@@ -22,16 +30,30 @@ results are on Kronecker products of matrices.
 
 ## Notation
 
-* `⨂` Notation typeclass of outer products. We define instances for
+* `⨂ i, f i` Notation typeclass for outer products. We define instances for
   `PiOuterProduct` and `PiKronecker`.
 
 ## Main results
 
-* `PiKronecker_det_dep` The determinant of a KroneckerProducgt
+* `PiKronecker_det_dep` The determinant of a `KroneckerProduct`
 
-## To do
+## Implementation notes
 
-The section on determinants needs golfing.
+Mathlib defines the notation `⨂ₜ[R] i, f i` for the tensor product
+`PiTensorProduct.tprod` of a family `f : Π i, s i` of vectors with `f i` in the
+`R`-module `s i`.  The ring `R` has to be specified explicitly in the notation,
+because it cannot be inferred from the type of `f`. For this reason, we can't
+register a `PiOuterProduct` instance for `PiTensorProduct.tprod`.
+
+On the other hand, we could define such an instance for the tensor product of a
+family `Π i, s i →ₗ[R] t i` of linear maps, as `R` is manifestly part of their
+type. The following would work
+```
+instance : PiOuterProduct (fun i ↦ s i →ₗ[R] t i) ((⨂[R] i, s i) →ₗ[R] ⨂[R] i, t i) where
+  tprod := PiTensorProduct.map
+```
+but is not currently defined in order to avoid having to import `LinearAlgebra.PiTensorProduct`.
+
 -/
 
 public section
@@ -39,13 +61,12 @@ public section
 /- Misc lemmas. Put somewhere appropriate.  -/
 section Lemmas
 
-
 namespace Function
 
 /-- Consider a family `(f : ∀ a, β a → γ)` of functions with dependent domain
 but non-dependent co-domain, and a family `r : ∀ a, β a` of arguments. Updating
-`f` and applying at `a (r a)` is the same as updating the non-dependent function
-`a ↦ f a (r a)` and applying at `a`. -/
+`f` and applying at `a (r a)` is the same as updating the non-dependently typed
+function `a ↦ f a (r a)` and applying at `a`. -/
 theorem update_apply_eq_update {α γ : Type*} [DecidableEq α] {β : α → Type*} (f : ∀ a, β a → γ)
     (a' : α) (b : β a' → γ) (a : α) (r : ∀ a, β a) :
     update f a' b a (r a) = update (fun a ↦ f a (r a)) a' (b (r a')) a := by
@@ -57,12 +78,12 @@ theorem update_apply_eq_update₂ {α γ : Type*} [DecidableEq α] {l m : α →
     (f : ∀ a, (l a) → (m a) → γ) (a' : α) (b : (l a') → (m a') → γ) (a : α) (r : ∀ a, l a)
     (s : ∀ a, m a) :
     update f a' b a (r a) (s a) = update (fun a ↦ f a (r a) (s a)) a' (b (r a') (s a')) a := by
-  simp [update_apply]
+  simp only [update_apply]
   aesop
 
 end Lemmas.Function
 
-/-- Notation typeclass for `⨂`. We'll use the spelling `OuterProduct` for
+/-- Notation typeclass for `⨂ i, f i`. We will use the spelling `OuterProduct` for
 functions / vectors and `KroneckerProduct` for matrices. -/
 class PiOuterProduct {ι : Type*} (α : ι → Type*) (β : outParam (Type*)) where
   /-- The outer product of a family of objects -/
@@ -325,7 +346,6 @@ determinant of a Kronecker product.
 
 open Equiv Kronecker
 
-/-- TBD: to be upstreamed to "Mathlib.Data.Finset". -/
 @[simps! apply symm_apply, expose]
 def Finset.univEquiv (α : Type*) [Fintype α] :
     (Finset.univ : Finset α) ≃ α :=
