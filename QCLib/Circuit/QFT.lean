@@ -4,9 +4,12 @@ public import QCLib.Circuit.Permutation
 public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Embed
 
+
+
+
 @[expose] public noncomputable section
 
-open Matrix Fin ComplexConjugate PiOuterProduct Qubit
+open Fin ComplexConjugate PiOuterProduct Qubit Matrix
 
 /- move out. -/
 theorem Fin.sum_univ_eq_sum_Iic_add_sum_Ioi
@@ -51,15 +54,16 @@ end Register
 
 open Register
 
+variable {n : ℕ}
 
 section Aux
 
-private theorem ζ_aux {n} (l : Fin n) (v : Register n) :
+private theorem ζ_aux (l : Fin n) (v : Register n) :
     (δ[0] + conj (ζ (2 ^ ((l : ℕ) + 1))) ^ (equivFin v : ℤ) • δ[1]) =
       ∑ j : Fin 2, conj ζ (2 ^ ((l : ℕ) + 1)) ^ (equivFin v * j : ℕ) • δ[j] := by
   simp [Pi.smul_def]
 
-private theorem ζ_aux' {n} (v x : Register n) :
+private theorem ζ_aux' (v x : Register n) :
    (∏ i : Fin n, conj ζ (2 ^ (i + 1 : ℕ)) ^ (equivFin v * (x i) : ℕ))
     = conj ζ (2 ^ n) ^ (equivFin v * equivFin x : ℤ) := by
   nth_rw 3 [equivFin_apply_reindex]
@@ -82,17 +86,17 @@ def IQFT (n : ℕ) : 𝐔[Register n] :=
   ⟩
 
 @[simp]
-theorem IQFT_apply (n : ℕ) (a b : Register n) :
+theorem IQFT_apply (a b : Register n) :
     IQFT n a b = √(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin a * equivFin b : ℤ) := by
   simp [IQFT]
 
-theorem IQFT_apply_basis {n} {v : Register n} :
+theorem IQFT_apply_basis (v : Register n) :
     IQFT n • δ[v] = ∑ k, (√(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin v * equivFin k : ℤ)) • δ[k] := by
   ext a
   by_cases ha : a = v <;>
     simp [basisVector_def, ha, Pi.single_apply, IQFT, mul_comm]
 
-theorem IQFT_apply_basis' {n} (v : Register n) :
+theorem IQFT_apply_basis' (v : Register n) :
     IQFT n • δ[v] =
       √(2^n)⁻¹ • ⨂ l : Fin n, δ[(0 : Qubit)] +
         conj (ζ (2 ^ (l + 1 : ℕ))) ^ (equivFin v : ℤ) • δ[1] := by
@@ -100,7 +104,7 @@ theorem IQFT_apply_basis' {n} (v : Register n) :
     ← basisVector_eq_prod, ζ_aux']
   simp [Finset.smul_sum]
 
-theorem IQFT_apply_basis'' {n} (v : Register n) :
+theorem IQFT_apply_basis'' (v : Register n) :
     IQFT n • δ[v] =
       √(2^n)⁻¹ • ⨂ x : Fin n, (δ[(0 : Qubit)] + (∏ i ∈ Finset.Iic x,
         conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]) := by
@@ -122,11 +126,12 @@ theorem IQFT_apply_basis'' {n} (v : Register n) :
 
 end IQFT
 
+
 section CIQFT
 
-public section CR
+open UnitaryGroup List
 
-open UnitaryGroup
+public section CR
 
 theorem R_diagonal (k) :
     R k = diagonalMonoidHom fun a : Qubit ↦ (uζ (2 ^ k)) ^ (a : ℕ) := by
@@ -136,7 +141,7 @@ theorem CR_diagonal (k) :
     C[R k] = diagonalMonoidHom (fun a ↦ (uζ (2 ^ k)) ^ (a.2 * a.1 : ℕ)) := by
   simp [R_diagonal, controllize_diagonal, pow_mul]
 
-variable {n : ℕ} (i j : Fin n) (k : ℕ)
+variable (i j : Fin n) (k : ℕ)
 
 def CR : 𝐔[Register n] :=
   diagonalMonoidHom (fun a : Register n ↦ (uζ (2 ^ k)) ^ (a j * a i : ℕ))
