@@ -6,7 +6,7 @@ public import QCLib.Circuit.Embed
 
 @[expose] public noncomputable section
 
-open Matrix Fin ComplexConjugate
+open Matrix Fin ComplexConjugate PiOuterProduct
 
 /- move out. -/
 theorem Fin.sum_univ_eq_sum_Iic_add_sum_Ioi
@@ -62,3 +62,36 @@ def QFTInv (n : ℕ) : 𝐔[Register n] :=
     simp_all [← mul_inv, mul_apply, one_apply,
       sum_register_univ_eq, show i = j ↔ j = i from Eq.comm]
   ⟩
+
+@[simp]
+theorem QFTInv_apply (n : ℕ) (a b : Register n) :
+    QFTInv n a b = √(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin a * equivFin b : ℤ) := by
+  simp [QFTInv]
+
+theorem QFTInv_apply_basis {n} {v : Register n} :
+    QFTInv n • δ[v] = ∑ k, (√(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin v * equivFin k : ℤ)) • δ[k] := by
+  ext a
+  by_cases ha : a = v <;>
+    simp [basisVector_def, ha, Pi.single_apply, QFTInv, mul_comm]
+
+private theorem ζ_aux {n} (l : Fin n) (v : Register n) :
+    (δ[0] + conj (ζ (2 ^ ((l : ℕ) + 1))) ^ (equivFin v : ℤ) • δ[1]) =
+      ∑ j : Fin 2, conj ζ (2 ^ ((l : ℕ) + 1)) ^ (equivFin v * j : ℕ) • δ[j] := by
+  simp [Pi.smul_def]
+
+private theorem ζ_aux' {n} (v x : Register n) :
+   (∏ i : Fin n, conj ζ (2 ^ (i + 1 : ℕ)) ^ (equivFin v * (x i) : ℕ))
+    = conj ζ (2 ^ n) ^ (equivFin v * equivFin x : ℤ) := by
+  nth_rw 3 [equivFin_apply_reindex]
+  norm_cast
+  simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.sum_mul]
+  lia
+
+theorem QFTInv_apply_basis' {n} (v : Register n) :
+    QFTInv n • δ[v] =
+      √(2^n)⁻¹ • ⨂ l : Fin n, δ[(0 : Qubit)] +
+        conj (ζ (2 ^ (l + 1 : ℕ))) ^ (equivFin v : ℤ) • δ[1] := by
+  simp_rw [QFTInv_apply_basis, ζ_aux, piOuterProduct_univ_sum, piOuterProduct_smul_univ,
+    ← basisVector_eq_prod, ζ_aux']
+  simp [Finset.smul_sum]
+
