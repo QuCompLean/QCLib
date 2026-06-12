@@ -129,7 +129,7 @@ end IQFT
 
 section CIQFT
 
-open UnitaryGroup Finset
+open UnitaryGroup Finset Function
 
 public section CR
 
@@ -170,6 +170,27 @@ theorem inv_prod_controlledR :
   simp [ζ_def, ← Complex.exp_nat_mul, pow_succ, pow_sub₀ (2 : ℂ) (by simp) (show i ≤ x by grind)]
   grind
 
-
-
 end CR
+
+def CIQFT_block (i : Fin n) :=
+  single i H *
+    (((Ioi i).toList.attach.map
+      (fun j : { x // x ∈ (Ioi i).toList } =>
+        bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)⁻¹
+
+lemma single_H_apply' (i : Fin n) (v : Register n) :
+    single i H • δ[v] =
+       ∑ j : Fin 2, ((√2 : ℂ)⁻¹ * (ζ 2) ^ (v i * j : ℕ)) • δ[update v i j] := by
+  rw [single_apply_basis, ζ_def]
+  generalize v i = a
+  fin_cases a <;> simp [H_eq, mul_assoc]
+
+theorem CQFT_block_apply (i) (v : Register n) :
+    CIQFT_block i • δ[v] =
+      (√2 : ℂ)⁻¹ • δ[update v i 0] + (√2 : ℂ)⁻¹ • (∏ x ∈ Finset.Ici i,
+        conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * v x : ℕ))) • δ[update v i 1] := by
+  simp_rw [Finset.Ici_eq_cons_Ioi, Finset.prod_cons]
+  ext w
+  simp [CIQFT_block, -SubmonoidClass.coe_list_prod, -inv_apply, -inv_val, -single'_coe,
+    Submonoid.smul_def, basisVector_def, inv_prod_controlledR]
+  sorry
