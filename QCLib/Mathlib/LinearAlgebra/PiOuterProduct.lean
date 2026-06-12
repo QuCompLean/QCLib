@@ -16,7 +16,7 @@ Mathlib defines the following notions of a "tensor product":
 3. `PiTensorProduct.tprod` for the tensor product of an indexed family of vectors
 4. `PiTensorProduct.map` for the tensor product of an indexed family of linear maps
 
-For concrete vectors (i.e. functions into a Monoid) and for matrices, only
+For concrete vectors (i.e. functions into a `CommMonoid`) and for matrices, only
 `Matrix.kronecker`, the analogue of 2. above, seems to be covered.
 
 In this file, we define the analogues of 3. and 4.

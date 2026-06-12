@@ -37,8 +37,7 @@ tuples, it fails to simplify certain expressions.
 This limitation stems from the construction of the `Fintype` instance ` Pi.instFintype`
 for functions of type `Fin n → Fin d`. Internally, this instance is derived from
 `Multiset.pi`, which constructs dependent Fintype functions using `Pi.cons`.
-As a consequence, the resulting terms contain several layers of abstraction,
-making it difficult for the elaborator to reduce them to their corresponding concrete values.
+This results in overly complicated terms, which often can't be handled by `simp`.
 
 The following example illustrates the issue:
 
