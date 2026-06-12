@@ -112,8 +112,7 @@ def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α w
   map_one' := by simp
   map_mul' := by simp
 
-variable {ι : Type*} {n : Type*} {R : Type*}
-    [DecidableEq n] [Fintype n] [CommRing R]
+variable {ι : Type*} {n : Type*} {R : Type*} [DecidableEq n] [Fintype n] [CommRing R]
 
 lemma List.prod_diagonal_map (l : List ι) (f : ι → n → R) :
     (l.map (fun i => Matrix.diagonal (f i))).prod
@@ -126,8 +125,8 @@ lemma List.prod_diagonal_map (l : List ι) (f : ι → n → R) :
 lemma Fisnet.prod_diagonal (s : Finset ι) (f : ι → n → R) :
     (s.toList.map (fun i => Matrix.diagonal (f i))).prod
       = Matrix.diagonal (fun j => ∏ i ∈ s, f i j) := by
-  rw [List.prod_diagonal_map]
-  simp [Finset.prod_eq_multiset_prod, ← Multiset.prod_toList, Finset.toList]
+  simp [List.prod_diagonal_map, Finset.prod_eq_multiset_prod,
+    ← Multiset.prod_toList, Finset.toList]
 
 end Diagonal
 
