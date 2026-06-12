@@ -70,9 +70,9 @@ private theorem ζ_aux' {n} (v x : Register n) :
 end Aux
 
 
-section QFTInv
+section IQFT
 
-def QFTInv (n : ℕ) : 𝐔[Register n] :=
+def IQFT (n : ℕ) : 𝐔[Register n] :=
   ⟨√(2^n)⁻¹ • of fun a b => conj (ζ (2^n) ^ (equivFin a * equivFin b : ℤ)), by
     rw [mem_unitaryGroup_iff, star_smul, star_trivial, smul_mul_smul]
     ext i j
@@ -82,31 +82,31 @@ def QFTInv (n : ℕ) : 𝐔[Register n] :=
   ⟩
 
 @[simp]
-theorem QFTInv_apply (n : ℕ) (a b : Register n) :
-    QFTInv n a b = √(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin a * equivFin b : ℤ) := by
-  simp [QFTInv]
+theorem IQFT_apply (n : ℕ) (a b : Register n) :
+    IQFT n a b = √(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin a * equivFin b : ℤ) := by
+  simp [IQFT]
 
-theorem QFTInv_apply_basis {n} {v : Register n} :
-    QFTInv n • δ[v] = ∑ k, (√(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin v * equivFin k : ℤ)) • δ[k] := by
+theorem IQFT_apply_basis {n} {v : Register n} :
+    IQFT n • δ[v] = ∑ k, (√(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin v * equivFin k : ℤ)) • δ[k] := by
   ext a
   by_cases ha : a = v <;>
-    simp [basisVector_def, ha, Pi.single_apply, QFTInv, mul_comm]
+    simp [basisVector_def, ha, Pi.single_apply, IQFT, mul_comm]
 
-theorem QFTInv_apply_basis' {n} (v : Register n) :
-    QFTInv n • δ[v] =
+theorem IQFT_apply_basis' {n} (v : Register n) :
+    IQFT n • δ[v] =
       √(2^n)⁻¹ • ⨂ l : Fin n, δ[(0 : Qubit)] +
         conj (ζ (2 ^ (l + 1 : ℕ))) ^ (equivFin v : ℤ) • δ[1] := by
-  simp_rw [QFTInv_apply_basis, ζ_aux, piOuterProduct_univ_sum, piOuterProduct_smul_univ,
+  simp_rw [IQFT_apply_basis, ζ_aux, piOuterProduct_univ_sum, piOuterProduct_smul_univ,
     ← basisVector_eq_prod, ζ_aux']
   simp [Finset.smul_sum]
 
-theorem QFTInv_apply_basis'' {n} (v : Register n) :
-    QFTInv n • δ[v] =
+theorem IQFT_apply_basis'' {n} (v : Register n) :
+    IQFT n • δ[v] =
       √(2^n)⁻¹ • ⨂ x : Fin n, (δ[(0 : Qubit)] + (∏ i ∈ Finset.Iic x,
         conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]) := by
   by_cases hn : n = 0
-  · subst hn; ext k; simp [QFTInv, basisVector_def]
-  · rw [QFTInv_apply_basis']
+  · subst hn; ext k; simp [IQFT, basisVector_def]
+  · rw [IQFT_apply_basis']
     congr! with y
     apply (starRingEnd ℂ).injective
     simp only [← coe_uζ, zpow_natCast, map_pow, RingHomCompTriple.comp_apply,
@@ -120,9 +120,9 @@ theorem QFTInv_apply_basis'' {n} (v : Register n) :
     generalize v i.rev = a
     fin_cases a <;> simp_all [Nat.pow_dvd_pow]
 
-end QFTInv
+end IQFT
 
-section CQFTInv
+section CIQFT
 
 public section CR
 
