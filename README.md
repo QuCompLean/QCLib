@@ -3,6 +3,7 @@
 The aim of this library is to provide a framework for reasoning about quantum
 gates and quantum circuits. *It is very much in an "alpha" stage of development*.
 
+
 ## Quick tour
 
 * `QCLib/Mathlib`
@@ -24,6 +25,8 @@ builds on these definitions.
 Quantum gate / circuits are modelled as unitary matrices. In addition to general
 results, these files also contain results for expressing the composition of
 diagonal unitaries in terms of their diagonals, and of permutation matrices in terms of the permutations they represent.
+
+There's also a messy file with results on complex numbers on the unit circle as objects of type `unitary ℂ` -- an approach which may or may not be a good idea.
 
 * `QCLib/Circuit/Gate/Qubit.lean`
 
@@ -98,6 +101,7 @@ Contributors:
 
 Georgios Afentakis <gafentak@smail.uni-koeln.de>
 Andrés Goens <andres.goens@tu-darmstadt.de>
+
 
 ## License
 
