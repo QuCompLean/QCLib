@@ -146,15 +146,30 @@ variable (i j : Fin n) (k : ℕ)
 def CR : 𝐔[Register n] :=
   diagonalMonoidHom (fun a : Register n ↦ (uζ (2 ^ k)) ^ (a j * a i : ℕ))
 
-theorem CR_eq_controlled (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
+theorem CR_eq_controlledR (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
   simp [CR, CR_diagonal, bipartite_diagonal]
 
-theorem CR_prod_apply :
+theorem prod_controlledR_eq :
     ((Ioi i).toList.attach.map
         (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod
     = diagonal (fun v : Register n =>
         ∏ j ∈ Ioi i, (ζ (2 ^ (j - i + 1 : ℕ))) ^ (v j * v i : ℕ)) := by
-  simp [← CR_eq_controlled, Function.comp_def, CR, ← Fisnet.prod_diagonal]
+  simp [← CR_eq_controlledR, Function.comp_def, CR, ← Fisnet.prod_diagonal]
   grind
+
+theorem inv_prod_controlledR :
+    (((Ioi i).toList.attach.map
+      (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)⁻¹
+    = diagonal (fun v : Register n =>
+        ∏ j ∈ Ioi i, conj (ζ (2 ^ (j + 1 : ℕ))) ^ (2 ^ (i : ℕ) * v j * v i : ℕ)) := by
+  apply star_injective
+  simp only [inv_val, prod_controlledR_eq, star_diagonal, Pi.star_def, star_prod, star_pow,
+    RCLike.star_def, RingHomCompTriple.comp_apply, RingHom.id_apply, diagonal_eq_diagonal_iff]
+  intro k
+  congr! 1 with x
+  simp [ζ_def, ← Complex.exp_nat_mul, pow_succ, pow_sub₀ (2 : ℂ) (by simp) (show i ≤ x by grind)]
+  grind
+
+
 
 end CR
