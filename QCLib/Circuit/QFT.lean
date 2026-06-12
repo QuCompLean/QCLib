@@ -150,14 +150,11 @@ theorem CR_eq_controlled (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
   simp [CR, CR_diagonal, bipartite_diagonal]
 
 theorem CR_prod_apply :
-    (((Ioi i).attach.toList.map
-      (fun j : ↥(Ioi i) => bipartite j.1 i C[R (j - i + 1)])).prod)
+    (((Ioi i).toList.attach.map
+      (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)
     = diagonal (fun v : Register n =>
         ∏ j ∈ Ioi i, (ζ (2 ^ (j - i + 1 : ℕ))) ^ (v j * v i : ℕ)) := by
   simp [← CR_eq_controlled, Function.comp_def, CR, ← Fisnet.prod_diagonal]
-  congr
-  · grind [diagonal_apply]
-  · sorry
-
+  grind
 
 end CR
