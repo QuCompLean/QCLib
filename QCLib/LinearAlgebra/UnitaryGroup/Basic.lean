@@ -26,7 +26,6 @@ open Complex
 
 -- TBD: scope
 notation "𝐔[" t "]" => Matrix.unitaryGroup t ℂ
-notation "𝐃[" t "]" => t → unitary ℂ
 
 end Notation
 
