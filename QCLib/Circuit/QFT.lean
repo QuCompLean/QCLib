@@ -129,7 +129,7 @@ end IQFT
 
 section CIQFT
 
-open UnitaryGroup List
+open UnitaryGroup Finset
 
 public section CR
 
@@ -148,5 +148,12 @@ def CR : 𝐔[Register n] :=
 
 theorem CR_eq_controlled (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
   simp [CR, CR_diagonal, bipartite_diagonal]
+
+theorem CR_prod_apply (a b) :
+    ((Ioi i).attach.toList.map
+      (fun j : ↥(Ioi i) => bipartite j.1 i C[R (j - i + 1)])).prod a b =
+    ∏ j ∈ Ioi i, (CR j i (j - i + 1)) a b := by
+  simp [← CR_eq_controlled, CR]
+  sorry
 
 end CR
