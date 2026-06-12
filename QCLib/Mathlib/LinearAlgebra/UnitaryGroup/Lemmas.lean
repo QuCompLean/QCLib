@@ -112,8 +112,12 @@ def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α w
   map_one' := by simp
   map_mul' := by simp
 
-omit [StarRing α] [DecidableEq ι]
 
+-- Relocate?
+
+omit [DecidableEq ι]
+
+omit [StarRing α] in
 lemma List.prod_diagonal_map (l : List ι) (f : ι → n → α) :
     (l.map (fun i => Matrix.diagonal (f i))).prod
       = Matrix.diagonal (fun j => (l.map (fun i => f i j)).prod) := by
@@ -122,11 +126,22 @@ lemma List.prod_diagonal_map (l : List ι) (f : ι → n → α) :
   | cons a l ih =>
     simp [List.map_cons, List.prod_cons, ih, Matrix.diagonal_mul_diagonal]
 
+omit [StarRing α] in
 lemma Fisnet.prod_diagonal (s : Finset ι) (f : ι → n → α) :
     (s.toList.map (fun i => Matrix.diagonal (f i))).prod
       = Matrix.diagonal (fun j => ∏ i ∈ s, f i j) := by
   simp [List.prod_diagonal_map, Finset.prod_eq_multiset_prod,
     ← Multiset.prod_toList, Finset.toList]
+
+theorem diagonalMonoidHom_list_prod_coe (l : List ι) (f : ι → n → unitary α) :
+    ((l.map (fun i => UnitaryGroup.diagonalMonoidHom (f i))).prod : Matrix n n α)
+      = Matrix.diagonal (fun j => (l.map (fun i => (f i j : α))).prod) := by
+  simp [Function.comp_def, List.prod_diagonal_map]
+
+theorem UnitaryGroup.prod_diagonalMonoidHom (s : Finset ι) (f : ι → n → unitary α) :
+    ((s.toList.map (fun i => UnitaryGroup.diagonalMonoidHom (f i))).prod : Matrix n n α)
+      = Matrix.diagonal (fun j => ∏ i ∈ s, (f i j : α)) := by
+  simp [Function.comp_def, Fisnet.prod_diagonal]
 
 end Diagonal
 
