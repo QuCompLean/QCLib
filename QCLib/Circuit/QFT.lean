@@ -49,10 +49,28 @@ lemma sum_register_univ_eq {n} {M : Type*} [AddCommMonoid M] (f : Register n →
 
 end Register
 
-
-section QFT
-
 open Register
+
+
+section Aux
+
+private theorem ζ_aux {n} (l : Fin n) (v : Register n) :
+    (δ[0] + conj (ζ (2 ^ ((l : ℕ) + 1))) ^ (equivFin v : ℤ) • δ[1]) =
+      ∑ j : Fin 2, conj ζ (2 ^ ((l : ℕ) + 1)) ^ (equivFin v * j : ℕ) • δ[j] := by
+  simp [Pi.smul_def]
+
+private theorem ζ_aux' {n} (v x : Register n) :
+   (∏ i : Fin n, conj ζ (2 ^ (i + 1 : ℕ)) ^ (equivFin v * (x i) : ℕ))
+    = conj ζ (2 ^ n) ^ (equivFin v * equivFin x : ℤ) := by
+  nth_rw 3 [equivFin_apply_reindex]
+  norm_cast
+  simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.sum_mul]
+  lia
+
+end Aux
+
+
+section QFTInv
 
 def QFTInv (n : ℕ) : 𝐔[Register n] :=
   ⟨√(2^n)⁻¹ • of fun a b => conj (ζ (2^n) ^ (equivFin a * equivFin b : ℤ)), by
@@ -74,19 +92,6 @@ theorem QFTInv_apply_basis {n} {v : Register n} :
   by_cases ha : a = v <;>
     simp [basisVector_def, ha, Pi.single_apply, QFTInv, mul_comm]
 
-private theorem ζ_aux {n} (l : Fin n) (v : Register n) :
-    (δ[0] + conj (ζ (2 ^ ((l : ℕ) + 1))) ^ (equivFin v : ℤ) • δ[1]) =
-      ∑ j : Fin 2, conj ζ (2 ^ ((l : ℕ) + 1)) ^ (equivFin v * j : ℕ) • δ[j] := by
-  simp [Pi.smul_def]
-
-private theorem ζ_aux' {n} (v x : Register n) :
-   (∏ i : Fin n, conj ζ (2 ^ (i + 1 : ℕ)) ^ (equivFin v * (x i) : ℕ))
-    = conj ζ (2 ^ n) ^ (equivFin v * equivFin x : ℤ) := by
-  nth_rw 3 [equivFin_apply_reindex]
-  norm_cast
-  simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.sum_mul]
-  lia
-
 theorem QFTInv_apply_basis' {n} (v : Register n) :
     QFTInv n • δ[v] =
       √(2^n)⁻¹ • ⨂ l : Fin n, δ[(0 : Qubit)] +
@@ -95,3 +100,24 @@ theorem QFTInv_apply_basis' {n} (v : Register n) :
     ← basisVector_eq_prod, ζ_aux']
   simp [Finset.smul_sum]
 
+theorem QFTInv_apply_basis'' {n} (v : Register n) :
+    QFTInv n • δ[v] =
+      √(2^n)⁻¹ • ⨂ x : Fin n, (δ[(0 : Qubit)] + (∏ i ∈ Finset.Iic x,
+        conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]) := by
+  by_cases hn : n = 0
+  · subst hn; ext k; simp [QFTInv, basisVector_def]
+  · rw [QFTInv_apply_basis']
+    congr! with y
+    apply (starRingEnd ℂ).injective
+    simp only [← coe_uζ, conj_coe_μζ, zpow_natCast, map_pow, RingHomCompTriple.comp_apply,
+      RingHom.id_apply, revRegister_apply, Finset.prod_pow_eq_pow_sum]
+    norm_cast
+    apply pow_eq_pow_iff_modEq.mpr
+    simp only [orderOf_uζ, equivFin_apply, finFunctionFinEquiv_apply_val, Equiv.piCongrLeft'_apply,
+      revPerm_symm, revPerm_apply, sum_univ_eq_sum_Iic_add_sum_Ioi y,  mul_comm,
+      Nat.add_modEq_left_iff]
+    apply Finset.dvd_sum (fun i hi => ?_)
+    generalize v i.rev = a
+    fin_cases a <;> simp_all [Nat.pow_dvd_pow]
+
+end QFTInv
