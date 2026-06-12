@@ -39,20 +39,21 @@ In this file, we define the analogues of 3. and 4.
 
 ## Implementation notes
 
-Mathlib defines the notation `⨂ₜ[R] i, f i` for the tensor product
-`PiTensorProduct.tprod` of a family `f : Π i, s i` of vectors with `f i` in the
-`R`-module `s i`.  The ring `R` has to be specified explicitly in the notation,
-because it cannot be inferred from the type of `f`. For this reason, we can't
-register a `PiOuterProduct` instance for `PiTensorProduct.tprod`.
+Mathlib has the notation `⨂ₜ[R] i, f i` for the tensor product `PiTensorProduct.tprod`
+of a family `f : Π i, s i` of vectors with `f i` in the `R`-module `s i`.  The
+ring `R` has to be specified explicitly in the notation, because it cannot be
+inferred from the type of `f`. For this reason, we can't register a
+`PiOuterProduct` instance for `PiTensorProduct.tprod`.
 
 On the other hand, we could define such an instance for the tensor product of a
 family `Π i, s i →ₗ[R] t i` of linear maps, as `R` is manifestly part of their
-type. The following would work
+type. Indeed, the following works
 ```
 instance : PiOuterProduct (fun i ↦ s i →ₗ[R] t i) ((⨂[R] i, s i) →ₗ[R] ⨂[R] i, t i) where
   tprod := PiTensorProduct.map
 ```
-but is not currently defined in order to avoid having to import `LinearAlgebra.PiTensorProduct`.
+We do not currenty register this instance, to avoid having to import
+`LinearAlgebra.PiTensorProduct`.
 
 -/
 
