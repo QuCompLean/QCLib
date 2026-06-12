@@ -124,6 +124,7 @@ public section
 -- non-trivial single-qubit circuits formally have complexity `∞`. TBD:
 -- Generalize to `k`-local gates.
 
+-- TBD: Rephrase `bipartite` to use this structure?
 /-- Structure that bundles the information where and how a two-qubit gate acts. -/
 structure TwoQubitGate (n : ℕ) where
   i : Fin n
@@ -233,18 +234,17 @@ theorem gateComplexity₂_inv (U : 𝐔[Register n]) :
         have := circuit_inv_aux (U := U⁻¹)
         simpa only [inv_inv])) -- `simpa using` doesn't work for some reason.
 
-@[simps] -- TBD: Remove attribute
 noncomputable def GateComplexity₂ : ComplexityMeasure 𝐔[Register n] ℕ∞ where
   toFun := GateComplexityFun₂
   map_one_eq_zero := gateComplexity₂_one
   map_mul_le_add := gateComplexity₂_mul
   map_inv_eq_map := gateComplexity₂_inv
 
+theorem GateComplexity₂_toFun (U : ↥𝐔[Register n]) : GateComplexity₂ U = GateComplexityFun₂ U := rfl
+
 @[simp]
-theorem gateComplexity₂_bipartite_le {i j : Fin n} (h : i ≠ j) (U : 𝐔[Qubit × Qubit]) :
+theorem gateComplexity₂_bipartite {i j : Fin n} (h : i ≠ j) (U : 𝐔[Qubit × Qubit]) :
     GateComplexity₂ (bipartite i j U h) ≤ 1 := by
   grw [GateComplexity₂_toFun,
     gateComplexity₂_le (bipartite i j U h) [⟨i, j, h, U⟩] (self_elem_circuits_biparite h U)]
   simp
-
-end
