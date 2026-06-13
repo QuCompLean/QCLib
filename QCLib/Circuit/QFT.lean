@@ -143,39 +143,40 @@ theorem CR_diagonal (k) :
 
 variable (i j : Fin n) (k : ℕ)
 
-def CRD : 𝐔[Register n] :=
+def CR : 𝐔[Register n] :=
   diagonalMonoidHom (fun a : Register n ↦ (uζ (2 ^ k)) ^ (a j * a i : ℕ))
 
-theorem CRD_eq_controlledR (h : i ≠ j) : CRD i j k = bipartite i j C[R k] h := by
-  simp [CRD, CR_diagonal, bipartite_diagonal]
+theorem CR_eq_controlledR (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
+  simp [CR, CR_diagonal, bipartite_diagonal]
 
-def CR :=
+def CCR :=
   ((Ioi i).toList.attach.map
-    (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod
+    (fun j : { x // x ∈ (Ioi i).toList } =>
+      bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod
 
-theorem prod_controlledR_eq :
-    CR i = diagonal (fun v : Register n =>
+theorem CCR_diagonal :
+    CCR i = diagonal (fun v : Register n =>
       ∏ j ∈ Ioi i, (ζ (2 ^ (j - i + 1 : ℕ))) ^ (v j * v i : ℕ)) := by
-  simp [CR, ← CRD_eq_controlledR, Function.comp_def, CRD, ← Fisnet.prod_diagonal]
+  simp [CCR, ← CR_eq_controlledR, Function.comp_def, CR, ← Fisnet.prod_diagonal]
   grind
 
-theorem inv_prod_controlledR :
-    (CR i)⁻¹
+theorem CRR_inv_eq :
+    (CCR i)⁻¹
     = diagonal (fun v : Register n =>
         ∏ j ∈ Ioi i, conj (ζ (2 ^ (j + 1 : ℕ))) ^ (2 ^ (i : ℕ) * v j * v i : ℕ)) := by
   apply star_injective
-  simp only [inv_val, prod_controlledR_eq, star_diagonal, Pi.star_def, star_prod, star_pow,
+  simp only [inv_val, CCR_diagonal, star_diagonal, Pi.star_def, star_prod, star_pow,
     RCLike.star_def, RingHomCompTriple.comp_apply, RingHom.id_apply, diagonal_eq_diagonal_iff]
   intro k
   congr! 1 with x
   simp [ζ_def, ← Complex.exp_nat_mul, pow_succ, pow_sub₀ (2 : ℂ) (by simp) (show i ≤ x by grind)]
   grind
 
-theorem inv_prod_controlledR_apply_basis (v : Register n) :
-  (CR i)⁻¹ • δ[v] =
+theorem CCR_inv_apply_basis (v : Register n) :
+  (CCR i)⁻¹ • δ[v] =
     (∏ j ∈ Ioi i,
       (starRingEnd ℂ) (ζ (2 ^ (j + 1 : ℕ))) ^ (2 ^ (i : ℕ) * (v j) * (v i) : ℕ)) • δ[v] := by
-  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, inv_prod_controlledR,
+  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, CRR_inv_eq,
     smul_eq_mulVec, mulVec_single, MulOpposite.op_one, col_diagonal, one_smul]
   ext w
   by_cases hw : w = v <;> simp_all
@@ -195,7 +196,7 @@ open List
 def CIQFT (k : Fin n) : 𝐔[Register n] :=
   ((finRange n).map (fun i : Fin n =>
     if k ≤ i then
-      single i H • (CR i)⁻¹
+      single i H • (CCR i)⁻¹
     else
       1
   )).prod • revCircuit n
