@@ -143,23 +143,24 @@ theorem CR_diagonal (k) :
 
 variable (i j : Fin n) (k : ℕ)
 
-def CR : 𝐔[Register n] :=
+def CRD : 𝐔[Register n] :=
   diagonalMonoidHom (fun a : Register n ↦ (uζ (2 ^ k)) ^ (a j * a i : ℕ))
 
-theorem CR_eq_controlledR (h : i ≠ j) : CR i j k = bipartite i j C[R k] h := by
-  simp [CR, CR_diagonal, bipartite_diagonal]
+theorem CRD_eq_controlledR (h : i ≠ j) : CRD i j k = bipartite i j C[R k] h := by
+  simp [CRD, CR_diagonal, bipartite_diagonal]
+
+def CR :=
+  ((Ioi i).toList.attach.map
+    (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod
 
 theorem prod_controlledR_eq :
-    ((Ioi i).toList.attach.map
-        (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod
-    = diagonal (fun v : Register n =>
-        ∏ j ∈ Ioi i, (ζ (2 ^ (j - i + 1 : ℕ))) ^ (v j * v i : ℕ)) := by
-  simp [← CR_eq_controlledR, Function.comp_def, CR, ← Fisnet.prod_diagonal]
+    CR i = diagonal (fun v : Register n =>
+      ∏ j ∈ Ioi i, (ζ (2 ^ (j - i + 1 : ℕ))) ^ (v j * v i : ℕ)) := by
+  simp [CR, ← CRD_eq_controlledR, Function.comp_def, CRD, ← Fisnet.prod_diagonal]
   grind
 
 theorem inv_prod_controlledR :
-    (((Ioi i).toList.attach.map
-      (fun j : { x // x ∈ (Ioi i).toList } => bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)⁻¹
+    (CR i)⁻¹
     = diagonal (fun v : Register n =>
         ∏ j ∈ Ioi i, conj (ζ (2 ^ (j + 1 : ℕ))) ^ (2 ^ (i : ℕ) * v j * v i : ℕ)) := by
   apply star_injective
@@ -171,9 +172,7 @@ theorem inv_prod_controlledR :
   grind
 
 theorem inv_prod_controlledR_apply_basis (v : Register n) :
-  (((Ioi i).toList.attach.map
-    (fun j : { x // x ∈ (Ioi i).toList } =>
-      bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)⁻¹ • δ[v] =
+  (CR i)⁻¹ • δ[v] =
     (∏ j ∈ Ioi i,
       (starRingEnd ℂ) (ζ (2 ^ (j + 1 : ℕ))) ^ (2 ^ (i : ℕ) * (v j) * (v i) : ℕ)) • δ[v] := by
   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, inv_prod_controlledR,
@@ -182,7 +181,6 @@ theorem inv_prod_controlledR_apply_basis (v : Register n) :
   by_cases hw : w = v <;> simp_all
 
 end CR
-
 
 lemma single_H_apply' (i : Fin n) (v : Register n) :
     single i H • δ[v] =
@@ -197,10 +195,7 @@ open List
 def CIQFT (k : Fin n) : 𝐔[Register n] :=
   ((finRange n).map (fun i : Fin n =>
     if k ≤ i then
-      single i H •
-      (((Ioi i).toList.attach.map
-        (fun j : { x // x ∈ (Ioi i).toList } =>
-          bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)⁻¹
+      single i H • (CR i)⁻¹
     else
       1
   )).prod • revCircuit n
