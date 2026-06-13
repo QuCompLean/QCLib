@@ -196,19 +196,17 @@ open List
 
 def CIQFT (k : Fin n) : 𝐔[Register n] :=
   ((finRange n).map (fun i : Fin n =>
-    if i ≤ k then
+    if k ≤ i then
       single i H •
       (((Ioi i).toList.attach.map
         (fun j : { x // x ∈ (Ioi i).toList } =>
           bipartite j.1 i C[R (j - i + 1)] (by aesop))).prod)⁻¹
     else
       1
-  )).prod
-  •
-  revCircuit n
+  )).prod • revCircuit n
 
-theorem CIQFT_eq_IQFT (v : Register (n + 1)) :
-    CIQFT (last n) = IQFT (n + 1) := by
+theorem CIQFT_eq_IQFT [NeZero n] :
+    CIQFT 0 = IQFT n := by
   apply ext_smul_basis
   intro w
   rw [IQFT_apply_basis'']
