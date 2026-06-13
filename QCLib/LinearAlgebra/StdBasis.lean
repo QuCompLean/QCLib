@@ -62,6 +62,13 @@ theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] 
   ext j
   simp [Submonoid.smul_def, basisVector_def, Pi.single_apply]
 
+@[simp]
+theorem Matrix.diagonal_smul_basisVector
+  {ι : Type*} [Fintype ι] [DecidableEq ι] (d : ι → ℂ) (v : ι) :
+    Matrix.diagonal d • δ[v] = d v • δ[v] := by
+  ext i
+  simp [basisVector_def, Pi.basisFun_apply, Pi.single_apply]
+
 section SMul
 
 section Qubits
