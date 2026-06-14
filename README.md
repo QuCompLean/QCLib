@@ -93,7 +93,7 @@ Hilbert space instances on the `PiTensorProduct` of Hilbert spaces. Approach aba
 
 Main authors:
 
-Davood Haji Taghi Tehrani <prparadoxes@gmail.com>
+Davood Haji Taghi Tehrani [Paradoxy (Zulipchat)](https://leanprover.zulipchat.com/#user/900949)
 David Gross <david.gross@thp.uni-koeln.de>
 
 
