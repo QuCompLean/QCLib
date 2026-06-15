@@ -178,7 +178,6 @@ theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     refine (Finset.prod_eq_zero (Finset.mem_univ w) ?_).symm
     simp_all
 
-@[simp]
 theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j A h • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
