@@ -83,7 +83,7 @@ def IQFT (n : ℕ) : 𝐔[Register n] :=
     rw [mem_unitaryGroup_iff, star_smul, star_trivial, smul_mul_smul]
     ext i j
     have (x : Fin (2^n)) (y) := mul_comm (conj (ζ (2^n) ^ (equivFin i * x : ℤ))) y
-    simp_all? [← mul_inv, mul_apply, one_apply,
+    simp_all [← mul_inv, mul_apply, one_apply,
       sum_register_univ_eq, show i = j ↔ j = i from Eq.comm]
   ⟩
 
@@ -186,15 +186,16 @@ theorem CCR_inv_apply_basis (v : Register n) :
 
 end CR
 
-lemma single_H_apply' (i : Fin n) (v : Register n) :
-    single i H • δ[v] =
-       ∑ j : Fin 2, ((√2 : ℂ)⁻¹ * (ζ 2) ^ (v i * j : ℕ)) • δ[update v i j] := by
-  rw [single_apply_basis, ζ_def]
-  generalize v i = a
-  fin_cases a <;> simp [H_eq, mul_assoc]
-
 
 open List
+
+
+-- lemma single_H_apply' (i : Fin n) (v : Register n) :
+--     single i H • δ[v] =
+--        ∑ j : Fin 2, ((√2 : ℂ)⁻¹ * (ζ 2) ^ (v i * j : ℕ)) • δ[update v i j] := by
+--   rw [single_apply_basis, ζ_def]
+--   generalize v i = a
+--   fin_cases a <;> simp [H_eq, mul_assoc]
 
 -- def CIQFT (k : Fin n) : 𝐔[Register n] :=
 --   ((finRange n).map (fun i : Fin n =>
