@@ -6,6 +6,7 @@ Authors: Davood Tehrani, David Gross
 module
 
 public import Mathlib.LinearAlgebra.Matrix.Permutation
+public import QCLib.Logic.Equiv
 public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 public import QCLib.LinearAlgebra.StdBasis
 
@@ -26,22 +27,6 @@ Actions on standard basis elements.
 
 @[expose] public section
 
-section AreTheseInMathlib?
-
-/-- Version of `Equiv.arrowCongr_trans` with trivial second permutation. -/
-theorem Equiv.arrowCongrLeft_trans {α₁ α₂ α₃ β : Sort*} (e₁ : α₁ ≃ α₂) (e₂ : α₂ ≃ α₃) :
-    arrowCongr (e₁.trans e₂) (Equiv.refl β)
-      = (arrowCongr e₁ (Equiv.refl β)).trans (arrowCongr e₂ (Equiv.refl β)) := rfl
-
-/-- The action of a permutation on the domain of a function as a Monoid homomorphism. -/
-@[simps]
-def Equiv.arrowCongrLeftHom {ι : Type*} (n : Type*) : (Perm ι) →* Perm (ι → n) where
-  toFun σ := arrowCongr σ (Equiv.refl n)
-  map_one' := by ext; simp [pull_end]
-  map_mul' x y := by simp [Equiv.Perm.mul_def, Equiv.arrowCongrLeft_trans]
-
-end AreTheseInMathlib?
-
 variable (R : Type*) [CommRing R] [StarRing R]
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
@@ -50,6 +35,13 @@ variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 open Equiv Matrix
 
 namespace Matrix.UnitaryGroup
+
+/-- The action of a permutation on the domain of a function as a Monoid homomorphism. -/
+@[simps]
+def arrowCongrLeftHom {ι : Type*} (n : Type*) : (Perm ι) →* Perm (ι → n) where
+  toFun σ := arrowCongr σ (Equiv.refl n)
+  map_one' := by ext; simp [pull_end]
+  map_mul' x y := by simp [Equiv.Perm.mul_def, Equiv.arrowCongrLeft_trans]
 
 /-- Permutations of basis vectors as unitary matrices -/
 @[simps]
@@ -65,11 +57,26 @@ theorem perm_smul_basisVector (σ : Perm n) (k : n) : (permHom ℂ σ) • δ[k]
   simp [Submonoid.smul_def, basisVector_def]
   grind
 
+@[simp]
+theorem unitary_mul_perm_apply_apply (σ : Perm n) (U : unitaryGroup n R) (k l : n) :
+    (U * (permHom R σ)) k l = (U k (σ l)) := by
+  push_cast
+  simp [PEquiv.mul_toMatrix_toPEquiv]
+  rfl -- TBD: Figure out `Equiv.symm` API.
+
+@[simp]
+theorem perm_mul_unitary_apply_apply (σ : Perm n) (U : unitaryGroup n R) (k l : n) :
+    ((permHom R σ) * U ) k l = (U (σ⁻¹ k) l) := by
+  push_cast
+  simp [PEquiv.toMatrix_toPEquiv_mul]
+
 variable (n) in
 /-- Permutations of subsystems -/
-@[simps!]
 def permSubsystemsHom : Perm ι →* unitaryGroup (ι → n) R :=
   (permHom R).comp (arrowCongrLeftHom n)
+
+theorem permSubsystemsHom_eq_permHom (σ : Perm ι) :
+  permSubsystemsHom R n σ = permHom R (arrowCongrLeftHom n σ) := rfl
 
 theorem permSubsystemsHom_smul_eq (σ : Perm ι) (v : (ι → n) → R) :
     (permSubsystemsHom R n σ) • v = (permHom R (arrowCongrLeftHom n σ)) • v := by

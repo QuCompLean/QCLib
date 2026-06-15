@@ -43,7 +43,7 @@ theorem CZ_diagonal' : C[Z] = diagonalMonoidHom (fun k ↦ (ᵤ-1) ^ (k.2 * k.1 
   simp only [CZ_diagonal, Int.ofNat_mul_ofNat, zpow_natCast]
 
 /-- The main diagonal of the controlled-`Z` gate. Degenerates to a `Z` gate for `i=j`. -/
-def CZFun : (k : Register n) → unitary ℂ := fun k ↦ (ᵤ-1) ^ (k j * k i : ℤ)
+def CZFun : (Register n) → unitary ℂ := fun k ↦ (ᵤ-1) ^ (k j * k i : ℤ)
 
 @[simp]
 theorem CZFun_def : CZFun i j = fun k ↦ (ᵤ-1) ^ (k j * k i : ℤ) := rfl

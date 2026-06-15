@@ -6,7 +6,7 @@ Authors: Davood Tehrani, David Gross
 module
 
 public import QCLib.Circuit.Gate.Bipartite
-public import QCLib.LinearAlgebra.PiOuterProduct.Equiv
+public import QCLib.Logic.Equiv
 public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
 /-!
@@ -136,12 +136,11 @@ realized by acting with `U` on the `i`th and the `j`th index, and trivially on
 all other indices. -/
 @[simps!]
 def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) : 𝐔[Π i, k i] :=
-  reindexMonoidEquiv (piSplitTwo i j h.symm).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
+  reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
 /-! `Matrix.UnitaryGroup.bipartite'` bundled as a monoid homomorphism. -/
-@[simps!]
 def bipartiteMonoidHom' (i j : ι) (h : i ≠ j := by grind) : 𝐔[k i × k j] →* 𝐔[Π i, k i] :=
-  (reindexMonoidEquiv (piSplitTwo i j h.symm).symm).toMonoidHom.comp
+  (reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm).toMonoidHom.comp
     <| blockDiagonalMonoidHom.comp
       <| Pi.monoidHom fun _ ↦ MonoidHom.id 𝐔[k i × k j]
 
@@ -218,5 +217,18 @@ theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i
     grind
 
 end bipartite
+
+section succ
+
+variable {n : ℕ}
+variable {k : Type*} [DecidableEq k] [Fintype k]
+
+/-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
+@[simps!]
+def succ (U : 𝐔[Fin n → k]) : 𝐔[Fin (n+1) → k] :=
+  reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
+
+end succ
 
 end Matrix.UnitaryGroup

@@ -27,9 +27,11 @@ of `Fin n` acting on subsytems has a circuit decompostion.
 
 open Matrix.UnitaryGroup Equiv
 
-/-- Rewrite a swap acting as a two-qubit gate in terms of a permutation of subsystems -/
+variable {d : Type*} [Fintype d] [DecidableEq d]
+
+/-- Rewrite a swap acting as a two-qudit gate in terms of a permutation of subsystems -/
 theorem bipartite_swap_eq_perm {n : ℕ} {i j : Fin n} (h : i ≠ j) :
-    bipartite i j QubitSwap h = permSubsystemsHom ℂ (Fin 2) (Equiv.swap i j) := by
+    bipartite i j Swap h = permSubsystemsHom ℂ d (Equiv.swap i j) := by
   apply Matrix.UnitaryGroup.ext_smul_basis
   intro k
   simp only [bipartite_apply_basis, _root_.swap_apply_apply, Prod.swap_prod_mk, ite_smul,
@@ -44,22 +46,23 @@ section RevCircuit
 
 open List Fin
 
-noncomputable def revCircuit (n : ℕ) : 𝐔[Register n] :=
+variable (d) in
+noncomputable def revCircuit (n : ℕ) : 𝐔[Fin n → d] :=
   Finset.univ.noncommProd
-    (fun i : Fin (n / 2) ↦ bipartite ⟨i, by lia⟩ ⟨n - (i + 1), by lia⟩ QubitSwap)
+    (fun i : Fin (n / 2) ↦ bipartite ⟨i, by lia⟩ ⟨n - (i + 1), by lia⟩ Swap)
     (by
       simp only [Finset.coe_univ, bipartite_swap_eq_perm, ← revSwap_def]
       intro i _ j _ hij
       exact (Fin.pairwise_commute_on_revSwap
-        (Set.mem_univ i) (Set.mem_univ j) (by simpa using hij)).map (permSubsystemsHom ℂ (Fin 2)) )
+        (Set.mem_univ i) (Set.mem_univ j) (by simpa using hij)).map (permSubsystemsHom ℂ d))
 
 theorem revCircuit_eq_revPermSubsystems (n : ℕ) :
-    (revCircuit n) = permSubsystemsHom ℂ (Fin 2) revPerm := by
+    (revCircuit d n) = permSubsystemsHom ℂ d revPerm := by
   simp_rw [revCircuit, ← noncommProd_revSwap_eq_revPerm,
     bipartite_swap_eq_perm, Finset.map_noncommProd, revSwap_def]
 
 @[simps! apply symm_apply]
-def revRegister {n} : Equiv.Perm (Register n) := (arrowCongr revPerm (Equiv.refl (Fin 2)))
+def revRegister {n} : Equiv.Perm (Fin n → d) := (arrowCongr revPerm (Equiv.refl d))
 
 theorem revRegister_eq {n} (v : Register n) : revRegister v = fun i ↦ v i.rev := rfl
 
@@ -72,15 +75,16 @@ theorem revRegister_comm_update {n} (v : Register n) (i m) :
   grind
 
 @[simp]
-theorem revCircuit_apply {n : ℕ} (v : Register n) :
-    revCircuit n • δ[v] = δ[revRegister v] := by
+theorem revCircuit_apply {n : ℕ} (v : Fin n → d) :
+    revCircuit d n • δ[v] = δ[revRegister v] := by
   simp [revCircuit_eq_revPermSubsystems, revRegister]
 
 open scoped PiOuterProduct
 
+-- TBD: Generalize from qubits.
 @[simp]
 theorem revCircuit_apply_prod {n : ℕ} (v : Register n) (f : Fin n → ℂ) :
-    revCircuit n • (⨂ i, f i • δ[v i]) = ⨂ i, f i • δ[v i.rev] := by
+    revCircuit (Fin 2) n • (⨂ i, f i • δ[v i]) = ⨂ i, f i • δ[v i.rev] := by
   simp [piOuterProduct_smul_univ, smul_comm, ←basisVector_eq_prod, revRegister_eq]
 
 end RevCircuit

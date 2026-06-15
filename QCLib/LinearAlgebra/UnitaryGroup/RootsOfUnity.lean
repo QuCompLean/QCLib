@@ -57,69 +57,43 @@ noncomputable def ζ (n : ℕ) := cexp (2 * π * I / n)
 
 theorem ζ_def : ζ n = cexp (2 * π * I / n) := by rfl
 
-variable [hnz : NeZero n]
-
-theorem ζ_isPrimitiveRoot : IsPrimitiveRoot (ζ n) n :=
+theorem ζ_isPrimitiveRoot [hnz : NeZero n] : IsPrimitiveRoot (ζ n) n :=
   isPrimitiveRoot_exp n hnz.ne
 
 @[simp]
-theorem orderOf_ζ : orderOf (ζ n) = n :=
+theorem orderOf_ζ [NeZero n] : orderOf (ζ n) = n :=
   IsPrimitiveRoot.iff_orderOf.mp (ζ_isPrimitiveRoot n)
 
--- too complicated?
 theorem ζ_mul_star_ζ_eq_one : ζ n * star (ζ n) = 1 := by
-  have h := Complex.norm_eq_one_of_pow_eq_one (isPrimitiveRoot_exp n hnz.ne).pow_eq_one hnz.ne
-  simp [RCLike.star_def, mul_conj, normSq_eq_norm_sq, h, ζ_def]
+  simp [ζ_def, mul_conj, normSq_eq_norm_sq, Complex.norm_exp]
 
 @[matrixExpand]
 theorem ζ_mul_star_ζ_eq_one' : ζ n * (starRingEnd ℂ) (ζ n) = 1 := by
   apply ζ_mul_star_ζ_eq_one
 
-lemma ζ_star : (starRingEnd ℂ) (ζ n) = (ζ n)⁻¹ := by
+-- state for `star`?
+theorem ζ_star : (starRingEnd ℂ) (ζ n) = (ζ n)⁻¹ := by
   refine eq_inv_of_mul_eq_one_left ?_
   rw [mul_comm, ζ_mul_star_ζ_eq_one']
 
-section QFT
-
-lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
-    ζ m ^ (m / n) = ζ n := by
+theorem ζ_div {n m : ℕ} (hm : m ≠ 0) (hdvd : n ∣ m) :
+    ζ (m / n)  = (ζ m) ^ n  := by
   obtain ⟨k, rfl⟩ := hdvd
-  have hk : k ≠ 0 := by lia
-  simp [hn, ζ_def, ← Complex.exp_nat_mul]
-  ring_nf
-  simp [mul_comm, ←mul_assoc, hk]
+  simp [ζ_def, ← Complex.exp_nat_mul]
+  field_simp
 
-lemma ζ_pow_succ (a k : ℕ) (ha : a ≠ 0) :
-    ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
-  simpa [pow_succ', ha] using
-    ζ_pow_dvd a (a ^ (k + 1)) ha (pow_ne_zero (k + 1) ha) (dvd_pow_self a (by lia))
+theorem ζ_mul_pow {n m l : ℕ} (hdvd : n ∣ l) :
+    ζ (m * n) ^ l = (ζ m) ^ (l / n) := by
+  obtain ⟨k, rfl⟩ := hdvd
+  simp [ζ_def, ← Complex.exp_nat_mul]
+  field_simp
 
-lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
-    ζ (a ^ (u + 1 : ℕ)) = ζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
-  have h :=
-    (ζ_pow_dvd (a ^ (u + 1 : ℕ)) (a ^ n)
-      (pow_ne_zero _ ha) (pow_ne_zero _ ha)
-      (Nat.pow_dvd_pow _ (Nat.succ_le_of_lt u.is_lt)))
-  rw [Nat.pow_div (by lia) (by lia)] at h
-  simp_all
-
--- TBD: Feels too manual & complicated. Try to base on general results.
-@[simp]
-theorem ζ_sum_ortho {n : ℕ} [NeZero n] (i j : Fin n) :
-    ∑ x : Fin n, (ζ n) ^ ((i : ℤ) * x) * starRingEnd ℂ (ζ n) ^ ((j : ℤ) * x)
-      = n * ite (i = j) 1 0 := by
-  simp_rw [ζ_star, inv_zpow', ← zpow_add₀ (a := (ζ n)) (by simp [ζ_def]),
-    ← sub_eq_add_neg, ← mul_sub_right_distrib, zpow_mul, zpow_natCast, ← Finset.sum_range]
-  by_cases hij : i = j
-  · simp_all
-  · rw [geom_sum_eq (x := (ζ n ^ (i - j : ℤ)))]
-    · simp only [hij, ↓reduceIte, mul_zero, div_eq_zero_iff, ← zpow_natCast, zpow_comm]
-      simp [zpow_natCast, (ζ_isPrimitiveRoot n).pow_eq_one]
-    · exact fun h => (show (i : ℤ) ≠ j by grind)
-        (sub_eq_zero.mp (Int.eq_zero_of_dvd_of_natAbs_lt_natAbs
-          (((ζ_isPrimitiveRoot n).zpow_eq_one_iff_dvd (i - j)).mp h) (by omega)))
-
-end QFT
+theorem ζ_pow_sub {b e f : ℕ} (hb : b ≠ 0) (h : f ≤ e) :
+    ζ (b ^ (e - f)) = (ζ (b ^ e)) ^ (b ^ f) := by
+  simp only [ζ_def, Nat.cast_pow, ← Complex.exp_nat_mul]
+  congr
+  rw [pow_sub₀ (b : ℂ) (by simp [hb]) h]
+  field_simp
 
 noncomputable def uζ : (unitary ℂ) :=
     ⟨ζ n, by rw [mul_comm, ζ_mul_star_ζ_eq_one n], ζ_mul_star_ζ_eq_one n⟩
@@ -127,8 +101,14 @@ noncomputable def uζ : (unitary ℂ) :=
 @[simp]
 theorem coe_uζ : (uζ n : ℂ) = ζ n := rfl
 
+-- Transfer the remaining lemmas above?
+theorem uζ_pow_sub {b e f : ℕ} (hb : b ≠ 0) (h : f ≤ e) :
+    uζ (b ^ (e - f)) = (uζ (b ^ e)) ^ (b ^ f) := by
+  ext
+  exact ζ_pow_sub hb h
+
 @[simp]
-theorem orderOf_uζ : orderOf (uζ n) = n := by
+theorem orderOf_uζ [NeZero n] : orderOf (uζ n) = n := by
   simp [(orderOf_submonoid (uζ n)).symm]
 
 notation "ᵤ1" => (1 : unitary ℂ)
@@ -147,10 +127,10 @@ theorem u_I_eq_I : ᵤI = (⟨I, by simp, by simp⟩ : unitary ℂ) := by
   ring_nf
   grind [mul_comm, mul_assoc, exp_pi_div_two_mul_I]
 
-set_option warn.sorry false in
 -- `grind` above seems heavy-handed, but
 -- `simp`, `ring_nf`, and `exp_pi_div_two_mul_I` all use different normal forms...
-example (c : ℂ) : 2 * Real.pi / 4 * I = c := by
+set_option warn.sorry false in
+example (c : ℂ) [hnz : NeZero n] : 2 * Real.pi / 4 * I = c := by
   ring_nf                               -- `↑π * I * (1 / 2)`
   simp                                  -- `↑π * I * 2⁻¹`
   have := isPrimitiveRoot_exp n hnz.ne  -- `cexp (2 * ↑π * I / ↑n`
@@ -207,3 +187,46 @@ theorem neg_vector_eq_one_smul {n : Type*} (v : n → ℂ) : ᵤ-1 • v = -v :=
 
 theorem neg_scalar_eq_one_smul (s : ℂ) : ᵤ-1 • s = -s := by
   simp [Unitary.coe_neg, Submonoid.smul_def]
+
+-- lemmas used (at some point) for QFT. TBD: clean up
+section QFT
+
+lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
+    ζ m ^ (m / n) = ζ n := by
+  obtain ⟨k, rfl⟩ := hdvd
+  have hk : k ≠ 0 := by lia
+  simp [hn, ζ_def, ← Complex.exp_nat_mul]
+  ring_nf
+  simp [mul_comm, ←mul_assoc, hk]
+
+lemma ζ_pow_succ (a k : ℕ) (ha : a ≠ 0) :
+    ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
+  simpa [pow_succ', ha] using
+    ζ_pow_dvd a (a ^ (k + 1)) ha (pow_ne_zero (k + 1) ha) (dvd_pow_self a (by lia))
+
+lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
+    ζ (a ^ (u + 1 : ℕ)) = ζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
+  have h :=
+    (ζ_pow_dvd (a ^ (u + 1 : ℕ)) (a ^ n)
+      (pow_ne_zero _ ha) (pow_ne_zero _ ha)
+      (Nat.pow_dvd_pow _ (Nat.succ_le_of_lt u.is_lt)))
+  rw [Nat.pow_div (by lia) (by lia)] at h
+  simp_all
+
+-- TBD: Feels too manual & complicated. Try to base on general results.
+@[simp]
+theorem ζ_sum_ortho {n : ℕ} [NeZero n] (i j : Fin n) :
+    ∑ x : Fin n, (ζ n) ^ ((i : ℤ) * x) * starRingEnd ℂ (ζ n) ^ ((j : ℤ) * x)
+      = n * ite (i = j) 1 0 := by
+  simp_rw [ζ_star, _root_.inv_zpow', ← zpow_add₀ (a := (ζ n)) (by simp [ζ_def]),
+    ← sub_eq_add_neg, ← mul_sub_right_distrib, _root_.zpow_mul, zpow_natCast, ← Finset.sum_range]
+  by_cases hij : i = j
+  · simp_all
+  · rw [geom_sum_eq (x := (ζ n ^ (i - j : ℤ)))]
+    · simp only [hij, ↓reduceIte, mul_zero, div_eq_zero_iff, ← zpow_natCast, zpow_comm]
+      simp [zpow_natCast, (ζ_isPrimitiveRoot n).pow_eq_one]
+    · exact fun h => (show (i : ℤ) ≠ j by grind)
+        (sub_eq_zero.mp (Int.eq_zero_of_dvd_of_natAbs_lt_natAbs
+          (((ζ_isPrimitiveRoot n).zpow_eq_one_iff_dvd (i - j)).mp h) (by omega)))
+
+end QFT

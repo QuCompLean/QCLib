@@ -30,6 +30,8 @@ namespace Register
   only for Fin types and therefore cannot be applied directly to arbitrary integers.
 -/
 
+open Fin ComplexConjugate PiOuterProduct Qubit Matrix
+
 /-- Identifies a binary tuple as a number. Unlike `finFunctionFinEquiv`,
   in the `equivFin` the most significant bit is at 0-th position. -/
 @[simps! -isSimp apply symm_apply]
@@ -81,14 +83,15 @@ def IQFT (n : ℕ) : 𝐔[Register n] :=
     rw [mem_unitaryGroup_iff, star_smul, star_trivial, smul_mul_smul]
     ext i j
     have (x : Fin (2^n)) (y) := mul_comm (conj (ζ (2^n) ^ (equivFin i * x : ℤ))) y
-    simp_all [← mul_inv, mul_apply, one_apply,
+    simp_all? [← mul_inv, mul_apply, one_apply,
       sum_register_univ_eq, show i = j ↔ j = i from Eq.comm]
   ⟩
 
 @[simp]
 theorem IQFT_apply (a b : Register n) :
     IQFT n a b = √(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin a * equivFin b : ℤ) := by
-  simp [IQFT]
+  simp only [IQFT, Real.sqrt_inv, map_zpow₀, smul_of, of_apply, Pi.smul_apply, Complex.real_smul,
+    Complex.ofReal_inv]
 
 theorem IQFT_apply_basis (v : Register n) :
     IQFT n • δ[v] = ∑ k, (√(2^n)⁻¹ * conj (ζ (2^n)) ^ (equivFin v * equivFin k : ℤ)) • δ[k] := by
@@ -193,17 +196,17 @@ lemma single_H_apply' (i : Fin n) (v : Register n) :
 
 open List
 
-def CIQFT (k : Fin n) : 𝐔[Register n] :=
-  ((finRange n).map (fun i : Fin n =>
-    if k ≤ i then
-      single i H • (CCR i)⁻¹
-    else
-      1
-  )).prod • revCircuit n
+-- def CIQFT (k : Fin n) : 𝐔[Register n] :=
+--   ((finRange n).map (fun i : Fin n =>
+--     if k ≤ i then
+--       single i H • (CCR i)⁻¹
+--     else
+--       1
+--   )).prod • revCircuit n
 
-theorem CIQFT_eq_IQFT [NeZero n] :
-    CIQFT 0 = IQFT n := by
-  apply ext_smul_basis
-  intro w
-  rw [IQFT_apply_basis'']
-  sorry
+-- theorem CIQFT_eq_IQFT [NeZero n] :
+--     CIQFT 0 = IQFT n := by
+--   apply ext_smul_basis
+--   intro w
+--   rw [IQFT_apply_basis'']
+--   sorry
