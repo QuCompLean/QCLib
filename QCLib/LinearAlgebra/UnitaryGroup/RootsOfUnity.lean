@@ -64,6 +64,12 @@ theorem ζ_isPrimitiveRoot [hnz : NeZero n] : IsPrimitiveRoot (ζ n) n :=
 theorem orderOf_ζ [NeZero n] : orderOf (ζ n) = n :=
   IsPrimitiveRoot.iff_orderOf.mp (ζ_isPrimitiveRoot n)
 
+-- TBD: Hack. Make nicer.
+@[simp]
+theorem ζ_pow_order [NeZero n] : (ζ n) ^ n = 1 := by
+  have := orderOf_ζ n ▸ pow_orderOf_eq_one (ζ n)
+  assumption
+
 theorem ζ_mul_star_ζ_eq_one : ζ n * star (ζ n) = 1 := by
   simp [ζ_def, mul_conj, normSq_eq_norm_sq, Complex.norm_exp]
 
@@ -214,6 +220,7 @@ lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
   simp_all
 
 -- TBD: Feels too manual & complicated. Try to base on general results.
+-- Update: Now done in one of the QFT files.
 @[simp]
 theorem ζ_sum_ortho {n : ℕ} [NeZero n] (i j : Fin n) :
     ∑ x : Fin n, (ζ n) ^ ((i : ℤ) * x) * starRingEnd ℂ (ζ n) ^ ((j : ℤ) * x)

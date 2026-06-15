@@ -51,6 +51,10 @@ def permHom : Perm n →* unitaryGroup n R where
   map_one' := by simp
   map_mul' := by simp
 
+-- base `arrowCongrLeftHom` on `piCongrLeft'`?
+theorem arrowCongrLeftHom_apply_eq_piCongrLeft' {ι : Type*} (n : Type*) (σ : Perm ι) :
+    arrowCongrLeftHom n σ = piCongrLeft' _ σ := by ext; simp
+
 @[simp]
 theorem perm_smul_basisVector (σ : Perm n) (k : n) : (permHom ℂ σ) • δ[k] = δ[σ k] := by
   ext l
