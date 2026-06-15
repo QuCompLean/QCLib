@@ -5,19 +5,32 @@ public import QCLib.Circuit.Embed
 
 public section
 
-/- ! Note : `Matrix.vecMulVec` exists but it produces matrices, not tuples.
-  It is possible to convert the output of `vecMulVec` to a tuple by tranpsorting
-  it along `Matrix.of.symm` equiv, however, at the moment the benefit of doing so
-  is not clear.
+/-
+Note: `Matrix.vecMulVec` already provides an outer product operation, but its
+result is a matrix rather than a tuple-indexed function.
 
-  TBD : Decide between cartasian product and currying.
-  For now, cartasian product is avoided because it requires writing more
-  `(r ⊗ s) ⟨i, j⟩` vs `(r ⊗ s) i j`. Furthermore `fin_cases` can be called on
-  `i` or `j` directly wheras it cannot be used for `a.1` or `a.2` with
-  `a = ⟨i, j⟩ ` without generalizing `a.1` and `a.2`.
+One could transport the result along `Matrix.of.symm` to obtain a tuple-indexed
+representation. At present, however, it is unclear whether this would provide
+any practical advantage.
 
-  Related Equivs like `Equiv.piSplitAt` on the other hand require a cartasian product.
+There is also a design choice between representing tensor indices as a Cartesian
+product or as a curried function.
 
+Using a Cartesian product requires expressions such as
+
+* `(r ⊗ s) ⟨i, j⟩`
+
+instead of
+
+* `(r ⊗ s) i j`.
+
+The curried representation is often more convenient for proofs. For example,
+`fin_cases` can be applied directly to `i` or `j`, whereas with a pair
+`a : α × β` one typically has to first generalize `a.1` and `a.2`.
+
+On the other hand, equivalences such as `Equiv.piSplitAt` naturally produce
+Cartesian-product representations, which makes them easier to use in that
+setting.
 -/
 
 variable {α β γ M : Type*} (f : γ → γ → γ) (r : α → γ) (s : β → γ)
