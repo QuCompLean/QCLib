@@ -105,12 +105,12 @@ variable {ι : Type*} [DecidableEq ι] [Fintype ι] {k : ι → Type u_2}
   [(i : ι) → DecidableEq (k i)] [(i : ι) → Fintype (k i)]
 
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔[k i]) :
-    single' i U • δ[v] = (U • δ[v i]) ⊗ δ[fun i : {j // j ≠ i} => v i] ∘ piSplitAt i _ := by
+    single' i U • δ[v] = (U • δ[v i]) ⊗ δ[fun a : {j // j ≠ i} => v a] ∘ piSplitAt i _ := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
 
 theorem bipartite_apply_basis' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j U h • δ[v] =
-      ((U • δ[(v i, v j)]) ⊗ δ[fun i : {m // m ≠ i ∧ m ≠ j} => v i]) ∘ (piSplitAtPair i j) := by
+      ((U • δ[(v i, v j)]) ⊗ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) ∘ (piSplitAtPair i j) := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, funext_iff, Pi.single_apply]
