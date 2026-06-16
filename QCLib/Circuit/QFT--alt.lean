@@ -124,6 +124,15 @@ theorem finFunctionFinEquiv_mul_equivFin {n d} (k x : Fin n → Fin d) :
   simp only [equivFin_apply_3, finFunctionFinEquiv_apply_val, Fintype.sum_mul_sum]
   grind
 
+-- not true :)
+example {n : ℕ} (a b : Fin n) : (↑(a * b) : ℕ) = ((a : ℕ) * b) := sorry
+
+theorem finFunctionFinEquiv_mul_equivFin' {n d} (k x : Fin n → Fin d) :
+    ↑((finFunctionFinEquiv k) * (equivFin x)) =
+      ∑ i : Fin n, ∑ j : Fin n, (k i) * (x j) * d ^ (i + j.rev : ℕ) := by
+  simp only [equivFin_apply_3, finFunctionFinEquiv_apply_val, Fintype.sum_mul_sum]
+  grind
+
 theorem finFunctionFinEquiv_mul_equivFin_1 {n d} (k x : Fin n → Fin d) :
     (finFunctionFinEquiv k) * (equivFin x) =
       ∑ j : Fin n, ∑ i : Fin n, (k i) * (x j) * d ^ (i + j.rev : ℕ) := by
@@ -178,8 +187,7 @@ private theorem aux3' {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
       ∑ i ≤ j, (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) :=  by
   have hu : Finset.univ = (Finset.Iic j) ∪ (Finset.Ioi j) := by grind
   have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by sorry
-  rw [hu, Finset.sum_union hd]
-  simp only [aux2']
+  rw [hu, Finset.sum_union hd, aux2']
   simp
 
 #check Nat.ModEq.add
@@ -192,6 +200,16 @@ private theorem aux3 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
   rw [hu, Finset.sum_union hd]
   simp only [aux2]
   sorry
+
+theorem char_finFunctionFinEquiv_mul_equivFin {n d} [NeZero d] (k x : Fin n → Fin d) :
+    ZMod.stdAddChar (↑(finFunctionFinEquiv k * equivFin x : ℕ) : ZMod (d ^ n))  =
+      ZMod.stdAddChar (∑ j : Fin n, ∑ i ≤ j,
+        (k i : ZMod (d ^ n)) * (x j : ZMod (d ^ n)) * (↑(d ^ (i + (j.rev : ℕ))) : ZMod (d ^ n)))
+        := by
+  congr
+  rw [finFunctionFinEquiv_mul_equivFin, Finset.sum_comm]
+  push_cast [-Nat.cast_pow]
+  simp_rw [aux3']
 
 -- that's painful. work in ZMod N?
 
