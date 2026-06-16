@@ -95,20 +95,19 @@ theorem outerProduct_neg [Mul γ] [HasDistribNeg γ] :
   ext ⟨i, j⟩; simp [mul_neg]
 
 theorem outerProduct_left_injective
-    [MulZeroClass γ] [IsRightCancelMulZero γ] (hs : ∃ j, s j ≠ 0) :
+    [MulZeroClass γ] [IsRightCancelMulZero γ] (hs : s ≠ 0) :
     Function.Injective (fun r : α → γ => r ⊗ s) := by
   intro r r' h
-  obtain ⟨j, hj⟩ := hs
+  obtain ⟨j, hj⟩ := Function.ne_iff.mp hs
   ext i
   have h' := congrArg (fun f => f (i, j)) h
   simp_all
 
 theorem outerProduct_right_injective
-    [MulZeroClass γ] [IsLeftCancelMulZero γ]
-    (hr : ∃ i, r i ≠ 0) :
+    [MulZeroClass γ] [IsLeftCancelMulZero γ] (hr : r ≠ 0) :
     Function.Injective (fun s : β → γ => r ⊗ s) := by
   intro s s' h
-  obtain ⟨i, hi⟩ := hr
+  obtain ⟨i, hi⟩ := Function.ne_iff.mp hr
   ext j
   have h' := congrArg (fun f => f (i, j)) h
   simp_all
