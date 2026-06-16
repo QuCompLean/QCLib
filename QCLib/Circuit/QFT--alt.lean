@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Nat.ModEq
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 public import Mathlib.Analysis.Fourier.ZMod
 public import QCLib.Circuit.Permutation
@@ -129,12 +130,32 @@ theorem finFunctionFinEquiv_mul_equivFin_1 {n d} (k x : Fin n → Fin d) :
   rw [finFunctionFinEquiv_mul_equivFin, Finset.sum_comm]
 
 #check Finset.sum_filter_add_sum_filter_not
+#check ZMod
 
-private theorem aux1 {n d} [NeZero d] (i j : Fin n) (h : i ∈ Finset.Ioi j) (x : ℕ) :
+#reduce ((7 : ℕ) : (ZMod 5))
+
+
+private theorem aux1 {n : ℕ} (d : ℕ) [NeZero d] (i j : Fin n) (h : i ∈ Finset.Ioi j) (x : ℕ) :
     x * d ^ (i + j.rev : ℕ) ≡ 0 [MOD d ^ n] := by
   have : i + (j.rev : ℕ) = n + ((i + (j.rev : ℕ))-n) := by grind
   rw [this, pow_add, ← mul_assoc, mul_comm x _, mul_assoc]
   exact Nat.modEq_zero_iff_dvd.mpr (dvd_mul_right _ _)
+
+example (a n : ℕ) : (a * n : ZMod n) = 0 := by
+  simp only [CharP.cast_eq_zero, mul_zero]
+
+example (a b n : ℕ) : (↑(a * b) : ZMod n) =  (a : ZMod n) * b := by
+  simp only [Nat.cast_mul]
+
+#check ZMod.cast_zmod_eq_zero_iff_of_le
+
+private theorem aux1' {n d} [NeZero d] (i j : Fin n) (h : i ∈ Finset.Ioi j) (x : ZMod (d ^ n)) :
+    x * ↑(d ^ (i + j.rev : ℕ)) = 0 := by
+  have : i + (j.rev : ℕ) = n + ((i + (j.rev : ℕ))-n) := by grind
+  rw [this, pow_add, Nat.cast_mul]
+  simp only [CharP.cast_eq_zero]
+  simp only [zero_mul, mul_zero]
+
 
 theorem sum_nat_mod_eq_zero {ι : Type*} (s : Finset ι) (n : ℕ) (f : ι → ℕ)
     (h : ∀ x ∈ s, f x ≡ 0 [MOD n]) [NeZero n] : (∑ i ∈ s, f i) ≡ 0 [MOD n] := by
@@ -146,14 +167,33 @@ private theorem aux2 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
   intro i hi
   simp only [aux1, hi]
 
+private theorem aux2' {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
+    ∑ i ∈ (Finset.Ioi j), (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) = 0 := by
+  apply Finset.sum_eq_zero
+  intro i hi
+  simp only [aux1', hi]
+
+private theorem aux3' {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
+    ∑ i : Fin n, (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) =
+      ∑ i ≤ j, (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) :=  by
+  have hu : Finset.univ = (Finset.Iic j) ∪ (Finset.Ioi j) := by grind
+  have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by sorry
+  rw [hu, Finset.sum_union hd]
+  simp only [aux2']
+  simp
+
+#check Nat.ModEq.add
+
 private theorem aux3 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
     ∑ i : Fin n, (k i) * (x j) * d ^ (i + (j.rev : ℕ)) ≡
       ∑ i ≤ j, (k i) * (x j) * d ^ (i + (j.rev : ℕ)) [MOD d ^ n] :=  by
   have hu : Finset.univ = (Finset.Iic j) ∪ (Finset.Ioi j) := by grind
   have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by sorry
   rw [hu, Finset.sum_union hd]
+  simp only [aux2]
   sorry
 
+-- that's painful. work in ZMod N?
 
 theorem zeta_pow_finFunctionFinEquiv_mul_equivFin {n d} [NeZero d] (k x : Fin n → Fin d) :
     (ζ (d ^ n)) ^ (finFunctionFinEquiv k * equivFin x : ℕ)  =
