@@ -94,10 +94,28 @@ theorem outerProduct_neg [Mul γ] [HasDistribNeg γ] :
     r ⊗ (-s) = -(r ⊗ s) := by
   ext ⟨i, j⟩; simp [mul_neg]
 
+theorem outerProduct_left_injective
+    [MulZeroClass γ] [IsRightCancelMulZero γ] (hs : ∃ j, s j ≠ 0) :
+    Function.Injective (fun r : α → γ => r ⊗ s) := by
+  intro r r' h
+  obtain ⟨j, hj⟩ := hs
+  ext i
+  have h' := congrArg (fun f => f (i, j)) h
+  simp_all
+
+theorem outerProduct_right_injective
+    [MulZeroClass γ] [IsLeftCancelMulZero γ]
+    (hr : ∃ i, r i ≠ 0) :
+    Function.Injective (fun s : β → γ => r ⊗ s) := by
+  intro s s' h
+  obtain ⟨i, hi⟩ := hr
+  ext j
+  have h' := congrArg (fun f => f (i, j)) h
+  simp_all
+
 def outerProductLinearMap [CommSemiring γ] :
     (α → γ) →ₗ[γ] (β → γ) →ₗ[γ] (α × β → γ) :=
   LinearMap.mk₂ γ (· ⊗ ·) (by simp) (by simp) (by simp) (by simp)
-
 
 open Matrix.UnitaryGroup Equiv Matrix
 
