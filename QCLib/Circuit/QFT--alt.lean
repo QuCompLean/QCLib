@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Nat.ModEq
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 public import Mathlib.Analysis.Fourier.ZMod
 public import QCLib.Circuit.Permutation
@@ -146,14 +147,18 @@ private theorem aux2 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
   intro i hi
   simp only [aux1, hi]
 
+#check Nat.ModEq.add
+
 private theorem aux3 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
     ∑ i : Fin n, (k i) * (x j) * d ^ (i + (j.rev : ℕ)) ≡
       ∑ i ≤ j, (k i) * (x j) * d ^ (i + (j.rev : ℕ)) [MOD d ^ n] :=  by
   have hu : Finset.univ = (Finset.Iic j) ∪ (Finset.Ioi j) := by grind
   have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by sorry
   rw [hu, Finset.sum_union hd]
+  simp only [aux2]
   sorry
 
+-- that's painful. work in ZMod N?
 
 theorem zeta_pow_finFunctionFinEquiv_mul_equivFin {n d} [NeZero d] (k x : Fin n → Fin d) :
     (ζ (d ^ n)) ^ (finFunctionFinEquiv k * equivFin x : ℕ)  =
