@@ -13,7 +13,6 @@ public import QCLib.Circuit.Embed
 
 -/
 
-
 section Schur
 
 namespace Matrix
@@ -70,7 +69,6 @@ noncomputable def dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _root_.Matrix.dft
 theorem dftZMod_coe : (dftZMod N : Matrix (ZMod N) (ZMod N) ℂ) = √(N⁻¹) • _root_.Matrix.dftZMod N :=
   rfl
 
-
 end ZMod.UnitaryGroup
 
 namespace UnitaryGroup
@@ -83,133 +81,49 @@ noncomputable def dftFin : 𝐔[Fin N] := reindexMonoidEquiv (ZMod.finEquiv N).s
 
 open Fin ComplexConjugate PiOuterProduct Qubit Matrix
 
-/-- Equivalence between `Fin n → Fin d` and `Fin (d ^ n)`. Unlike `finFunctionFinEquiv`,
-it lakes the most significant digit first -/
---@[simps! -isSimp apply symm_apply]
--- @[simps!]
--- def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
---   (Equiv.piCongrLeft' _ Fin.revPerm).trans finFunctionFinEquiv
-
 -- TBD: move to `_root_.Fin.` namespace
 @[simps! apply]
 def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
   (arrowCongrLeftHom (Fin d) Fin.revPerm).trans finFunctionFinEquiv
 
-theorem equivFin_apply_1 {n d} (v : Fin n → Fin d) :
-    ((equivFin v) : ℕ) = ∑ i : Fin n, (v i : ℕ) * d ^ (n - (i + 1) : ℕ) := by
-  simp only [equivFin_apply]
-  simp only [finFunctionFinEquiv_apply_val]
+theorem equivFin_apply' {n d} (f : Fin n → Fin d) :
+    equivFin f = ∑ i : Fin n, (f i : ZMod (d ^ n)) * d ^ (i.rev : ℕ) := by
+  simp_rw [equivFin_apply, finFunctionFinEquiv_apply_val]
+  push_cast
   apply Finset.sum_equiv Fin.revPerm (by simp) (fun i hi ↦ ?_)
   simp
-  grind
-
-theorem equivFin_apply_2 {n d} (f : Fin n → Fin d) :
-    equivFin f = ∑ i : Fin n, ↑(f i.rev) * d ^ (i : ℕ) := by
-  simp only [equivFin, arrowCongrLeftHom_apply_eq_piCongrLeft']
-  simp
-
-theorem equivFin_apply_3 {n d} (f : Fin n → Fin d) :
-    equivFin f = ∑ i : Fin n, f i * d ^ (i.rev : ℕ) := by
-  simp only [equivFin_apply, finFunctionFinEquiv_apply_val, Equiv.arrowCongr_apply, Equiv.coe_refl,
-    Fin.revPerm_symm, Function.comp_apply, Fin.revPerm_apply, id_eq, Fin.val_rev]
-  apply Finset.sum_equiv Fin.revPerm (by simp) (fun i hi ↦ ?_)
-  simp
-  grind
-
-#check finFunctionFinEquiv_apply_val --  `↑(finFunctionFinEquiv f) = ∑ i, ↑(f i) * m ^ ↑i`
 
 theorem finFunctionFinEquiv_mul_equivFin {n d} (k x : Fin n → Fin d) :
     (finFunctionFinEquiv k) * (equivFin x) =
-      ∑ i : Fin n, ∑ j : Fin n, (k i) * (x j) * d ^ (i + j.rev : ℕ) := by
-  simp only [equivFin_apply_3, finFunctionFinEquiv_apply_val, Fintype.sum_mul_sum]
+      ∑ i : Fin n, ∑ j : Fin n, (k i : ZMod (d ^ n)) * (x j) * d ^ (i + j.rev : ℕ) := by
+  simp only [equivFin_apply', finFunctionFinEquiv_apply_val] -- _3 also works??
+  push_cast
+  simp only [Fintype.sum_mul_sum]
   grind
 
-theorem finFunctionFinEquiv_mul_equivFin_1 {n d} (k x : Fin n → Fin d) :
-    (finFunctionFinEquiv k) * (equivFin x) =
-      ∑ j : Fin n, ∑ i : Fin n, (k i) * (x j) * d ^ (i + j.rev : ℕ) := by
-  rw [finFunctionFinEquiv_mul_equivFin, Finset.sum_comm]
-
-#check Finset.sum_filter_add_sum_filter_not
-#check ZMod
-
-#reduce ((7 : ℕ) : (ZMod 5))
-
-
-private theorem aux1 {n : ℕ} (d : ℕ) [NeZero d] (i j : Fin n) (h : i ∈ Finset.Ioi j) (x : ℕ) :
-    x * d ^ (i + j.rev : ℕ) ≡ 0 [MOD d ^ n] := by
-  have : i + (j.rev : ℕ) = n + ((i + (j.rev : ℕ))-n) := by grind
-  rw [this, pow_add, ← mul_assoc, mul_comm x _, mul_assoc]
-  exact Nat.modEq_zero_iff_dvd.mpr (dvd_mul_right _ _)
-
-example (a n : ℕ) : (a * n : ZMod n) = 0 := by
-  simp only [CharP.cast_eq_zero, mul_zero]
-
-example (a b n : ℕ) : (↑(a * b) : ZMod n) =  (a : ZMod n) * b := by
-  simp only [Nat.cast_mul]
-
-#check ZMod.cast_zmod_eq_zero_iff_of_le
-
-private theorem aux1' {n d} [NeZero d] (i j : Fin n) (h : i ∈ Finset.Ioi j) (x : ZMod (d ^ n)) :
-    x * ↑(d ^ (i + j.rev : ℕ)) = 0 := by
-  have : i + (j.rev : ℕ) = n + ((i + (j.rev : ℕ))-n) := by grind
-  rw [this, pow_add, Nat.cast_mul]
-  simp only [CharP.cast_eq_zero]
-  simp only [zero_mul, mul_zero]
-
-
-theorem sum_nat_mod_eq_zero {ι : Type*} (s : Finset ι) (n : ℕ) (f : ι → ℕ)
-    (h : ∀ x ∈ s, f x ≡ 0 [MOD n]) [NeZero n] : (∑ i ∈ s, f i) ≡ 0 [MOD n] := by
-  simp_all [Nat.ModEq, Finset.sum_nat_mod]
-
+-- maybe give up and let `d` be cast to `ZMod` already
 private theorem aux2 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
-    ∑ i ∈ (Finset.Ioi j), ↑(k i) * ↑(x j) * d ^ (i + (j.rev : ℕ)) ≡ 0 [MOD d ^ n] := by
-  apply sum_nat_mod_eq_zero
-  intro i hi
-  simp only [aux1, hi]
-
-private theorem aux2' {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
-    ∑ i ∈ (Finset.Ioi j), (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) = 0 := by
+    ∑ i ∈ (Finset.Ioi j), (k i : ZMod (d ^ n)) * (x j) * (d ^ (i + (j.rev : ℕ))) = 0 := by
   apply Finset.sum_eq_zero
   intro i hi
-  simp only [aux1', hi]
-
-private theorem aux3' {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
-    ∑ i : Fin n, (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) =
-      ∑ i ≤ j, (k i : ZMod (d ^ n)) * (x j) * ↑(d ^ (i + (j.rev : ℕ))) :=  by
-  have hu : Finset.univ = (Finset.Iic j) ∪ (Finset.Ioi j) := by grind
-  have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by sorry
-  rw [hu, Finset.sum_union hd]
-  simp only [aux2']
-  simp
-
-#check Nat.ModEq.add
+  rw [ZMod.natCast_pow_eq_zero_of_le d] <;> grind
 
 private theorem aux3 {n d} [NeZero d] (j : Fin n) (k x : Fin n → Fin d) :
-    ∑ i : Fin n, (k i) * (x j) * d ^ (i + (j.rev : ℕ)) ≡
-      ∑ i ≤ j, (k i) * (x j) * d ^ (i + (j.rev : ℕ)) [MOD d ^ n] :=  by
+    ∑ i : Fin n, (k i : ZMod (d ^ n)) * (x j) * (d ^ (i + (j.rev : ℕ))) =
+      ∑ i ≤ j, (k i : ZMod (d ^ n)) * (x j) * (d ^ (i + (j.rev : ℕ))) :=  by
   have hu : Finset.univ = (Finset.Iic j) ∪ (Finset.Ioi j) := by grind
-  have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by sorry
-  rw [hu, Finset.sum_union hd]
-  simp only [aux2]
-  sorry
+  have hd : Disjoint (Finset.Iic j) (Finset.Ioi j) := by grind [Finset.disjoint_left]
+  rw [hu, Finset.sum_union hd, aux2, add_zero]
 
--- that's painful. work in ZMod N?
-
-theorem zeta_pow_finFunctionFinEquiv_mul_equivFin {n d} [NeZero d] (k x : Fin n → Fin d) :
-    (ζ (d ^ n)) ^ (finFunctionFinEquiv k * equivFin x : ℕ)  =
-      ζ (d ^ n) ^ (∑ j : Fin n, ∑ i ≤ j, ((k i) * (x j) * d ^ (i + j.rev : ℕ))) := by
+theorem char_finFunctionFinEquiv_mul_equivFin {n d} [NeZero d] (k x : Fin n → Fin d) :
+    ZMod.stdAddChar ((finFunctionFinEquiv k * equivFin x) : ZMod (d ^ n)) =
+      ZMod.stdAddChar (∑ j, ∑ i ≤ j, (k i) * (x j) * (d ^ (i + (j.rev : ℕ))) : ZMod (d ^ n)) := by
   rw [finFunctionFinEquiv_mul_equivFin, Finset.sum_comm]
-  refine pow_eq_pow_of_modEq ?_ (ζ_pow_order (d ^ n))
-  -- have (j : Fin n) := Finset.Iic_union_Ioc_eq_Iic (show j ≤ n - 1 by grind)
+  simp_rw [aux3]
 
-
-  sorry
-
-#check equivFin_apply
-
-lemma sum_register_univ_eq {n d} {M : Type*} [AddCommMonoid M] (f : (Fin n → Fin d) → M) :
-    ∑ r : Fin n → Fin d, f r = ∑ i, f (equivFin.symm i) :=
-  Finset.sum_equiv equivFin (by simp) (by simp)
+-- lemma sum_register_univ_eq {n d} {M : Type*} [AddCommMonoid M] (f : (Fin n → Fin d) → M) :
+--     ∑ r : Fin n → Fin d, f r = ∑ i, f (equivFin.symm i) :=
+--   Finset.sum_equiv equivFin (by simp) (by simp)
 
 /-- The quantum Fourier transform. -/
 @[simps!]
