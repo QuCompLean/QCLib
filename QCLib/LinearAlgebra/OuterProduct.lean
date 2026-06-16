@@ -44,7 +44,9 @@ theorem OuterProductMap_apply (i : α) (j : β) :
 
 def OuterProduct [Mul γ] : α × β → γ := OuterProductMap (· * ·) r s
 
-infixl:100 " ⊗ " => OuterProduct
+scoped[OuterProduct] infixl:100 " ⊗ " => OuterProduct
+
+open OuterProduct
 
 @[simp]
 theorem outerProduct_apply [Mul γ] (i : α) (j : β) :
