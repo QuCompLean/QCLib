@@ -7,6 +7,7 @@ module
 
 public import QCLib.Circuit.Gate.Bipartite
 public import QCLib.Logic.Equiv
+public import QCLib.LinearAlgebra.OuterProduct
 public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
 
 /-!
@@ -91,6 +92,12 @@ theorem single_apply_basis (v : Π i, k i) (j : ι) (U : 𝐔[k j]) :
   split_ifs
   · rw [Finset.sum_eq_single (k j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
+
+open OuterProduct Equiv in
+theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔[k i]) :
+    single' i U • δ[v] = (U • δ[v i]) ⊗ δ[fun a : {j // j ≠ i} => v a] ∘ piSplitAt i _ := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
 
 @[simp]
 theorem single_single_commute {i j : ι} (h : i ≠ j) (U : 𝐔[k i]) (V : 𝐔[k j]) :
@@ -188,6 +195,13 @@ theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v
   · rw [Finset.sum_eq_single (w i, w j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
+open OuterProduct Equiv in
+theorem bipartite_apply_basis' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
+    bipartite' i j U h • δ[v] =
+      ((U • δ[(v i, v j)]) ⊗ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) ∘ (piSplitAtPair i j) := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, funext_iff, Pi.single_apply]
+
 @[simp]
 theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i ≠ j) :
     bipartite' i j (diagonalMonoidHom d) h = diagonalMonoidHom (fun x ↦ d (x i, x j)) := by
@@ -229,5 +243,24 @@ def succ (U : 𝐔[Fin n → k]) : 𝐔[Fin (n+1) → k] :=
   reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
 end succ
+
+
+section subtype
+
+@[simps!]
+def subtype (p : ι → Prop) [DecidablePred p]
+    (U : 𝐔[Π i : {j // p j}, k i.1])  : 𝐔[Π i, k i] :=
+  reindexMonoidEquiv (Equiv.piEquivPiSubtypeProd p k).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
+
+open OuterProduct in
+theorem subtype_apply_basis (p : ι → Prop) [DecidablePred p]
+    (U : 𝐔[Π i : {j // p j}, k i.1]) (v : Π i, k i)  :
+    subtype p U • δ[v] =
+      ((U • δ[fun i : {j // p j} => v i.1])
+        ⊗ (δ[fun i : {j // ¬ p j} => v i.1])) ∘ (Equiv.piEquivPiSubtypeProd p k) := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, funext_iff, Pi.single_apply]
+
+end subtype
 
 end Matrix.UnitaryGroup

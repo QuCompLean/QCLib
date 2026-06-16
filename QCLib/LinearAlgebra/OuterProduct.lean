@@ -1,7 +1,8 @@
 module
 
 
-public import QCLib.Circuit.Embed
+public import Mathlib.Algebra.Algebra.Basic
+public import Mathlib.LinearAlgebra.BilinearMap
 
 public section
 
@@ -13,24 +14,6 @@ One could transport the result along `Matrix.of.symm` to obtain a tuple-indexed
 representation. At present, however, it is unclear whether this would provide
 any practical advantage.
 
-There is also a design choice between representing tensor indices as a Cartesian
-product or as a curried function.
-
-Using a Cartesian product requires expressions such as
-
-* `(r ⊗ s) ⟨i, j⟩`
-
-instead of
-
-* `(r ⊗ s) i j`.
-
-The curried representation is often more convenient for proofs. For example,
-`fin_cases` can be applied directly to `i` or `j`, whereas with a pair
-`a : α × β` one typically has to first generalize `a.1` and `a.2`.
-
-On the other hand, equivalences such as `Equiv.piSplitAt` naturally produce
-Cartesian-product representations, which makes them easier to use in that
-setting.
 -/
 
 variable {α β γ M : Type*} (f : γ → γ → γ) (r : α → γ) (s : β → γ)
@@ -118,18 +101,3 @@ def outerProductLinearMap [CommSemiring γ] :
     (α → γ) →ₗ[γ] (β → γ) →ₗ[γ] (α × β → γ) :=
   LinearMap.mk₂ γ (· ⊗ ·) (by simp) (by simp) (by simp) (by simp)
 
-open Matrix.UnitaryGroup Equiv Matrix
-
-variable {ι : Type*} [DecidableEq ι] [Fintype ι] {k : ι → Type u_2}
-  [(i : ι) → DecidableEq (k i)] [(i : ι) → Fintype (k i)]
-
-theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔[k i]) :
-    single' i U • δ[v] = (U • δ[v i]) ⊗ δ[fun a : {j // j ≠ i} => v a] ∘ piSplitAt i _ := by
-  ext
-  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
-
-theorem bipartite_apply_basis' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
-    bipartite' i j U h • δ[v] =
-      ((U • δ[(v i, v j)]) ⊗ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) ∘ (piSplitAtPair i j) := by
-  ext
-  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, funext_iff, Pi.single_apply]

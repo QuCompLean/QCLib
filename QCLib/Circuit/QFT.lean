@@ -3,7 +3,7 @@ module
 public import QCLib.Circuit.Permutation
 public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Embed
-
+public import QCLib.LinearAlgebra.OuterProduct
 
 
 
@@ -189,25 +189,18 @@ end CR
 
 open List
 
+#check Fin.shift
+def CIQFT_aux : 𝐔[Register n] :=
+  ((finRange n).map (fun i : Fin n => single i H • (CCR i)⁻¹)).prod • revCircuit (Fin 2) n
 
--- lemma single_H_apply' (i : Fin n) (v : Register n) :
---     single i H • δ[v] =
---        ∑ j : Fin 2, ((√2 : ℂ)⁻¹ * (ζ 2) ^ (v i * j : ℕ)) • δ[update v i j] := by
---   rw [single_apply_basis, ζ_def]
---   generalize v i = a
---   fin_cases a <;> simp [H_eq, mul_assoc]
 
--- def CIQFT (k : Fin n) : 𝐔[Register n] :=
---   ((finRange n).map (fun i : Fin n =>
---     if k ≤ i then
---       single i H • (CCR i)⁻¹
---     else
---       1
---   )).prod • revCircuit n
 
--- theorem CIQFT_eq_IQFT [NeZero n] :
---     CIQFT 0 = IQFT n := by
---   apply ext_smul_basis
---   intro w
---   rw [IQFT_apply_basis'']
---   sorry
+open OuterProduct
+-- ((√(2^k.val)⁻¹ • ⨂ l : Fin k, δ[(0 : Qubit)] +
+--         conj (ζ (2 ^ (l + 1 : ℕ))) ^ (equivFin v : ℤ) • δ[1])
+--         ⊗ δ[fun i : Fin (n - k) => v i]) ∘ (Fin.appendEquiv k (n - k)).symm
+
+-- variable (v : Fin n → Fin 2) (k : Fin n)
+-- #check fun i : Fin k => v i.val
+-- theorem CIQFT_aux_apply (k : Fin n) (v : Register n) :
+--     CIQFT_aux k • δ[v] = ((δ[fun i : Fin k => v i]) ⊗ () ) ∘
