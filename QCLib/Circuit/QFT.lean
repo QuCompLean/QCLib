@@ -226,25 +226,38 @@ def CIQFT_Rev (n) : 𝐔[Register n] :=
   | 0 => 1
   | k + 1 => single (last k) H • (CCR (last k))⁻¹ • succ (CIQFT_Rev k)
 
+theorem embedFin_revCircuit (v : Register m) (h : n ≤ m) :
+    embedFin h (revCircuit Qubit n) • δ[v] =
+      δ[fun i : Fin m => if hi : i.val < n then v ((⟨i, hi⟩ : Fin n).rev.castLE h) else v i] := by
+  simp only [embedFin, piCongrLeft', subtype_apply_basis, reindexMonoidEquiv_smul_basis, symm_mk,
+    coe_fn_mk, finLEEquiv_apply_coe, revCircuit_apply]
+  ext x
+  simp only [basisVector_def, Pi.basisFun_apply, Function.comp_apply, piEquivPiSubtypeProd_apply,
+    outerProduct_apply, finLEEquiv_apply_coe, Pi.single_apply, funext_iff, revRegister_apply,
+    Subtype.forall, not_lt, mul_ite, mul_one, mul_zero]
+  split_ifs with h1 h2 _ h3 <;> try grind
+  obtain ⟨q, hq⟩ := not_forall.mp h2
+  have := h3 (q.castLE h)
+  simp_all
+
 theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
-    embedFin h (CIQFT_Rev n) • embedFin h (revCircuit Qubit n) • δ[v] =
+    embedFin h (CIQFT_Rev n • revCircuit Qubit n) • δ[v] =
       ((√(2^n)⁻¹ • ⨂ x : {j : Fin m // j.val < n},
         (δ[(0 : Qubit)] +
         (∏ i ∈ Finset.Iic x,
           conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]))
           ⊗ (δ[fun i : {j : Fin m // ¬(j.val < n)} => v i.1])) ∘
           piEquivPiSubtypeProd _ _ := by
+  rw [embedFin_smul, smul_assoc, embedFin_revCircuit]
+  induction n with
+  | zero =>
+    haveI : IsEmpty {j : Fin m // j.val < 0} := by
+      simp [Subtype.isEmpty_of_false]
+    ext
+    simp [embedFin, subtype, basisVector_def, Submonoid.smul_def,
+      blockDiagonal_apply, Pi.single_apply, funext_iff, CIQFT_Rev, Matrix.one_apply]
+  | succ n ih =>
     sorry
-
-    -- simp [embedFin, subtype, basisVector_def, Submonoid.smul_def,
-    --   blockDiagonal_apply, Pi.single_apply, funext_iff, CIQFT_Rev]
-
-
-    -- simp [embedFin, subtype_apply_basis, reindexMonoidEquiv_smul_basis, ]
-    -- simp [CIQFT_Rev, basisVector_def, Pi.single_apply, funext_iff]
-
---   | succ n ih =>
---     sorry
 
 
 -- theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
