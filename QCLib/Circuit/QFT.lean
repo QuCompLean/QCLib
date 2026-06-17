@@ -21,7 +21,7 @@ theorem Fin.sum_univ_eq_sum_Iic_add_sum_Ioi
   congr <;> ext i <;> simp [Finset.mem_Iic, Finset.mem_Ioi]
 
 
--- move out, also weaken it (n is already Fintype and Decidable because of e.)
+-- move out,
 theorem reindexMonoidEquiv_smul_basis {m n : Type*}
     [DecidableEq m] [Fintype m] [Fintype n] [DecidableEq n]
     (e : m ≃ n) (U : 𝐔[m]) (w : n) :
@@ -227,9 +227,16 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
           conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]))
           ⊗ (δ[fun i : {j : Fin m // ¬(j.val < n)} => v i.1])) ∘
           piEquivPiSubtypeProd _ _ := by
-  simp [embedFin, subtype_apply_basis]
-  sorry
-
+  induction n with
+  | zero =>
+    haveI : IsEmpty {j : Fin m // j.val < 0} := by
+      simp [Subtype.isEmpty_of_false]
+    ext
+    simp [embedFin, subtype_apply_basis, reindexMonoidEquiv_smul_basis, CIQFT]
+    simp [basisVector_def, Pi.single_apply, funext_iff]
+  | succ n ih =>
+    sorry
+    
 theorem CIQFT_eq_IQFT : CIQFT = IQFT n := by
   rw [← embedFin_eq CIQFT]
   apply ext_smul_basis
