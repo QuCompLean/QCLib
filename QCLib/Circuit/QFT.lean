@@ -198,10 +198,7 @@ end CR
 
 open List OuterProduct Equiv
 
-variable (m : ℕ)
-
-def CIQFT (n) : 𝐔[Register n] :=
-  ((finRange n).map (fun i : Fin n => single i H • (CCR i)⁻¹)).prod • revCircuit (Fin 2) n
+variable {m : ℕ}
 
 @[simps]
 def finLEEquiv {m} (h : n ≤ m) : Fin n ≃ {j : Fin m // j.val < n} where
@@ -214,40 +211,52 @@ def embedFin (h : n ≤ m) (U : 𝐔[Register n]) : 𝐔[Register m] :=
   subtype (fun i : Fin m => i.val < n)
     (reindexMonoidEquiv (Equiv.piCongrLeft' _ (finLEEquiv h)) U)
 
-theorem embedFin_eq (U : 𝐔[Register n]) : embedFin n (le_refl n) U = U := by
+theorem embedFin_eq (U : 𝐔[Register n]) : embedFin (le_refl n) U = U := by
   ext
   simp [embedFin, blockDiagonal_apply, funext_iff]
   congr
 
+theorem embedFin_smul (h : n ≤ m) (A U : 𝐔[Register n]) :
+    embedFin h (A • U) = embedFin h A • embedFin h U := by
+  ext
+  simp [embedFin, ← blockDiagonal_mul]
+
+def CIQFT_Rev (n) : 𝐔[Register n] :=
+  match n with
+  | 0 => 1
+  | k + 1 => single (last k) H • (CCR (last k))⁻¹ • succ (CIQFT_Rev k)
+
 theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
-    embedFin m h (CIQFT n) • δ[v] =
+    embedFin h (CIQFT_Rev n) • embedFin h (revCircuit Qubit n) • δ[v] =
       ((√(2^n)⁻¹ • ⨂ x : {j : Fin m // j.val < n},
         (δ[(0 : Qubit)] +
         (∏ i ∈ Finset.Iic x,
           conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]))
           ⊗ (δ[fun i : {j : Fin m // ¬(j.val < n)} => v i.1])) ∘
           piEquivPiSubtypeProd _ _ := by
-  induction n generalizing m with
-  | zero =>
-    haveI : IsEmpty {j : Fin m // j.val < 0} := by
-      simp [Subtype.isEmpty_of_false]
-    ext
-    simp [embedFin, subtype_apply_basis, reindexMonoidEquiv_smul_basis, CIQFT]
-    simp [basisVector_def, Pi.single_apply, funext_iff]
-  | succ n ih =>
     sorry
 
+    -- simp [embedFin, subtype, basisVector_def, Submonoid.smul_def,
+    --   blockDiagonal_apply, Pi.single_apply, funext_iff, CIQFT_Rev]
 
-theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
-  rw [← embedFin_eq (CIQFT n)]
-  apply ext_smul_basis
-  intro v
-  rw [embedFin_CIQFT_apply_basis, IQFT_apply_basis'']
-  ext k
-  simp? [basisVector_def, Pi.single_apply, funext_iff] -- simp only = regret
-  apply Fintype.prod_equiv (finLEEquiv (n := n) (le_refl n)).symm
-  simp only [isValue, finLEEquiv, castLE_refl, Fin.eta, symm_mk, coe_fn_mk, Subtype.forall, is_lt,
-    forall_true_left]
-  intro a
-  split_ifs with h1 h2 h3 <;> simp <;> try grind
-  apply Finset.prod_equiv (finLEEquiv (le_refl n)).symm <;> aesop
+
+    -- simp [embedFin, subtype_apply_basis, reindexMonoidEquiv_smul_basis, ]
+    -- simp [CIQFT_Rev, basisVector_def, Pi.single_apply, funext_iff]
+
+--   | succ n ih =>
+--     sorry
+
+
+-- theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
+--   rw [← embedFin_eq (CIQFT n)]
+--   apply ext_smul_basis
+--   intro v
+--   rw [embedFin_CIQFT_apply_basis, IQFT_apply_basis'']
+--   ext k
+--   simp? [basisVector_def, Pi.single_apply, funext_iff] -- simp only = regret
+--   apply Fintype.prod_equiv (finLEEquiv (n := n) (le_refl n)).symm
+--   simp only [isValue, finLEEquiv, castLE_refl, Fin.eta, symm_mk, coe_fn_mk, Subtype.forall, is_lt,
+--     forall_true_left]
+--   intro a
+--   split_ifs with h1 h2 h3 <;> simp <;> try grind
+--   apply Finset.prod_equiv (finLEEquiv (le_refl n)).symm <;> aesop
