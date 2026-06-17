@@ -33,6 +33,16 @@ lemma ζ_pow_mul {n} [NeZero n] (a b : Fin n) :
 def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
   (arrowCongrLeftHom (Fin d) Fin.revPerm).trans finFunctionFinEquiv
 
+lemma equivFin_apply_reindex {n d} [NeZero d] (v : Fin n → Fin d) :
+    ((equivFin v) : ℕ) = ∑ i : Fin n, (v i : ℕ) * d ^ (n - 1 - i : ℕ) := by
+  simp only [equivFin_apply, finFunctionFinEquiv_apply_val, arrowCongr_apply, coe_refl,
+    revPerm_symm, Function.comp_apply, revPerm_apply, id_eq]
+  apply Finset.sum_equiv Fin.revPerm (by simp) (fun i _ => ?_)
+  simp only [revPerm_apply, val_rev, mul_eq_mul_left_iff, val_eq_zero_iff]
+  left
+  congr
+  lia
+
 open AddChar in
 theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
     ∑ x, stdAddChar (t * x) * conj (stdAddChar (s * x)) = if t = s then ↑N else 0 := by
@@ -45,15 +55,16 @@ end Aux
 -- To be removed, if possible
 section private_aux
 
-variable {n d : ℕ} [NeZero d]
+variable {n d : ℕ} [hd : NeZero d]
 
-private theorem ζ_aux (l : Fin n) (u : Fin (d ^ n)) (h : 2 ≤ d) :
-    ∑ j : Fin 2, ζ (d ^ (l + 1 : ℕ)) ^ (u * j : ℕ) • δ[j.castLE h]
-      = (δ[(0 : Fin d)] + (ζ (d ^ (l + 1 : ℕ))) ^ (u : ℤ) • δ[(1 : Fin d)]) := by
-  ext
-  simp [Pi.smul_def,
-    show 0 = Fin.castLE h 0 from eq_of_val_eq (by simp),
-    show 1 = Fin.castLE h 1 from eq_of_val_eq (by simp [Nat.one_mod_eq_one.mpr (by grind : d ≠ 1)])]
+private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
+   (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ))
+    =  ζ (d ^ n) ^ (u * equivFin x : ℕ) := by
+  nth_rw 1 [equivFin_apply_reindex]
+  simp [hd.out, ζ_pow_fin_rev, ← pow_mul,
+    Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
+  lia
+
 
 end private_aux
 
@@ -105,9 +116,11 @@ theorem QFT_apply_basis (v : Fin n → Fin d) :
     Finset.sum_apply, smul_eq_mul]
   rw [Finset.sum_eq_single w] <;> grind
 
-theorem QFT_apply_basis_product (h : 2 ≤ d) (v : Fin n → Fin d) :
+theorem QFT_apply_basis_product (v : Fin n → Fin d) :
     QFT n d • δ[v] =
-      ⨂ i : Fin n, δ[(0 : Fin d)] + ζ (d ^ (i + 1 : ℕ)) ^ (equivFin v : ℤ) • δ[1] := by
-  simp_rw [QFT_apply_basis, ← ζ_aux (h := h),
-    piOuterProduct_univ_sum, piOuterProduct_smul_univ, ]
-  sorry
+      (√(d ^ n)⁻¹ : ℂ) •
+        ⨂ (i : Fin n), ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ) • δ[j] := by
+  simp_rw [QFT_apply_basis, basisVector_eq_prod, ←smul_eq_mul, smul_assoc,
+    ← Finset.smul_sum,]
+  simp [← ζ_aux, ←piOuterProduct_smul_univ, ← piOuterProduct_univ_sum (ι := Fin n) (κ := Fin d)
+    (f := fun i j => ζ (d ^ (↑i + 1 : ℕ)) ^ (↑(equivFin v) * (j : ℕ)) • δ[j])]
