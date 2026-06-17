@@ -211,10 +211,24 @@ def embedFin (h : n ≤ m) (U : 𝐔[Register n]) : 𝐔[Register m] :=
   subtype (fun i : Fin m => i.val < n)
     (reindexMonoidEquiv (Equiv.piCongrLeft' _ (finLEEquiv h)) U)
 
-theorem embedFin_eq (U : 𝐔[Register n]) : embedFin (le_refl n) U = U := by
+theorem embedFin_self_eq (U : 𝐔[Register n]) : embedFin (le_refl n) U = U := by
   ext
   simp [embedFin, blockDiagonal_apply, funext_iff]
   congr
+
+theorem embedFin_embedFin {k} (U : 𝐔[Register n]) (hn : n ≤ k) (hk : k ≤ m) :
+    embedFin hk (embedFin hn U) = embedFin (le_trans hn hk) U := by
+  ext a b
+  simp [embedFin, blockDiagonal_apply, funext_iff, piCongrLeft']
+  split_ifs with h1 h2 h3 <;> try grind
+  obtain ⟨q, hq⟩ := not_forall.mp h3
+  by_cases hkq : k ≤ q
+  · have := h1 q
+    simp_all
+  · simp only [not_le] at hkq
+    have := h2 ⟨q, hkq⟩
+    exfalso
+    exact hq (by simp_all)
 
 theorem embedFin_smul (h : n ≤ m) (A U : 𝐔[Register n]) :
     embedFin h (A • U) = embedFin h A • embedFin h U := by
@@ -224,7 +238,8 @@ theorem embedFin_smul (h : n ≤ m) (A U : 𝐔[Register n]) :
 def CIQFT_Rev (n) : 𝐔[Register n] :=
   match n with
   | 0 => 1
-  | k + 1 => single (last k) H • (CCR (last k))⁻¹ • succ (CIQFT_Rev k)
+  | k + 1 =>
+    single (last k) H • (CCR (last k))⁻¹ • embedFin (show k ≤ k + 1 by lia) (CIQFT_Rev k)
 
 theorem embedFin_revCircuit (v : Register m) (h : n ≤ m) :
     embedFin h (revCircuit Qubit n) • δ[v] =
@@ -257,9 +272,10 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
     simp [embedFin, subtype, basisVector_def, Submonoid.smul_def,
       blockDiagonal_apply, Pi.single_apply, funext_iff, CIQFT_Rev, Matrix.one_apply]
   | succ n ih =>
+    simp_rw [CIQFT_Rev, embedFin_smul, smul_assoc, embedFin_embedFin, ]
+    generalize_proofs hnm
     sorry
-
-
+  
 -- theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
 --   rw [← embedFin_eq (CIQFT n)]
 --   apply ext_smul_basis
