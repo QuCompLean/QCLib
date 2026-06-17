@@ -227,7 +227,7 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
           conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]))
           ⊗ (δ[fun i : {j : Fin m // ¬(j.val < n)} => v i.1])) ∘
           piEquivPiSubtypeProd _ _ := by
-  induction n with
+  induction n generalizing m with
   | zero =>
     haveI : IsEmpty {j : Fin m // j.val < 0} := by
       simp [Subtype.isEmpty_of_false]
@@ -236,6 +236,7 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
     simp [basisVector_def, Pi.single_apply, funext_iff]
   | succ n ih =>
     sorry
+
 
 theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
   rw [← embedFin_eq (CIQFT n)]
