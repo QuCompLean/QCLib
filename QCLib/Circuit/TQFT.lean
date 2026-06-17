@@ -28,6 +28,13 @@ theorem finEquiv_mul {n} [NeZero n] (a b : Fin n) :
   | zero => exact Fin.elim0 a
   | succ n => simp
 
+lemma ζ_pow_mul {n} [NeZero n] (a b : Fin n) :
+    ζ n ^ ((a * b : Fin n) : ℕ) = ζ n ^ ((a : ℕ) * (b : ℕ)) := by
+  rw [← coe_uζ]
+  norm_cast
+  exact pow_eq_pow_iff_modEq.mpr
+    (by simpa [orderOf_uζ, Fin.val_mul] using Nat.mod_modEq _ _)
+
 @[simps! -isSimp apply, expose]
 def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
   (arrowCongrLeftHom (Fin d) Fin.revPerm).trans finFunctionFinEquiv
@@ -74,11 +81,9 @@ noncomputable def QFT : 𝐔[Fin n → Fin d] :=
     (UnitaryGroup.dftZMod (d ^ n))
 
 omit hnz in
-theorem QFT_apply {a b} :
+@[simp] theorem QFT_apply (a b) :
     QFT n d a b = √(d^n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
-  simp? [stdAddChar_apply, toCircle_apply, hdz.out, -map_mul,
+  simp [stdAddChar_apply, toCircle_apply, -map_mul,
     finEquiv_mul, ← div_mul_eq_mul_div, exp_nat_mul',
-    show cexp (2 / ↑d ^ n * ↑π * I) = ζ (d ^ n) by grind [ζ_def], ← coe_uζ]
-  norm_cast
-  exact pow_eq_pow_iff_modEq.mpr
-    (by simpa [orderOf_uζ, Fin.val_mul] using Nat.mod_modEq _ _)
+    show cexp (2 / ↑d ^ n * ↑π * I) = ζ (d ^ n) by grind [ζ_def],
+    ζ_pow_mul]
