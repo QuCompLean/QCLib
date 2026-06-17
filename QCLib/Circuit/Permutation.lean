@@ -64,11 +64,11 @@ theorem revCircuit_eq_revPermSubsystems (n : ℕ) :
 @[simps! apply symm_apply]
 def revRegister {n} : Equiv.Perm (Fin n → d) := (arrowCongr revPerm (Equiv.refl d))
 
-theorem revRegister_eq {n} (v : Register n) : revRegister v = fun i ↦ v i.rev := rfl
+theorem revRegister_eq {n d} (v : Fin n → Fin d) : revRegister v = fun i ↦ v i.rev := rfl
 
 open Function
 
-theorem revRegister_comm_update {n} (v : Register n) (i m) :
+theorem revRegister_comm_update {n d} (v : Fin n → Fin d) (i m) :
   revRegister (update v i m) = update (revRegister v) i.rev m := by
   ext
   simp [update_apply]
@@ -78,13 +78,5 @@ theorem revRegister_comm_update {n} (v : Register n) (i m) :
 theorem revCircuit_apply {n : ℕ} (v : Fin n → d) :
     revCircuit d n • δ[v] = δ[revRegister v] := by
   simp [revCircuit_eq_revPermSubsystems, revRegister]
-
-open scoped PiOuterProduct
-
--- TBD: Generalize from qubits.
-@[simp]
-theorem revCircuit_apply_prod {n : ℕ} (v : Register n) (f : Fin n → ℂ) :
-    revCircuit (Fin 2) n • (⨂ i, f i • δ[v i]) = ⨂ i, f i • δ[v i.rev] := by
-  simp [piOuterProduct_smul_univ, smul_comm, ←basisVector_eq_prod, revRegister_eq]
 
 end RevCircuit
