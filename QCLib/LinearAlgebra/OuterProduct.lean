@@ -100,4 +100,3 @@ theorem outerProduct_right_injective
 def outerProductLinearMap [CommSemiring γ] :
     (α → γ) →ₗ[γ] (β → γ) →ₗ[γ] (α × β → γ) :=
   LinearMap.mk₂ γ (· ⊗ ·) (by simp) (by simp) (by simp) (by simp)
-

@@ -249,7 +249,7 @@ section subtype
 
 @[simps!]
 def subtype (p : ι → Prop) [DecidablePred p]
-    (U : 𝐔[Π i : {j // p j}, k i.1])  : 𝐔[Π i, k i] :=
+    (U : 𝐔[Π i : {j // p j}, k i.1]) : 𝐔[Π i, k i] :=
   reindexMonoidEquiv (Equiv.piEquivPiSubtypeProd p k).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
 open OuterProduct in

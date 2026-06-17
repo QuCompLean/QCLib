@@ -114,7 +114,7 @@ theorem IQFT_apply_basis'' (v : Register n) :
   by_cases hn : n = 0
   · subst hn; ext k; simp [IQFT, basisVector_def]
   · rw [IQFT_apply_basis']
-    congr! with y
+    with_reducible congr! with y
     apply (starRingEnd ℂ).injective
     simp only [← coe_uζ, zpow_natCast, map_pow, RingHomCompTriple.comp_apply,
       RingHom.id_apply, revRegister_apply, Finset.prod_pow_eq_pow_sum]
@@ -187,20 +187,52 @@ theorem CCR_inv_apply_basis (v : Register n) :
 end CR
 
 
-open List
+open List OuterProduct Equiv
 
-#check Fin.shift
-def CIQFT_aux : 𝐔[Register n] :=
+variable (m : ℕ)
+
+def CIQFT : 𝐔[Register n] :=
   ((finRange n).map (fun i : Fin n => single i H • (CCR i)⁻¹)).prod • revCircuit (Fin 2) n
 
+@[simps]
+def finLEEquiv {m} (h : n ≤ m) : Fin n ≃ {j : Fin m // j.val < n} where
+  toFun i := ⟨i.castLE h, i.isLt⟩
+  invFun j := ⟨j.val, j.prop⟩
+  left_inv i := by simp
+  right_inv j := by simp
+
+def embedFin (h : n ≤ m) (U : 𝐔[Register n]) : 𝐔[Register m] :=
+  subtype (fun i : Fin m => i.val < n)
+    (reindexMonoidEquiv (Equiv.piCongrLeft' _ (finLEEquiv h)) U)
+
+theorem embedFin_eq (U : 𝐔[Register n]) : embedFin n (le_refl n) U = U := by
+  ext
+  simp [embedFin, blockDiagonal_apply, funext_iff]
+  congr
 
 
-open OuterProduct
--- ((√(2^k.val)⁻¹ • ⨂ l : Fin k, δ[(0 : Qubit)] +
---         conj (ζ (2 ^ (l + 1 : ℕ))) ^ (equivFin v : ℤ) • δ[1])
---         ⊗ δ[fun i : Fin (n - k) => v i]) ∘ (Fin.appendEquiv k (n - k)).symm
+theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
+    embedFin m h CIQFT • δ[v] =
+      ((√(2^n)⁻¹ • ⨂ x : {j : Fin m // j.val < n},
+        (δ[(0 : Qubit)] +
+        (∏ i ∈ Finset.Iic x,
+          conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]))
+          ⊗ (δ[fun i : {j : Fin m // ¬(j.val < n)} => v i.1])) ∘
+          piEquivPiSubtypeProd (fun i : Fin m => i.val < n) (fun _ => Fin 2) := by
+  simp? [embedFin, subtype_apply_basis, -smul_outerProduct]
+  congr 2
+  sorry
 
--- variable (v : Fin n → Fin 2) (k : Fin n)
--- #check fun i : Fin k => v i.val
--- theorem CIQFT_aux_apply (k : Fin n) (v : Register n) :
---     CIQFT_aux k • δ[v] = ((δ[fun i : Fin k => v i]) ⊗ () ) ∘
+theorem CIQFT_eq_IQFT : CIQFT = IQFT n := by
+  rw [← embedFin_eq CIQFT]
+  apply ext_smul_basis
+  intro v
+  rw [embedFin_CIQFT_apply_basis, IQFT_apply_basis'']
+  ext k
+  simp? [basisVector_def, Pi.single_apply, funext_iff] -- simp only = regret
+  apply Fintype.prod_equiv (finLEEquiv (n := n) (le_refl n)).symm
+  simp only [isValue, finLEEquiv, castLE_refl, Fin.eta, symm_mk, coe_fn_mk, Subtype.forall, is_lt,
+    forall_true_left]
+  intro a
+  split_ifs with h1 h2 h3 <;> simp <;> try grind
+  apply Finset.prod_equiv (finLEEquiv (le_refl n)).symm <;> aesop
