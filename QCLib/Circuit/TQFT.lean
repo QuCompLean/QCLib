@@ -7,7 +7,7 @@ public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Permutation
 
 
-open ZMod Matrix.UnitaryGroup ComplexConjugate Matrix Complex Real
+open ZMod Matrix.UnitaryGroup ComplexConjugate Matrix Complex Real PiOuterProduct Fin Equiv
 
 public section Aux
 
@@ -21,12 +21,6 @@ theorem finEquiv_val {n} [NeZero n] (a : Fin n) :
   cases n with
   | zero => exact Fin.elim0 a
   | succ n => rfl
-
-theorem finEquiv_mul {n} [NeZero n] (a b : Fin n) :
-    (finEquiv n a) * (finEquiv n b) = (finEquiv n (a * b)) := by
-  cases n with
-  | zero => exact Fin.elim0 a
-  | succ n => simp
 
 lemma ζ_pow_mul {n} [NeZero n] (a b : Fin n) :
     ζ n ^ ((a * b : Fin n) : ℕ) = ζ n ^ ((a : ℕ) * (b : ℕ)) := by
@@ -46,6 +40,22 @@ theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
     AddChar.sum_mulShift _ (isPrimitive_stdAddChar N), sub_eq_zero]
 
 end Aux
+
+
+-- To be removed, if possible
+section private_aux
+
+variable {n d : ℕ} [NeZero d]
+
+private theorem ζ_aux (l : Fin n) (u : Fin (d ^ n)) (h : 2 ≤ d) :
+    ∑ j : Fin 2, ζ (d ^ (l + 1 : ℕ)) ^ (u * j : ℕ) • δ[j.castLE h]
+      = (δ[(0 : Fin d)] + (ζ (d ^ (l + 1 : ℕ))) ^ (u : ℤ) • δ[(1 : Fin d)]) := by
+  ext
+  simp [Pi.smul_def,
+    show 0 = Fin.castLE h 0 from eq_of_val_eq (by simp),
+    show 1 = Fin.castLE h 1 from eq_of_val_eq (by simp [Nat.one_mod_eq_one.mpr (by grind : d ≠ 1)])]
+
+end private_aux
 
 
 public section dftZMod
@@ -82,8 +92,8 @@ noncomputable def QFT : 𝐔[Fin n → Fin d] :=
 
 @[simp] theorem QFT_apply (a b) :
     QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
-  simp [QFT_coe, stdAddChar_apply, toCircle_apply, -map_mul,
-    finEquiv_mul, ← div_mul_eq_mul_div, exp_nat_mul',
+  simp [QFT_coe, stdAddChar_apply, toCircle_apply,
+    ← map_mul, ← div_mul_eq_mul_div, exp_nat_mul',
     show cexp (2 / ↑d ^ n * ↑π * I) = ζ (d ^ n) by grind [ζ_def],
     ζ_pow_mul]
 
@@ -94,3 +104,10 @@ theorem QFT_apply_basis (v : Fin n → Fin d) :
     MulOpposite.op_one, Pi.smul_apply, col_apply, QFT_apply, sqrt_inv, ofReal_inv, one_smul,
     Finset.sum_apply, smul_eq_mul]
   rw [Finset.sum_eq_single w] <;> grind
+
+theorem QFT_apply_basis_product (h : 2 ≤ d) (v : Fin n → Fin d) :
+    QFT n d • δ[v] =
+      ⨂ i : Fin n, δ[(0 : Fin d)] + ζ (d ^ (i + 1 : ℕ)) ^ (equivFin v : ℤ) • δ[1] := by
+  simp_rw [QFT_apply_basis, ← ζ_aux (h := h),
+    piOuterProduct_univ_sum, piOuterProduct_smul_univ, ]
+  sorry

@@ -79,8 +79,7 @@ abbrev Register (n : Nat) := (Fin n) → Qubit
 open Complex Matrix
 open scoped PiOuterProduct
 
-/-- Computational basis vectors factorize -/
-theorem basisVector_eq_prod {n : ℕ} (k : Register n) : δ[k] = ⨂ i, δ[(k i)] := by
+theorem basisVector_eq_prod {d} {n : ℕ} (k : Fin n → Fin d) : δ[k] = ⨂ i, δ[(k i)] := by
   ext
   simp [basisVector_def, Pi.single_eq_prod]
 
