@@ -7,9 +7,13 @@ public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Permutation
 
 
-open ZMod Matrix.UnitaryGroup ComplexConjugate Matrix
+open ZMod Matrix.UnitaryGroup ComplexConjugate Matrix Complex Real
 
 public section Aux
+
+theorem Complex.exp_nat_mul' (x : ℂ) (n : ℕ) :
+    cexp (x * n) = cexp (x) ^ n := by
+  simp [← Complex.exp_nat_mul, mul_comm]
 
 @[simp]
 theorem finEquiv_val {n} [NeZero n] (a : Fin n) :
@@ -17,6 +21,12 @@ theorem finEquiv_val {n} [NeZero n] (a : Fin n) :
   cases n with
   | zero => exact Fin.elim0 a
   | succ n => rfl
+
+theorem finEquiv_mul {n} [NeZero n] (a b : Fin n) :
+    (finEquiv n a) * (finEquiv n b) = (finEquiv n (a * b)) := by
+  cases n with
+  | zero => exact Fin.elim0 a
+  | succ n => simp
 
 @[simps! -isSimp apply, expose]
 def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
@@ -56,25 +66,19 @@ end dftZMod
 
 public section dftFin
 
-variable (n d : ℕ) [NeZero d] [NeZero n]
+variable (n d : ℕ) [hdz : NeZero d] [hnz : NeZero n]
 
 @[simps! coe]
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
   reindexMonoidEquiv (equivFin.trans (ZMod.finEquiv (d^n)).toEquiv).symm
     (UnitaryGroup.dftZMod (d ^ n))
 
-
--- #check ZMod.val_mul'
--- #check ZMod.intCast_cast_mul
-
--- theorem QFT_apply {a b} :
---     QFT n d a b = √(d^n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℤ) := by
---   simp [stdAddChar_apply, toCircle_apply, ζ_def, ← Complex.exp_int_mul]
---   left
---   field_simp
---   conv_rhs => simp [← finEquiv_val]
---   simp [mul_assoc, ]
---   simp_rw [ZMod.cast_eq_val, ZMod.val_mul]
---   congr
---   simp
-  -- rw [ZMod.cast_mul', ZMod.cast_eq_val, ZMod.cast_eq_val ]
+omit hnz in
+theorem QFT_apply {a b} :
+    QFT n d a b = √(d^n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
+  simp? [stdAddChar_apply, toCircle_apply, hdz.out, -map_mul,
+    finEquiv_mul, ← div_mul_eq_mul_div, exp_nat_mul',
+    show cexp (2 / ↑d ^ n * ↑π * I) = ζ (d ^ n) by grind [ζ_def], ← coe_uζ]
+  norm_cast
+  exact pow_eq_pow_iff_modEq.mpr
+    (by simpa [orderOf_uζ, Fin.val_mul] using Nat.mod_modEq _ _)
