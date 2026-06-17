@@ -69,17 +69,17 @@ variable {n : ℕ}
 
 section Aux
 
-private theorem ζ_aux (l : Fin n) (v : Register n) :
-    (δ[0] + conj (ζ (2 ^ ((l : ℕ) + 1))) ^ (equivFin v : ℤ) • δ[1]) =
-      ∑ j : Fin 2, conj ζ (2 ^ ((l : ℕ) + 1)) ^ (equivFin v * j : ℕ) • δ[j] := by
+private theorem ζ_aux (l : Fin n) (u : Fin (2 ^ n)) :
+    (δ[0] + conj (ζ (2 ^ ((l : ℕ) + 1))) ^ (u : ℤ) • δ[1]) =
+      ∑ j : Fin 2, conj ζ (2 ^ ((l : ℕ) + 1)) ^ (u * j : ℕ) • δ[j] := by
   simp [Pi.smul_def]
 
-private theorem ζ_aux' (v x : Register n) :
-   (∏ i : Fin n, conj ζ (2 ^ (i + 1 : ℕ)) ^ (equivFin v * (x i) : ℕ))
-    = conj ζ (2 ^ n) ^ (equivFin v * equivFin x : ℤ) := by
-  nth_rw 3 [equivFin_apply_reindex]
+private theorem ζ_aux' (x : Register n) (u : Fin (2 ^ n)) :
+   (∏ i : Fin n, conj ζ (2 ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ))
+    = conj ζ (2 ^ n) ^ (u * equivFin x : ℤ) := by
+  nth_rw 1 [equivFin_apply_reindex]
   norm_cast
-  simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.sum_mul]
+  simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
 
 end Aux
@@ -195,6 +195,21 @@ theorem CCR_inv_apply_basis (v : Register n) :
 
 end CR
 
+-- #check Finset.sum_equiv
+-- variable {n : ℕ}
+-- private theorem rev_IQFT_apply_basis (v : Register n) :
+--     revCircuit Qubit n • IQFT n • δ[v] = √(2^n)⁻¹ • ⨂ l : Fin n, δ[(0 : Qubit)] +
+--         conj (ζ (2 ^ (l + 1 : ℕ))) ^ (equivFin (revRegister v) : ℤ) • δ[1] := by
+--   simp [IQFT_apply_basis, Finset.smul_sum, smul_comm, -zpow_natCast, ]
+--   simp_rw [ζ_aux, piOuterProduct_univ_sum, piOuterProduct_smul_univ,
+--     ← basisVector_eq_prod, ζ_aux']
+--   simp [Finset.smul_sum]
+--   rw [Finset.sum_equiv revRegister.symm]
+--   · simp
+--   · intro i _
+--     congr 3
+--     simp [Register.equivFin]
+
 
 open List OuterProduct Equiv
 
@@ -275,7 +290,7 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
     simp_rw [CIQFT_Rev, embedFin_smul, smul_assoc, embedFin_embedFin, ]
     generalize_proofs hnm
     sorry
-  
+
 -- theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
 --   rw [← embedFin_eq (CIQFT n)]
 --   apply ext_smul_basis
