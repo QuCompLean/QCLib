@@ -73,17 +73,24 @@ end dftZMod
 
 public section dftFin
 
-variable (n d : ℕ) [hdz : NeZero d] [hnz : NeZero n]
+variable (n d : ℕ) [hdz : NeZero d]
 
-@[simps! coe]
+@[simps! -isSimp coe]
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
   reindexMonoidEquiv (equivFin.trans (ZMod.finEquiv (d^n)).toEquiv).symm
     (UnitaryGroup.dftZMod (d ^ n))
 
-omit hnz in
 @[simp] theorem QFT_apply (a b) :
-    QFT n d a b = √(d^n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
-  simp [stdAddChar_apply, toCircle_apply, -map_mul,
+    QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
+  simp [QFT_coe, stdAddChar_apply, toCircle_apply, -map_mul,
     finEquiv_mul, ← div_mul_eq_mul_div, exp_nat_mul',
     show cexp (2 / ↑d ^ n * ↑π * I) = ζ (d ^ n) by grind [ζ_def],
     ζ_pow_mul]
+
+theorem QFT_apply_basis (v : Fin n → Fin d) :
+    QFT n d • δ[v] = ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ)) • δ[k] := by
+  ext w
+  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
+    MulOpposite.op_one, Pi.smul_apply, col_apply, QFT_apply, sqrt_inv, ofReal_inv, one_smul,
+    Finset.sum_apply, smul_eq_mul]
+  rw [Finset.sum_eq_single w] <;> grind
