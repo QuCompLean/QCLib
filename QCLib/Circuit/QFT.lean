@@ -20,6 +20,15 @@ theorem Fin.sum_univ_eq_sum_Iic_add_sum_Ioi
   rw [← Finset.sum_filter_add_sum_filter_not Finset.univ (fun i => i ≤ x)]
   congr <;> ext i <;> simp [Finset.mem_Iic, Finset.mem_Ioi]
 
+
+-- move out, also weaken it (n is already Fintype and Decidable because of e.)
+theorem reindexMonoidEquiv_smul_basis {m n : Type*}
+    [DecidableEq m] [Fintype m] [Fintype n] [DecidableEq n]
+    (e : m ≃ n) (U : 𝐔[m]) (w : n) :
+    reindexMonoidEquiv e U • δ[w] = (U • δ[e.symm w]) ∘ e.symm := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def]
+
 namespace Register
 
 /-
@@ -210,7 +219,6 @@ theorem embedFin_eq (U : 𝐔[Register n]) : embedFin n (le_refl n) U = U := by
   simp [embedFin, blockDiagonal_apply, funext_iff]
   congr
 
-
 theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
     embedFin m h CIQFT • δ[v] =
       ((√(2^n)⁻¹ • ⨂ x : {j : Fin m // j.val < n},
@@ -218,9 +226,8 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
         (∏ i ∈ Finset.Iic x,
           conj (ζ (2 ^ (x + 1 : ℕ)) ^ (2 ^ (i : ℕ) * revRegister v i : ℕ))) • δ[1]))
           ⊗ (δ[fun i : {j : Fin m // ¬(j.val < n)} => v i.1])) ∘
-          piEquivPiSubtypeProd (fun i : Fin m => i.val < n) (fun _ => Fin 2) := by
-  simp? [embedFin, subtype_apply_basis, -smul_outerProduct]
-  congr 2
+          piEquivPiSubtypeProd _ _ := by
+  simp [embedFin, subtype_apply_basis]
   sorry
 
 theorem CIQFT_eq_IQFT : CIQFT = IQFT n := by
