@@ -200,7 +200,7 @@ open List OuterProduct Equiv
 
 variable (m : ℕ)
 
-def CIQFT : 𝐔[Register n] :=
+def CIQFT (n) : 𝐔[Register n] :=
   ((finRange n).map (fun i : Fin n => single i H • (CCR i)⁻¹)).prod • revCircuit (Fin 2) n
 
 @[simps]
@@ -220,7 +220,7 @@ theorem embedFin_eq (U : 𝐔[Register n]) : embedFin n (le_refl n) U = U := by
   congr
 
 theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
-    embedFin m h CIQFT • δ[v] =
+    embedFin m h (CIQFT n) • δ[v] =
       ((√(2^n)⁻¹ • ⨂ x : {j : Fin m // j.val < n},
         (δ[(0 : Qubit)] +
         (∏ i ∈ Finset.Iic x,
@@ -236,9 +236,9 @@ theorem embedFin_CIQFT_apply_basis (v : Register m) (h : n ≤ m) :
     simp [basisVector_def, Pi.single_apply, funext_iff]
   | succ n ih =>
     sorry
-    
-theorem CIQFT_eq_IQFT : CIQFT = IQFT n := by
-  rw [← embedFin_eq CIQFT]
+
+theorem CIQFT_eq_IQFT : CIQFT n = IQFT n := by
+  rw [← embedFin_eq (CIQFT n)]
   apply ext_smul_basis
   intro v
   rw [embedFin_CIQFT_apply_basis, IQFT_apply_basis'']
