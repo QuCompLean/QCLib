@@ -79,4 +79,12 @@ theorem revCircuit_apply {n : ℕ} (v : Fin n → d) :
     revCircuit d n • δ[v] = δ[revRegister v] := by
   simp [revCircuit_eq_revPermSubsystems, revRegister]
 
+@[simp]
+theorem revCircuit_involution {n d} :
+    revCircuit (Fin d) n * revCircuit (Fin d) n = 1 := by
+  apply ext_smul_basis
+  intro i
+  simp [← smul_eq_mul, revRegister_eq]
+
+
 end RevCircuit

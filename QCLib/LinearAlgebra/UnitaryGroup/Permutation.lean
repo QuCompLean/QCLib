@@ -91,6 +91,18 @@ theorem permSubsystemsHom_apply_apply (σ : Perm ι) (k : ι → n) :
     (permSubsystemsHom ℂ n σ) • δ[k] = δ[arrowCongrLeftHom n σ k] := by
   simp [permSubsystemsHom_smul_eq]
 
+@[simp]
+theorem permSubsystemsHom_mul_unitary_apply_apply
+    (σ : Perm ι) (U : unitaryGroup (ι → n) R) (k l : ι → n) :
+    ((permSubsystemsHom R n σ) * U) k l = U (k ∘ σ) l := by
+  simp [permSubsystemsHom, perm_mul_unitary_apply_apply, arrowCongrLeftHom_apply,
+    Function.comp_def, arrowCongr]
+
+@[simp]
+theorem permSubsystemsHom_apply (σ : Perm ι) (i j : ι → n) :
+    (permSubsystemsHom R n σ) i j = if i ∘ ⇑σ = j then 1 else 0 := by
+  simp [permSubsystemsHom, arrowCongr]
+
 end Matrix.UnitaryGroup
 
 

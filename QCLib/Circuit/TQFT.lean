@@ -186,5 +186,17 @@ def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
 def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
 
 theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := by
-  rw [QFTCircuit]
-  sorry
+  rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
+    ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
+  induction n with
+  | zero =>
+    ext i j
+    simp [QFTRevCircuit, Subsingleton.elim i j]
+  | succ n ih =>
+    rw [← mul_left_inj (star UnitaryGroup.succ (QFTRevCircuit n d)),
+        QFTRevCircuit, mul_assoc, Pi.star_apply, Unitary.mul_star_self, mul_one, ih]
+    ext i j
+    simp [-blockDiagonal_mul, Matrix.mul_apply,
+      CRCircuit_eq, diagonal_apply, blockDiagonal_apply, funext_iff, apply_ite]
+    congr with x
+    sorry --use embed?
