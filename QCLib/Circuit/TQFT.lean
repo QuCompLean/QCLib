@@ -52,8 +52,9 @@ theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
 end Aux
 
 
--- To be removed, if possible
 section private_aux
+
+open Finset
 
 variable {n d : ℕ} [hd : NeZero d]
 
@@ -64,17 +65,6 @@ private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
   simp [hd.out, ζ_pow_fin_rev, ← pow_mul,
     Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
-
-private theorem uζ_aux (x : Fin n.succ → Fin d) :
-    (uζ (d ^ n)) ^ ((∑ i ∈ (Finset.Ioi (Fin.last n)).attach,
-      d ^ (i : ℕ) * (x i) * (x (Fin.last n)))) =
-    ∏ i ∈ (Finset.Ioi (Fin.last n)).attach,
-      (uζ (d ^ (n - i))) ^ (((x i) * (x (Fin.last n))) : ℕ)
-    := by
-  rw [← Finset.prod_pow_eq_pow_sum]
-  congr
-  ext i
-  simp [uζ_pow_sub hd.out (show i ≤ n by grind), pow_mul]
 
 end private_aux
 
@@ -89,15 +79,15 @@ noncomputable def Matrix.dftZMod : Matrix (ZMod N) (ZMod N) ℂ :=
 
 @[simp]
 theorem Matrix.dftZMod_apply_apply (i j : ZMod N) : dftZMod N i j = stdAddChar (i * j) := by
-  simp [dftZMod , ← AddChar.map_neg_eq_conj, dft_apply, Pi.single_apply, mul_comm]
+  simp [dftZMod, ← AddChar.map_neg_eq_conj, dft_apply, Pi.single_apply, mul_comm]
 
 @[simps coe, expose]
 noncomputable def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _root_.Matrix.dftZMod N, by
-    simp only [Real.sqrt_inv, mem_unitaryGroup_iff, star_smul, star_trivial, Algebra.mul_smul_comm,
-      Algebra.smul_mul_assoc, smul_assoc_symm, smul_eq_mul,
-      show (√↑N)⁻¹ * (√↑N)⁻¹ = (N : ℝ)⁻¹ by grind]
-    ext
-    simp [Matrix.mul_apply, Matrix.one_apply, stdChar_orthogonal] ⟩
+  simp only [Real.sqrt_inv, mem_unitaryGroup_iff, star_smul, star_trivial, Algebra.mul_smul_comm,
+    Algebra.smul_mul_assoc, smul_assoc_symm, smul_eq_mul,
+    show (√↑N)⁻¹ * (√↑N)⁻¹ = (N : ℝ)⁻¹ by grind]
+  ext
+  simp [Matrix.mul_apply, Matrix.one_apply, stdChar_orthogonal] ⟩
 
 @[simps! -isSimp coe]
 noncomputable def UnitaryGroup.dftFin : 𝐔[Fin N] :=
@@ -176,42 +166,42 @@ theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
 end IQFT
 
 
-public section CRCircuit
+public noncomputable section CRCircuit
 
-noncomputable def R {d : ℕ} (k : ℕ) : 𝐔[Fin d] :=
+open Finset
+
+variable {d n : ℕ} (k : ℕ)
+
+def R : 𝐔[Fin d] :=
   diagonalMonoidHom (fun x ↦ (uζ (d ^ k)) ^ (x : ℕ))
 
-theorem CR_diagonal {d : ℕ} (k : ℕ) :
+theorem CR_diagonal :
     controllize d (R k) =
       diagonalMonoidHom (fun x : Fin d × Fin d ↦ (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
   simp [R, controllize_diagonal, pow_mul]
 
--- theorem CR_at_diagonal {n : ℕ} {i j : Fin n} (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
---     bipartite i j (controllize d (R k)) hneq =
---       diagonalMonoidHom (fun x : Fin n → Fin d ↦ (uζ (d ^ k)) ^ (x j * x i : ℕ)) := by
---   simp [CR_diagonal, bipartite_diagonal]
+theorem CR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
+    bipartite i j (controllize d (R k)) hneq =
+      diagonalMonoidHom (fun x : Fin n → Fin d ↦ (uζ (d ^ k)) ^ (x j * x i : ℕ)) := by
+  simp [CR_diagonal, bipartite_diagonal]
 
--- noncomputable def CRCircuit {n : ℕ} (d : ℕ) : 𝐔[Fin (n + 1) → Fin d] :=
---   ((Finset.Ioi (Fin.last n)).attach.toList.map
---     fun i ↦ bipartite i.val (Fin.last n) (controllize d (R (n - i.val))) (by grind)).prod
+def CRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
+  ((Ioi i).attach.toList.map (
+    fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (R (j + 1 - i)))
+  )).prod
 
--- theorem CRCircuit_eq_zero {n : ℕ} (d : ℕ) :
---     CRCircuit (n := n) d = 1 := by
---   simp [CRCircuit]
---   have : (Finset.Ioi (last n)).attach = ({} : Finset _) := by
---     grind
---   simp [this]
+theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
+    CRCircuit d i =
+      diagonalMonoidHom fun y : Fin n → Fin d ↦
+        ∏ x ∈ (Ioi i).attach,
+          uζ (d ^ (x + 1 : ℕ)) ^ (d ^ (i : ℕ) * (y i) * (y x) : ℕ) := by
+  simp only [CRCircuit, CR_at_diagonal, ← prod_diagonal]
+  congr! 1
+  apply List.map_congr_left (fun a h => ?_)
+  congr! 2
+  simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
 
-
--- theorem CRCircuit_eq {n : ℕ} (d : ℕ) [NeZero d] :
---     CRCircuit d =
---       diagonalMonoidHom fun x : Fin n.succ → Fin d ↦
---         (uζ (d ^ n)) ^ ((∑ i ∈ (Finset.Ioi (Fin.last n)).attach,
---         d ^ (i : ℕ) * (x i) * (x (Fin.last n))) : ℕ) := by
---   simp_rw [CRCircuit, CR_at_diagonal, uζ_aux,
---     ← UnitaryGroup.prod_diagonal, mul_comm]
-
--- end CRCircuit
+end CRCircuit
 
 
 -- noncomputable section QFTCircuit
