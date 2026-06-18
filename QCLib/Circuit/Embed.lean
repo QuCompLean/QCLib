@@ -229,47 +229,44 @@ theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i
 
 end bipartite
 
-section succ
+section Fin
 
 variable {n : ℕ}
 variable {k : Type*} [DecidableEq k] [Fintype k]
 
+-- relocate
+@[simps!]
+def Fin.consFunEquiv (n k) := (Equiv.prodComm _ _).trans (Fin.consEquiv (fun _ : Fin (n + 1) => k))
+
+@[simps!]
+def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
+  reindexMonoidEquiv (Fin.consFunEquiv n k)
+    <| blockDiagonalMonoidHom (fun _ ↦ U)
+
+/-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
+theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    embedRight U • δ[v] =
+      ((U • δ[fun i : Fin n => v i.succ]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
+  rfl
+
 /-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
 @[simps!]
-def succ (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
+def embedLeft (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
   reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
-theorem succ_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    succ U • δ[v] =
+theorem embedLeft_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    embedLeft U • δ[v] =
       ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ δ[v (Fin.last n)])
       ∘ Fin.succFunEquiv k n := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
   rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
 
-set_option linter.flexible false in
-theorem last_single_succ_apply_basis (A : 𝐔[k]) (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    single (Fin.last n) A • succ U • δ[v] =
-      ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ (A • δ[v (Fin.last n)]))
-      ∘ Fin.succFunEquiv k n := by
-  rw [succ_apply_basis]
-  ext u
-  simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum,
-    Function.comp_def, blockDiagonal_apply, funext_iff] -- openning this make it unreadable
-  simp only [Fin.isValue, Pi.single_apply, mul_ite, mul_one, mul_zero, ← ite_and]
-  rw [Finset.sum_eq_single (Fin.snoc (fun i => u i.castSucc) (v (Fin.last n)))]
-  · simp [Fin.snoc, mul_comm]
-    grind
-  · simp only [ite_eq_right_iff, mul_eq_zero]
-    intro b hb1 hb2 hb3
-    exfalso
-    apply hb2
-    ext i
-    refine Fin.lastCases (by aesop) (by aesop) i
-  · simp
-
-end succ
+end Fin
 
 
 section subtype

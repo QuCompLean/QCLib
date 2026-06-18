@@ -219,20 +219,27 @@ end CRCircuit
 
 noncomputable section QFTCircuit
 
-open UnitaryGroup OuterProduct Fin
+open UnitaryGroup OuterProduct Fin Finset
 
--- def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
---   | 0 => 1
---   | n + 1 =>
---     (single (last n) (idftFin d)) * CIRCircuit d (last n) * (succ (IQFTRevCircuit n d))
+def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
+  | 0 => 1
+  | n + 1 =>
+    (single (last n) (idftFin d)) * CIRCircuit d 0 * (succ (IQFTRevCircuit n d))
 
+-- example : Ioi (0 : Fin 1) = ∅ := by
+--   simp
+-- example (d : ℕ) [NeZero d] (v : Fin 2 → Fin d): True := by
+--   set s := IQFTRevCircuit 2 d • δ[v] with hs
+--   simp [IQFTRevCircuit, ] at hs
+--   simp_rw [←smul_eq_mul, smul_assoc, succ_apply_basis] at hs
+--   simp at hs
 
 -- def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
 
--- theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
---   rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
---     ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
---   induction n with
+-- -- theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
+-- theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
+--   rw [← mul_left_inj (revCircuit (Fin d) n), IQFTCircuit,
+--     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]--   induction n with
 --   | zero =>
 --     ext i j
 --     simp [QFTRevCircuit, Subsingleton.elim i j]
