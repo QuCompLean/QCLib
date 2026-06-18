@@ -181,7 +181,7 @@ open UnitaryGroup
 def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
   match n with
   | 0 => 1
-  | n + 1 => (succ (QFTRevCircuit n d)) * (CRCircuit d) * (single (Fin.last n) (dftFin d))
+  | n + 1 => (CRCircuit d) * (single (Fin.last n) (dftFin d)) * (succ (QFTRevCircuit n d))
 
 def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
 
@@ -193,31 +193,15 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := b
     ext i j
     simp [QFTRevCircuit, Subsingleton.elim i j]
   | succ n ih =>
-    rw [← mul_right_inj (star UnitaryGroup.succ (QFTRevCircuit n d))]
-    simp [QFTRevCircuit, ←mul_assoc, ih,
-      CRCircuit_eq]
+    rw [← mul_left_inj (star UnitaryGroup.succ (QFTRevCircuit n d)),  QFTRevCircuit]
+    simp [mul_assoc, CRCircuit_eq, ih]
     ext a b
-    simp [Matrix.mul_apply, blockDiagonal_apply, diagonal_apply,
-      funext_iff, ← ite_and, apply_ite]
+    simp [-blockDiagonal_mul,
+      star_eq_conjTranspose, blockDiagonal_apply, Matrix.mul_apply,
+      diagonal_apply, funext_iff, ← ite_and]
     congr with x
-    split_ifs with h <;> try grind
+    split_ifs with h1 h2 h3 <;> try grind
     · sorry
-    · rw [Finset.sum_eq_zero]
-      · simp
-      · intro u hu
-        split_ifs with h <;> try grind
-        rw [Finset.sum_eq_zero]
-        · intro a h
-          aesop -- Impossible to prove
-          sorry
-
-
-
-
--- private theorem revCircuit_qft_basis (v : Fin n → Fin d) :
---     (revCircuit (Fin d) n * QFT n d) • δ[v] =
---     ∑ w, ((√(d ^ n) : ℂ)⁻¹ *
---       ζ (d ^ n) ^ ((equivFin (w ∘ ⇑revPerm)) * (equivFin v) : ℕ)) • δ[w] := by
---   ext x
---   simp [revCircuit_eq_revPermSubsystems]
---   simp [basisVector_def, Pi.single_apply]
+    · simp
+      sorry -- impossible
+    · sorry
