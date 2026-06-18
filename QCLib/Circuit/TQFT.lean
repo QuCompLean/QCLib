@@ -69,12 +69,12 @@ private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
 end private_aux
 
 
-public section dftZMod
+public noncomputable section dftZMod
 
 variable (N : ℕ) [NeZero N]
 
 /-- The matrix representation of the inverse DFT for `ZMod N`, also known as the *Schur matrix* -/
-noncomputable def Matrix.dftZMod : Matrix (ZMod N) (ZMod N) ℂ :=
+def Matrix.dftZMod : Matrix (ZMod N) (ZMod N) ℂ :=
   of fun i j ↦ conj ((dft (Pi.single j 1)) i)
 
 @[simp]
@@ -82,7 +82,7 @@ theorem Matrix.dftZMod_apply_apply (i j : ZMod N) : dftZMod N i j = stdAddChar (
   simp [dftZMod, ← AddChar.map_neg_eq_conj, dft_apply, Pi.single_apply, mul_comm]
 
 @[simps coe, expose]
-noncomputable def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _root_.Matrix.dftZMod N, by
+def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _root_.Matrix.dftZMod N, by
   simp only [Real.sqrt_inv, mem_unitaryGroup_iff, star_smul, star_trivial, Algebra.mul_smul_comm,
     Algebra.smul_mul_assoc, smul_assoc_symm, smul_eq_mul,
     show (√↑N)⁻¹ * (√↑N)⁻¹ = (N : ℝ)⁻¹ by grind]
@@ -90,7 +90,7 @@ noncomputable def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _roo
   simp [Matrix.mul_apply, Matrix.one_apply, stdChar_orthogonal] ⟩
 
 @[simps! -isSimp coe]
-noncomputable def UnitaryGroup.dftFin : 𝐔[Fin N] :=
+def UnitaryGroup.dftFin : 𝐔[Fin N] :=
   reindexMonoidEquiv (ZMod.finEquiv N).symm (dftZMod N)
 
 @[simp]
@@ -101,6 +101,18 @@ theorem UnitaryGroup.dftFin_apply (a b) : dftFin N a b = √N⁻¹ • ζ N ^ (a
 
 theorem UnitaryGroup.dftFin_apply_basis (v : Fin N) :
     dftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * ζ N ^ (k * v : ℕ)) • δ[k] := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, Pi.single_apply]
+
+def UnitaryGroup.idftFin : 𝐔[Fin N] := star (dftFin N)
+
+@[simp]
+theorem UnitaryGroup.idftFin_apply (a b) : idftFin N a b = √N⁻¹ • conj (ζ N ^ (a * b : ℕ)) := by
+  simp [idftFin, mul_comm]
+
+@[simp]
+theorem UnitaryGroup.idftFin_apply_basis (v : Fin N) :
+    idftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * conj (ζ N ^ (k * v : ℕ))) • δ[k] := by
   ext
   simp [basisVector_def, Submonoid.smul_def, Pi.single_apply]
 
@@ -207,12 +219,12 @@ end CRCircuit
 
 noncomputable section QFTCircuit
 
--- open UnitaryGroup OuterProduct
+open UnitaryGroup OuterProduct
 
--- def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
---   match n with
+-- def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
 --   | 0 => 1
---   | n + 1 => (CRCircuit d) * (single (Fin.last n) (dftFin d)) * (succ (QFTRevCircuit n d))
+--   | n + 1 => (succ (IQFTRevCircuit n d)) * (single (Fin.last n) (idftFin d))
+
 
 -- def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
 
