@@ -240,8 +240,7 @@ def Fin.consFunEquiv (n k) := (Equiv.prodComm _ _).trans (Fin.consEquiv (fun _ :
 
 @[simps!]
 def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
-  reindexMonoidEquiv (Fin.consFunEquiv n k)
-    <| blockDiagonalMonoidHom (fun _ ↦ U)
+  reindexMonoidEquiv (Fin.consFunEquiv n k) <| blockDiagonalMonoidHom (fun _ ↦ U)
 
 /-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
