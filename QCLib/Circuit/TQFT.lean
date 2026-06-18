@@ -60,7 +60,7 @@ variable {n d : ℕ} [hd : NeZero d]
 private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
    (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ))
     =  ζ (d ^ n) ^ (u * equivFin x : ℕ) := by
-  nth_rw 1 [equivFin_apply_reindex]
+  rw [equivFin_apply_reindex]
   simp [hd.out, ζ_pow_fin_rev, ← pow_mul,
     Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
@@ -99,6 +99,17 @@ noncomputable def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _roo
     ext
     simp [Matrix.mul_apply, Matrix.one_apply, stdChar_orthogonal] ⟩
 
+@[simps! -isSimp coe]
+noncomputable def UnitaryGroup.dftFin : 𝐔[Fin N] :=
+  reindexMonoidEquiv (ZMod.finEquiv N).symm (dftZMod N)
+
+@[simp]
+theorem UnitaryGroup.dftFin_apply (a b) : dftFin N a b = √N⁻¹ • ζ N ^ (a * b : ℕ) := by
+  simp [dftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul,
+    ← div_mul_eq_mul_div, exp_nat_mul', show cexp (2 / N * ↑π * I) = ζ N by grind [ζ_def],
+    ζ_pow_mul]
+
+
 end dftZMod
 
 
@@ -106,17 +117,13 @@ public section QFT
 
 variable (n d : ℕ) [hdz : NeZero d]
 
-@[simps! -isSimp coe]
+
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
-  reindexMonoidEquiv (equivFin.trans (ZMod.finEquiv (d^n)).toEquiv).symm
-    (UnitaryGroup.dftZMod (d ^ n))
+  reindexMonoidEquiv equivFin.symm (UnitaryGroup.dftFin (d ^ n))
 
 @[simp] theorem QFT_apply (a b) :
     QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
-  simp [QFT_coe, stdAddChar_apply, toCircle_apply,
-    ← map_mul, ← div_mul_eq_mul_div, exp_nat_mul',
-    show cexp (2 / ↑d ^ n * ↑π * I) = ζ (d ^ n) by grind [ζ_def],
-    ζ_pow_mul]
+  simp [QFT]
 
 theorem QFT_apply_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] = ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ)) • δ[k] := by
@@ -167,3 +174,17 @@ theorem CRCircuit_eq {n : ℕ} (d : ℕ) [NeZero d] :
 end CRCircuit
 
 
+noncomputable section QFTCircuit
+
+open UnitaryGroup
+
+def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
+  match n with
+  | 0 => 1
+  | n + 1 => (CRCircuit d) * (single (Fin.last n) (dftFin d)) * (succ (QFTRevCircuit n d))
+
+def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
+
+theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := by
+  rw [QFTCircuit]
+  sorry
