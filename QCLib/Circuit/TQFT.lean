@@ -121,7 +121,6 @@ public section QFT
 
 variable (n d : ℕ) [hdz : NeZero d]
 
-
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
   reindexMonoidEquiv equivFin.symm (UnitaryGroup.dftFin (d ^ n))
 
@@ -137,16 +136,45 @@ theorem QFT_apply_basis (v : Fin n → Fin d) :
     Finset.sum_apply, smul_eq_mul]
   rw [Finset.sum_eq_single w] <;> grind
 
-theorem QFT_apply_basis_product (v : Fin n → Fin d) :
+theorem QFT_apply_product_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] =
       (√(d ^ n)⁻¹ : ℂ) •
         ⨂ (i : Fin n), ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ) • δ[j] := by
   simp_rw [QFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
-  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ,
-    ← piOuterProduct_univ_sum (ι := Fin n) (κ := Fin d)
-    (f := fun i j => ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * (j : ℕ)) • δ[j])]
+  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
 
 end QFT
+
+
+public section IQFT
+
+variable (n d : ℕ) [hdz : NeZero d]
+
+noncomputable def IQFT : 𝐔[Fin n → Fin d] := star (QFT n d)
+
+@[simp] theorem IQFT_apply (a b) :
+    IQFT n d a b = √(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ)) := by
+  simp [IQFT, mul_comm]
+
+theorem IQFT_apply_basis (v : Fin n → Fin d) :
+    IQFT n d • δ[v] =
+      ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ))) • δ[k] := by
+  ext w
+  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
+    MulOpposite.op_one, Pi.smul_apply, col_apply, IQFT_apply, sqrt_inv, ofReal_inv, one_smul,
+    Finset.sum_apply, smul_eq_mul]
+  rw [Finset.sum_eq_single w] <;> grind
+
+theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
+    IQFT n d • δ[v] =
+      (√(d ^ n)⁻¹ : ℂ) • ⨂ (i : Fin n),
+        ∑ j : Fin d, conj (ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ)) • δ[j] := by
+  simp_rw [IQFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
+  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ,
+     piOuterProduct_univ_sum]
+
+end IQFT
+
 
 public section CRCircuit
 
@@ -158,57 +186,64 @@ theorem CR_diagonal {d : ℕ} (k : ℕ) :
       diagonalMonoidHom (fun x : Fin d × Fin d ↦ (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
   simp [R, controllize_diagonal, pow_mul]
 
-theorem CR_at_diagonal {n : ℕ} {i j : Fin n} (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
-    bipartite i j (controllize d (R k)) hneq =
-      diagonalMonoidHom (fun x : Fin n → Fin d ↦ (uζ (d ^ k)) ^ (x j * x i : ℕ)) := by
-  simp [CR_diagonal, bipartite_diagonal]
+-- theorem CR_at_diagonal {n : ℕ} {i j : Fin n} (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
+--     bipartite i j (controllize d (R k)) hneq =
+--       diagonalMonoidHom (fun x : Fin n → Fin d ↦ (uζ (d ^ k)) ^ (x j * x i : ℕ)) := by
+--   simp [CR_diagonal, bipartite_diagonal]
 
-noncomputable def CRCircuit {n : ℕ} (d : ℕ) : 𝐔[Fin (n + 1) → Fin d] :=
-  ((Finset.Ioi (Fin.last n)).attach.toList.map
-    fun i ↦ bipartite i.val (Fin.last n) (controllize d (R (n - i.val))) (by grind)).prod
+-- noncomputable def CRCircuit {n : ℕ} (d : ℕ) : 𝐔[Fin (n + 1) → Fin d] :=
+--   ((Finset.Ioi (Fin.last n)).attach.toList.map
+--     fun i ↦ bipartite i.val (Fin.last n) (controllize d (R (n - i.val))) (by grind)).prod
 
-theorem CRCircuit_eq {n : ℕ} (d : ℕ) [NeZero d] :
-    CRCircuit d =
-      diagonalMonoidHom fun x : Fin n.succ → Fin d ↦
-        (uζ (d ^ n)) ^ ((∑ i ∈ (Finset.Ioi (Fin.last n)).attach,
-        d ^ (i : ℕ) * (x i) * (x (Fin.last n))) : ℕ) := by
-  simp_rw [CRCircuit, CR_at_diagonal, uζ_aux,
-    ← UnitaryGroup.prod_diagonal, mul_comm]
-
-end CRCircuit
+-- theorem CRCircuit_eq_zero {n : ℕ} (d : ℕ) :
+--     CRCircuit (n := n) d = 1 := by
+--   simp [CRCircuit]
+--   have : (Finset.Ioi (last n)).attach = ({} : Finset _) := by
+--     grind
+--   simp [this]
 
 
-noncomputable section QFTCircuit
+-- theorem CRCircuit_eq {n : ℕ} (d : ℕ) [NeZero d] :
+--     CRCircuit d =
+--       diagonalMonoidHom fun x : Fin n.succ → Fin d ↦
+--         (uζ (d ^ n)) ^ ((∑ i ∈ (Finset.Ioi (Fin.last n)).attach,
+--         d ^ (i : ℕ) * (x i) * (x (Fin.last n))) : ℕ) := by
+--   simp_rw [CRCircuit, CR_at_diagonal, uζ_aux,
+--     ← UnitaryGroup.prod_diagonal, mul_comm]
 
-open UnitaryGroup OuterProduct
+-- end CRCircuit
 
-def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
-  match n with
-  | 0 => 1
-  | n + 1 => (CRCircuit d) * (single (Fin.last n) (dftFin d)) * (succ (QFTRevCircuit n d))
 
-def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
+-- noncomputable section QFTCircuit
 
-theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
-  rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
-    ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
-  induction n with
-  | zero =>
-    ext i j
-    simp [QFTRevCircuit, Subsingleton.elim i j]
-  | succ n ih =>
-    apply ext_smul_basis
-    intro v
-    simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, last_single_succ_apply_basis]
-    ext a
-    simp? [permSubsystemsHom_smul_unitary_smul_basis,
-      Function.comp_def, CRCircuit_eq, dftFin_apply_basis]
-    simp? [Submonoid.smul_def,
-      basisVector_def, Pi.single_apply, mulVec_eq_sum, diagonal_apply]
-    field_simp
-    simp [show (√(d ^ n) * √d) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ],
-      div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out]),
-      show (Finset.Ioi (last n)).attach = ({} : Finset _) by grind
-    ]
-    sorry
+-- open UnitaryGroup OuterProduct
 
+-- def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
+--   match n with
+--   | 0 => 1
+--   | n + 1 => (CRCircuit d) * (single (Fin.last n) (dftFin d)) * (succ (QFTRevCircuit n d))
+
+-- def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
+
+-- theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
+--   rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
+--     ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
+--   induction n with
+--   | zero =>
+--     ext i j
+--     simp [QFTRevCircuit, Subsingleton.elim i j]
+--   | succ n ih =>
+--     apply ext_smul_basis
+--     intro v
+--     simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, last_single_succ_apply_basis]
+--     ext a
+--     simp? [permSubsystemsHom_smul_unitary_smul_basis,
+--       Function.comp_def, CRCircuit_eq, dftFin_apply_basis]
+--     simp? [Submonoid.smul_def,
+--       basisVector_def, Pi.single_apply, mulVec_eq_sum, diagonal_apply]
+--     field_simp
+--     simp [show (√(d ^ n) * √d) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ],
+--       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out]),
+--       show (Finset.Ioi (last n)).attach = ({} : Finset _) by grind
+--     ]
+--     simp [equivFin, Fin.sum_univ_castSucc, add_mul, mul_add]
