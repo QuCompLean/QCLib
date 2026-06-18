@@ -189,7 +189,7 @@ def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
 
 def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
 
-theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := by
+theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
   rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
     ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
   induction n with
@@ -201,8 +201,14 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := b
     intro v
     simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, last_single_succ_apply_basis]
     ext a
-    simp [permSubsystemsHom_smul_unitary_smul_basis,
+    simp? [permSubsystemsHom_smul_unitary_smul_basis,
       Function.comp_def, CRCircuit_eq, dftFin_apply_basis]
-    simp [Submonoid.smul_def,
+    simp? [Submonoid.smul_def,
       basisVector_def, Pi.single_apply, mulVec_eq_sum, diagonal_apply]
+    field_simp
+    simp [show (√(d ^ n) * √d) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ],
+      div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out]),
+      show (Finset.Ioi (last n)).attach = ({} : Finset _) by grind
+    ]
     sorry
+
