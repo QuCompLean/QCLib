@@ -109,6 +109,10 @@ theorem UnitaryGroup.dftFin_apply (a b) : dftFin N a b = √N⁻¹ • ζ N ^ (a
     ← div_mul_eq_mul_div, exp_nat_mul', show cexp (2 / N * ↑π * I) = ζ N by grind [ζ_def],
     ζ_pow_mul]
 
+theorem UnitaryGroup.dftFin_apply_basis (v : Fin N) :
+    dftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * ζ N ^ (k * v : ℕ)) • δ[k] := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, Pi.single_apply]
 
 end dftZMod
 
@@ -176,7 +180,7 @@ end CRCircuit
 
 noncomputable section QFTCircuit
 
-open UnitaryGroup
+open UnitaryGroup OuterProduct
 
 def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
   match n with
@@ -193,15 +197,12 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := b
     ext i j
     simp [QFTRevCircuit, Subsingleton.elim i j]
   | succ n ih =>
-    rw [← mul_left_inj (star UnitaryGroup.succ (QFTRevCircuit n d)),  QFTRevCircuit]
-    simp [mul_assoc, CRCircuit_eq, ih]
-    ext a b
-    simp [-blockDiagonal_mul,
-      star_eq_conjTranspose, blockDiagonal_apply, Matrix.mul_apply,
-      diagonal_apply, funext_iff, ← ite_and]
-    congr with x
-    split_ifs with h1 h2 h3 <;> try grind
-    · sorry
-    · simp
-      sorry -- impossible
-    · sorry
+    apply ext_smul_basis
+    intro v
+    simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, last_single_succ_apply_basis]
+    ext a
+    simp [permSubsystemsHom_smul_unitary_smul_basis,
+      Function.comp_def, CRCircuit_eq, dftFin_apply_basis]
+    simp [Submonoid.smul_def,
+      basisVector_def, Pi.single_apply, mulVec_eq_sum, diagonal_apply]
+    sorry

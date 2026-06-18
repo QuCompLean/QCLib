@@ -32,7 +32,7 @@ TBD
 
 @[expose] public section
 
-open Function PiOuterProduct
+open Function PiOuterProduct OuterProduct Equiv
 
 variable {ι : Type*} [DecidableEq ι] [Fintype ι]
 variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
@@ -93,7 +93,6 @@ theorem single_apply_basis (v : Π i, k i) (j : ι) (U : 𝐔[k j]) :
   · rw [Finset.sum_eq_single (k j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
-open OuterProduct Equiv in
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔[k i]) :
     single' i U • δ[v] = (U • δ[v i]) ⊗ δ[fun a : {j // j ≠ i} => v a] ∘ piSplitAt i _ := by
   ext
@@ -195,7 +194,6 @@ theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v
   · rw [Finset.sum_eq_single (w i, w j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
-open OuterProduct Equiv in
 theorem bipartite_apply_basis' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j U h • δ[v] =
       ((U • δ[(v i, v j)]) ⊗ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) ∘ (piSplitAtPair i j) := by
@@ -239,8 +237,37 @@ variable {k : Type*} [DecidableEq k] [Fintype k]
 /-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
 @[simps!]
-def succ (U : 𝐔[Fin n → k]) : 𝐔[Fin (n+1) → k] :=
+def succ (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
   reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
+
+theorem succ_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    succ U • δ[v] =
+      ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ δ[v (Fin.last n)])
+      ∘ Fin.succFunEquiv k n := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
+  rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
+
+set_option linter.flexible false in
+theorem last_single_succ_apply_basis (A : 𝐔[k]) (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    single (Fin.last n) A • succ U • δ[v] =
+      ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ (A • δ[v (Fin.last n)]))
+      ∘ Fin.succFunEquiv k n := by
+  rw [succ_apply_basis]
+  ext u
+  simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum,
+    Function.comp_def, blockDiagonal_apply, funext_iff] -- openning this make it unreadable
+  simp only [Fin.isValue, Pi.single_apply, mul_ite, mul_one, mul_zero, ← ite_and]
+  rw [Finset.sum_eq_single (Fin.snoc (fun i => u i.castSucc) (v (Fin.last n)))]
+  · simp [Fin.snoc, mul_comm]
+    grind
+  · simp only [ite_eq_right_iff, mul_eq_zero]
+    intro b hb1 hb2 hb3
+    exfalso
+    apply hb2
+    ext i
+    refine Fin.lastCases (by aesop) (by aesop) i
+  · simp
 
 end succ
 
@@ -252,7 +279,6 @@ def subtype (p : ι → Prop) [DecidablePred p]
     (U : 𝐔[Π i : {j // p j}, k i.1]) : 𝐔[Π i, k i] :=
   reindexMonoidEquiv (Equiv.piEquivPiSubtypeProd p k).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
-open OuterProduct in
 theorem subtype_apply_basis (p : ι → Prop) [DecidablePred p]
     (U : 𝐔[Π i : {j // p j}, k i.1]) (v : Π i, k i)  :
     subtype p U • δ[v] =
