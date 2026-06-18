@@ -203,14 +203,14 @@ def CIRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
     fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (IR (j + 1 - i)))
   )).prod
 
-theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
+theorem CIRCircuit_eq (i : Fin n) [hd : NeZero d] :
     CIRCircuit d i =
       diagonalMonoidHom fun y : Fin n → Fin d ↦
         ∏ x ∈ (Ioi i).attach,
           star (uζ (d ^ (x + 1 : ℕ)) ^ (d ^ (i : ℕ) * (y i) * (y x) : ℕ)) := by
   simp only [CIRCircuit, CIR_at_diagonal, ← prod_diagonal]
   congr! 1
-  apply List.map_congr_left (fun a h => ?_)
+  apply List.map_congr_left (fun a h ↦ ?_)
   congr! 3
   simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
 
@@ -219,11 +219,12 @@ end CRCircuit
 
 noncomputable section QFTCircuit
 
-open UnitaryGroup OuterProduct
+open UnitaryGroup OuterProduct Fin
 
 -- def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
 --   | 0 => 1
---   | n + 1 => (succ (IQFTRevCircuit n d)) * (single (Fin.last n) (idftFin d))
+--   | n + 1 =>
+--     (single (last n) (idftFin d)) * CIRCircuit d (last n) * (succ (IQFTRevCircuit n d))
 
 
 -- def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
