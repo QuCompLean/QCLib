@@ -36,7 +36,7 @@ theorem bipartite_swap_eq_perm {n : ℕ} {i j : Fin n} (h : i ≠ j) :
   intro k
   simp only [bipartite_apply_basis, _root_.swap_apply_apply, Prod.swap_prod_mk, ite_smul,
     one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte,
-    permSubsystemsHom_apply_apply, arrowCongrLeftHom_apply]
+    permSubsystemsHom_apply_basis, arrowCongrLeftHom_apply]
   congr 1
   ext a
   simp

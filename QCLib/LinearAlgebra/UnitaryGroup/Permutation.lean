@@ -87,7 +87,7 @@ theorem permSubsystemsHom_smul_eq (σ : Perm ι) (v : (ι → n) → R) :
   simp [permSubsystemsHom]
 
 @[simp]
-theorem permSubsystemsHom_apply_apply (σ : Perm ι) (k : ι → n) :
+theorem permSubsystemsHom_smul_basis (σ : Perm ι) (k : ι → n) :
     (permSubsystemsHom ℂ n σ) • δ[k] = δ[arrowCongrLeftHom n σ k] := by
   simp [permSubsystemsHom_smul_eq]
 
