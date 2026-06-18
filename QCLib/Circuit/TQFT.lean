@@ -172,39 +172,40 @@ open Finset
 
 variable {d n : ℕ} (k : ℕ)
 
-def R : 𝐔[Fin d] :=
-  diagonalMonoidHom (fun x ↦ (uζ (d ^ k)) ^ (x : ℕ))
+def IR : 𝐔[Fin d] :=
+  diagonalMonoidHom (fun x ↦ star ((uζ (d ^ k)) ^ (x : ℕ)))
 
-theorem CR_diagonal :
-    controllize d (R k) =
-      diagonalMonoidHom (fun x : Fin d × Fin d ↦ (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
-  simp [R, controllize_diagonal, pow_mul]
+theorem CIR_diagonal :
+    controllize d (IR k) =
+      diagonalMonoidHom (fun x : Fin d × Fin d ↦
+        star (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
+  simp [IR, controllize_diagonal, pow_mul]
 
-theorem CR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
-    bipartite i j (controllize d (R k)) hneq =
-      diagonalMonoidHom (fun x : Fin n → Fin d ↦ (uζ (d ^ k)) ^ (x j * x i : ℕ)) := by
-  simp [CR_diagonal, bipartite_diagonal]
+theorem CIR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
+    bipartite i j (controllize d (IR k)) hneq =
+      diagonalMonoidHom (fun x : Fin n → Fin d ↦ star (uζ (d ^ k) ^ (x j * x i : ℕ))) := by
+  simp [CIR_diagonal, bipartite_diagonal]
 
-def CRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
+def CIRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
   ((Ioi i).attach.toList.map (
-    fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (R (j + 1 - i)))
+    fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (IR (j + 1 - i)))
   )).prod
 
 theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
-    CRCircuit d i =
+    CIRCircuit d i =
       diagonalMonoidHom fun y : Fin n → Fin d ↦
         ∏ x ∈ (Ioi i).attach,
-          uζ (d ^ (x + 1 : ℕ)) ^ (d ^ (i : ℕ) * (y i) * (y x) : ℕ) := by
-  simp only [CRCircuit, CR_at_diagonal, ← prod_diagonal]
+          star (uζ (d ^ (x + 1 : ℕ)) ^ (d ^ (i : ℕ) * (y i) * (y x) : ℕ)) := by
+  simp only [CIRCircuit, CIR_at_diagonal, ← prod_diagonal]
   congr! 1
   apply List.map_congr_left (fun a h => ?_)
-  congr! 2
+  congr! 3
   simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
 
 end CRCircuit
 
 
--- noncomputable section QFTCircuit
+noncomputable section QFTCircuit
 
 -- open UnitaryGroup OuterProduct
 
