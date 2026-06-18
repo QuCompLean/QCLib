@@ -92,16 +92,34 @@ theorem permSubsystemsHom_apply_apply (σ : Perm ι) (k : ι → n) :
   simp [permSubsystemsHom_smul_eq]
 
 @[simp]
-theorem permSubsystemsHom_mul_unitary_apply_apply
+theorem permSubsystemsHom_mul_unitary_apply
     (σ : Perm ι) (U : unitaryGroup (ι → n) R) (k l : ι → n) :
     ((permSubsystemsHom R n σ) * U) k l = U (k ∘ σ) l := by
   simp [permSubsystemsHom, perm_mul_unitary_apply_apply, arrowCongrLeftHom_apply,
     Function.comp_def, arrowCongr]
 
 @[simp]
+theorem unitary_mul_permSubsystemsHom_apply
+    (σ : Perm ι) (U : unitaryGroup (ι → n) R) (k l : ι → n) :
+    (U * (permSubsystemsHom R n σ)) k l = U k (l ∘ σ.symm) := by
+  simp [permSubsystemsHom, unitary_mul_perm_apply_apply, arrowCongr]
+
+@[simp]
 theorem permSubsystemsHom_apply (σ : Perm ι) (i j : ι → n) :
     (permSubsystemsHom R n σ) i j = if i ∘ ⇑σ = j then 1 else 0 := by
   simp [permSubsystemsHom, arrowCongr]
+
+theorem permSubsystemsHom_smul_unitary_smul_basis
+    (σ : Perm ι) (U : unitaryGroup (ι → n) ℂ) (v : ι → n) (k : ι → n) :
+    ((permSubsystemsHom ℂ n σ * U) • δ[v]) k = U (k ∘ σ) v := by
+  rw [← smul_eq_mul, smul_assoc]
+  simp [Matrix.mulVec_eq_sum, basisVector_def, Submonoid.smul_def]
+
+theorem star_permSubsystemsHom_eq_inv (σ : Perm ι) :
+    star (permSubsystemsHom R n σ) = permSubsystemsHom R n σ⁻¹ := by
+  ext a b
+  simp [apply_ite, funext_iff]
+  grind
 
 end Matrix.UnitaryGroup
 
