@@ -151,13 +151,10 @@ theorem QFT_apply_3 {n d} [NeZero d] (a b : Fin n → Fin d) :
 
 theorem thm0 {n d} [NeZero d] (a : Fin n → Fin d) :
     (finEquiv (d ^ n) (equivFin a)).val = ↑(equivFin a) := by
-  apply?
-
   sorry
 theorem thm1 {n d} [NeZero d] (a b : Fin n → Fin d) :
     (finEquiv (d ^ n) (equivFin a * equivFin b)).val = ↑(equivFin a * equivFin b) := by
   simp
-
   sorry
 
 /-- The quantum Fourier transform, with output register least significant bit first. -/
@@ -282,8 +279,7 @@ theorem qft (d n : ℕ) [NeZero d] : (QFTRevCircuit d n) = QFTRev d n := by
     simp only [hi]
     simp only [QFTRev_apply]
     push_cast
-    simp only [stdAddChar_coe]
-
+    
 
 
 
