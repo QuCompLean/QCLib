@@ -185,8 +185,32 @@ def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
 
 def QFTCircuit (n d : ℕ) [NeZero d] := revCircuit (Fin d) n * QFTRevCircuit n d
 
+theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := by
+  rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
+    ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
+  induction n with
+  | zero =>
+    ext i j
+    simp [QFTRevCircuit, Subsingleton.elim i j]
+  | succ n ih =>
+    rw [← mul_right_inj (star UnitaryGroup.succ (QFTRevCircuit n d))]
+    simp [QFTRevCircuit, ←mul_assoc, ih,
+      CRCircuit_eq]
+    ext a b
+    simp [Matrix.mul_apply, blockDiagonal_apply, diagonal_apply,
+      funext_iff, ← ite_and, apply_ite]
+    congr with x
+    split_ifs with h <;> try grind
+    · sorry
+    · rw [Finset.sum_eq_zero]
+      · simp
+      · intro u hu
+        split_ifs with h <;> try grind
+        rw [Finset.sum_eq_zero]
+        · intro a h
+          aesop -- Impossible to prove
+          sorry
 
-variable (n d : ℕ) [NeZero d]
 
 
 
@@ -197,41 +221,3 @@ variable (n d : ℕ) [NeZero d]
 --   ext x
 --   simp [revCircuit_eq_revPermSubsystems]
 --   simp [basisVector_def, Pi.single_apply]
--- #check ζ_pow_sub
--- private theorem revCircuit_qft_basis_product (v : Fin n → Fin d) :
---     (revCircuit (Fin d) n * QFT n d) • δ[v] =
---       (√(d ^ n)⁻¹ : ℂ) • ⨂ (i : Fin n),
---         ∑ j : Fin d, ζ (d ^ (revPerm i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ) • δ[j] := by
---   simp_rw [revCircuit_qft_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
---   simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
---   congr! 5 with u _ k
-
-
-
-
--- #check permSubsystemsHom_mul_unitary_apply_apply
--- theorem QFTCircuit_eq_QFT (n d : ℕ) [NeZero d] : QFTCircuit n d = QFT n d := by
---   rw [← mul_right_inj (revCircuit (Fin d) n), QFTCircuit,
---     ← mul_assoc, revCircuit_involution, one_mul, revCircuit_eq_revPermSubsystems]
---   induction n with
---   | zero =>
---     ext i j
---     simp [QFTRevCircuit, Subsingleton.elim i j]
---   | succ n ih =>
---     rw [← mul_left_inj (star UnitaryGroup.succ (QFTRevCircuit n d)),
---         QFTRevCircuit, mul_assoc, Pi.star_apply, Unitary.mul_star_self, mul_one, ih, mul_assoc]
---     ext i j
---     simp? [- blockDiagonal_mul, star_eq_conjTranspose,
---       CRCircuit_eq, blockDiagonal_apply, funext_iff,]
---     simp [Matrix.mul_apply, blockDiagonal_apply, funext_iff,
---       ← ite_and, Fintype.sum_prod_type]
-
-
---     ext i j
---     simp [-blockDiagonal_mul, Matrix.mul_apply,
---       CRCircuit_eq, diagonal_apply, blockDiagonal_apply,
---       funext_iff, apply_ite, ]
---     congr with x
---     split_ifs with h1 h2 h3 <;> try grind
---     · sorry
---     · simp_all
