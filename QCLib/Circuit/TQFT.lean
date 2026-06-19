@@ -206,44 +206,75 @@ def CIRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
 theorem CIRCircuit_eq (i : Fin n) [hd : NeZero d] :
     CIRCircuit d i =
       diagonalMonoidHom fun y : Fin n → Fin d ↦
-        ∏ x ∈ (Ioi i).attach,
-          star (uζ (d ^ (x + 1 : ℕ)) ^ (d ^ (i : ℕ) * (y i) * (y x) : ℕ)) := by
+        ∏ j ∈ (Ioi i).attach,
+          star (uζ (d ^ (j + 1 : ℕ)) ^ (d ^ (i : ℕ) * (y i) * (y j) : ℕ)) := by
   simp only [CIRCircuit, CIR_at_diagonal, ← prod_diagonal]
   congr! 1
   apply List.map_congr_left (fun a h ↦ ?_)
   congr! 3
   simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
 
+def CIRCircuit' (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
+  ((Iio i.rev).attach.toList.map (
+    fun j : ↥(Iio i.rev) ↦ bipartite j.val.rev i (controllize d (IR (j.val.rev + 1 - i)))
+  )).prod
+
+theorem CIRCircuit'_eq (i : Fin n) [hd : NeZero d] :
+    CIRCircuit' d i =
+      diagonalMonoidHom fun y : Fin n → Fin d ↦
+        ∏ x ∈ (Iio i.rev).attach,
+          star (uζ (d ^ ((x : Fin n).rev + 1 : ℕ))
+            ^ (d ^ (↑i : ℕ) * (y i) * ((revRegister y) x) : ℕ)) := by
+  simp only [CIRCircuit', CIR_at_diagonal, ← prod_diagonal]
+  congr! 1
+  apply List.map_congr_left (fun a h ↦ ?_)
+  congr! 3
+  simp only [pow_mul, ← uζ_pow_sub hd.out (show i.val ≤ a.val.rev + 1 by grind)]
+  simp
+
+theorem CIRCircuit'_eq_CIRCircuit (i : Fin n) [hd : NeZero d] :
+    CIRCircuit' d i = CIRCircuit d i := by
+  ext a b
+  simp? [CIRCircuit'_eq, CIRCircuit_eq, -val_rev, -revRegister_apply]
+  congr with x
+  rw [Finset.prod_attach (s := (Iio i.rev)) (f := fun x_1 =>
+    (starRingEnd ℂ) (ζ (d ^ (↑(x_1).rev + 1 : ℕ)))
+    ^ (d ^ (i : ℕ) * ↑(x i) * ↑(revRegister x ↑x_1) : ℕ)),
+    Finset.prod_attach (s := (Ioi i)) (f := fun x_1 =>
+    (starRingEnd ℂ) (ζ (d ^ (↑↑x_1 + 1 : ℕ))) ^ (d ^ (i : ℕ) * ↑(x i) * ↑(x ↑x_1)))
+  ]
+  exact Finset.prod_equiv Fin.revPerm (by simp; grind) (by simp)
+
 end CRCircuit
 
 
-noncomputable section QFTCircuit
+-- noncomputable section QFTCircuit
 
-open UnitaryGroup OuterProduct Fin Finset
+-- open UnitaryGroup OuterProduct Fin Finset
 
-def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
-  | 0 => 1
-  | n + 1 =>
-    (single 0 (idftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
+-- def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
+--   | 0 => 1
+--   | n + 1 =>
+--     (single 0 (idftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
 
-example (d : ℕ) [NeZero d] (v : Fin 2 → Fin d) : True := by
-  set s := IQFTRevCircuit 2 d • δ[v] with hs
-  simp only [IQFTRevCircuit, Nat.reduceAdd, isValue] at hs
-  simp_rw [←smul_eq_mul, smul_assoc, embedRight_apply_basis] at hs
-  simp at hs
-  trivial
+-- example (d : ℕ) [NeZero d] (v : Fin 2 → Fin d) : True := by
+--   set s := IQFTRevCircuit 2 d • δ[v] with hs
+--   simp only [IQFTRevCircuit, Nat.reduceAdd, isValue] at hs
+--   simp_rw [←smul_eq_mul, smul_assoc, embedRight_apply_basis] at hs
+--   simp at hs
+--   trivial
 
-def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
+-- def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
 
-theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
-  rw [← mul_left_inj (revCircuit (Fin d) n), IQFTCircuit,
-    mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
-  induction n with
-  | zero =>
-    ext i j
-    simp [IQFTRevCircuit, Subsingleton.elim i j]
-  | succ n ih =>
-    sorry
+-- theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
+--   rw [← mul_left_inj (revCircuit (Fin d) n), IQFTCircuit,
+--     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
+--   induction n with
+--   | zero =>
+--     ext i j
+--     simp [IQFTRevCircuit, Subsingleton.elim i j]
+--   | succ n ih =>
+--     sorry
 --     apply ext_smul_basis
 --     intro v
 --     simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, last_single_succ_apply_basis]
