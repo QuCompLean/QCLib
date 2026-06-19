@@ -40,7 +40,6 @@ theorem embedFinHom_trans {k} (U : 𝐔[Fin n → Fin d]) (hn : n ≤ k) (hk : k
     exfalso
     exact hq (by simp_all)
 
-@[simp]
 theorem embedFinHom_single_castAdd (k) (i : Fin n) (U : 𝐔[Fin d]) :
     embedFinHom le_self_add (single i U) = single (i.castAdd k) U := by
   ext i j
@@ -54,12 +53,10 @@ theorem embedFinHom_single_castAdd (k) (i : Fin n) (U : 𝐔[Fin d]) :
   · have := h1.2 ⟨x, by lia⟩ (by grind)
     simp_all
 
-@[simp]
 theorem embedFinHom_single_castSucc (i : Fin n) (U : 𝐔[Fin d]) :
     embedFinHom (Nat.le_succ n) (single i U) = single i.castSucc U := by
-  simp [Fin.castSucc]
+  simp [embedFinHom_single_castAdd, Fin.castSucc]
 
-@[simp]
 theorem embedFinHom_diagonalMonoidHom_castAdd (k : ℕ) (f : (Fin n → Fin d) → (unitary ℂ)) :
     embedFinHom le_self_add (diagonalMonoidHom f)
       = diagonalMonoidHom
@@ -69,8 +66,7 @@ theorem embedFinHom_diagonalMonoidHom_castAdd (k : ℕ) (f : (Fin n → Fin d) �
   split_ifs with h1 h2 <;> try grind
   rfl
 
-@[simp]
 theorem embedFinHom_diagonalMonoidHom_castSucc (f : (Fin n → Fin d) → (unitary ℂ)) :
     embedFinHom (Nat.le_succ n) (diagonalMonoidHom f) =
       diagonalMonoidHom (fun y : Fin (n + 1) → Fin d ↦ f (fun i ↦ y i.castSucc)) := by
-  simp [Fin.castSucc]
+  simp [embedFinHom_diagonalMonoidHom_castAdd, Fin.castSucc]
