@@ -51,6 +51,17 @@ theorem splitPair_funext_iff {k : ι → Type*} (i j : ι) (a b : Π x, k x) :
   ext k
   by_cases hi : k = i <;> by_cases hj : k = j <;> grind
 
+@[simps apply symm_apply]
+def finLEEquiv {n m} (h : n ≤ m) : Fin n ≃ {j : Fin m // j.val < n} where
+  toFun i := ⟨i.castLE h, i.isLt⟩
+  invFun j := ⟨j.val, j.prop⟩
+  left_inv i := by simp
+  right_inv j := by simp
+
+@[simps! apply symm_apply]
+def finFunSubtypeEquiv {n m} (d) (h : n ≤ m) : (Fin n → Fin d) ≃ ({ j : Fin m // j < n } → Fin d) :=
+  Equiv.piCongrLeft' _ (finLEEquiv h)
+
 
 -- -- Non-dep version of `piSplitTwo`? Needed?
 -- @[simps]

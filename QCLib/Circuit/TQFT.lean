@@ -49,6 +49,14 @@ theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
   simp [← inv_apply_eq_conj, ← inv_apply', ← map_add_eq_mul, ← sub_eq_add_neg, ← sub_mul, mul_comm,
     AddChar.sum_mulShift _ (isPrimitive_stdAddChar N), sub_eq_zero]
 
+-- Relocate
+theorem reindexMonoidEquiv_smul_basis {m n : Type*}
+    [DecidableEq m] [Fintype m] [Fintype n] [DecidableEq n]
+    (e : m ≃ n) (U : 𝐔[m]) (w : n) :
+    reindexMonoidEquiv e U • δ[w] = (U • δ[e.symm w]) ∘ e.symm := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def]
+
 end Aux
 
 
@@ -245,12 +253,108 @@ theorem CIRCircuit'_eq_CIRCircuit (i : Fin n) [hd : NeZero d] :
   ]
   exact Finset.prod_equiv Fin.revPerm (by simp; grind) (by simp)
 
+theorem CIRCircuit_last (d) (a : ℕ) :
+    CIRCircuit d (last a) = 1 := by
+  simp [CIRCircuit, show  (Ioi (last ↑a)).attach = ∅  by grind]
+
 end CRCircuit
 
 
--- noncomputable section QFTCircuit
+section embedFin
 
--- open UnitaryGroup OuterProduct Fin Finset
+open UnitaryGroup
+
+variable {n m d}
+
+@[simps]
+def finLEEquiv (h : n ≤ m) : Fin n ≃ {j : Fin m // j.val < n} where
+  toFun i := ⟨i.castLE h, i.isLt⟩
+  invFun j := ⟨j.val, j.prop⟩
+  left_inv i := by simp
+  right_inv j := by simp
+
+def embedFin (h : n ≤ m) (U : 𝐔[Fin n → Fin d]) : 𝐔[Fin m → Fin d] :=
+  subtype (fun i : Fin m => i.val < n)
+    (reindexMonoidEquiv (Equiv.piCongrLeft' _ (finLEEquiv h)) U)
+
+theorem embedFin_self_eq (U : 𝐔[Fin n → Fin d]) : embedFin (le_refl n) U = U := by
+  ext
+  simp [embedFin, blockDiagonal_apply, funext_iff]
+  congr
+
+theorem embedFin_trans {k} (U : 𝐔[Fin n → Fin d]) (hn : n ≤ k) (hk : k ≤ m) :
+    embedFin hk (embedFin hn U) = embedFin (le_trans hn hk) U := by
+  ext a b
+  simp [embedFin, blockDiagonal_apply, funext_iff, piCongrLeft']
+  split_ifs with h1 h2 h3 <;> try grind
+  obtain ⟨q, hq⟩ := not_forall.mp h3
+  by_cases hkq : k ≤ q
+  · have := h1 q
+    simp_all
+  · simp only [not_le] at hkq
+    have := h2 ⟨q, hkq⟩
+    exfalso
+    exact hq (by simp_all)
+
+theorem embedFin_mul (h : n ≤ m) (A U : 𝐔[Fin n → Fin d]) :
+    embedFin h (A * U) = embedFin h A * embedFin h U := by
+  ext
+  simp [embedFin, ← blockDiagonal_mul]
+
+@[simps!]
+def embedFinHom {n m d : ℕ} (h : n ≤ m) : ↥𝐔[Fin n → Fin d] →* ↥𝐔[Fin m → Fin d] :=
+  MonoidHom.mk' (embedFin h) (embedFin_mul h)
+
+end embedFin
+
+
+noncomputable section QFTCircuit
+
+open UnitaryGroup OuterProduct Fin List
+
+def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] :=
+  ((finRange n).map (fun i : Fin n ↦ single i (idftFin d) * CIRCircuit d i)).prod
+
+def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
+
+theorem IQFTCircuit_eq_QFT (n k d : ℕ) [hd : NeZero d] (h : k ≤ n) :
+    embedFinHom h (IQFTCircuit k d) = embedFinHom h (IQFT k d) := by
+  rw [IQFTCircuit, map_mul, ← mul_left_inj (embedFinHom h (revCircuit (Fin d) k)),
+    mul_assoc, ← map_mul, revCircuit_involution, ← map_mul, ← map_mul,
+    revCircuit_eq_revPermSubsystems, mul_one
+  ]
+  induction k with
+  | zero =>
+    congr
+    ext i j
+    simp [IQFTRevCircuit, Subsingleton.elim i j]
+  | succ a ih =>
+    rw [IQFTRevCircuit] at ih ⊢
+    simp [finRange_succ_last, -map_mul]
+    rw [map_mul]
+    simp [Function.comp_def, -map_mul]
+    replace ih := ih (by lia)
+    have key :
+      (List.map (fun x : Fin a ↦ UnitaryGroup.single x.castSucc (idftFin d) * CIRCircuit d x.castSucc)
+        (finRange a)).prod
+      = embedFinHom (Nat.le_succ a)
+          (List.map (fun i ↦ UnitaryGroup.single i (idftFin d) * CIRCircuit d i) (finRange a)).prod := by
+      rw [map_list_prod , List.map_map]
+      simp [Function.comp_def, map_mul]
+      sorry
+    simp [embedFinHom, -map_mul] at ih
+    simp [key, embedFinHom, embedFin_trans, ih, CIRCircuit_last, -map_mul, ]
+    apply ext_smul_basis
+    intro v
+    simp_rw [←smul_eq_mul, embedFin, subtype_apply_basis, reindexMonoidEquiv_smul_basis]
+    simp? [piCongrLeft', Function.comp_def]
+    sorry
+
+
+
+
+
+
 
 -- def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
 --   | 0 => 1
