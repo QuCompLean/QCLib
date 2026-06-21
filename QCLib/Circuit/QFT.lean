@@ -27,6 +27,10 @@ lemma equivFin_apply_reindex {n d} [NeZero d] (v : Fin n → Fin d) :
   congr
   lia
 
+lemma equivFin_apply' {n d} (v : Fin n → Fin d) :
+    ((equivFin v) : ℕ) = ∑ i : Fin n, v i.rev * d ^ (i : ℕ) := by
+  simp [equivFin]
+
 end equivFin
 
 public section Aux
@@ -258,7 +262,7 @@ theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT 
     simp_rw [IQFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
     ext a
     -- Application on basis
-    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq]
+    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq_reindexed, Fin.rev_castSucc]
     simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
     simp [Pi.single_apply, ← ite_and, cons_iff]
     -- Normalization
@@ -267,27 +271,22 @@ theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT 
     simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
     -- Elementary math (to be simplified)
-    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add, equivFin]
+    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add, ζ_pow_eq_pow_iff_modEq]
+    simp [equivFin]
     nth_rw 2 [Fin.sum_univ_succ]
-    simp [Fin.sum_univ_castSucc, Fin.rev_castSucc, mul_add, add_mul, ζ_pow_eq_pow_iff_modEq]
-    have hE0 : ∑ x : Fin n, d ^ (n - (x + 1)) * (v 0 : ℕ) * (a x.succ)
-            = (∑ x : Fin n, (a x.rev.succ) * d ^ (x : ℕ)) * (v 0) := by
-      rw [Finset.sum_mul]
-      refine Finset.sum_equiv Fin.revPerm (fun i => by simp) fun i _ => ?_
-      simp only [Fin.revPerm_apply, Fin.rev_rev, Fin.val_rev]
+    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc]
+    have h1 : (∑ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ))
+        = (v 0 : ℕ) * ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ) := by
+      simpa [Finset.mul_sum] using Finset.sum_congr rfl fun x _ => by ring
+    have h2 : (∑ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1))
+        = d * ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ) := by
+      simpa [Finset.mul_sum] using Finset.sum_congr rfl fun x _ => by ring
+    set S1 := ∑ x : Fin n, (a x.rev.succ) * d ^ (x : ℕ)
+    set S2 := ∑ x : Fin n, (v x.succ) * d ^ (x : ℕ)
+    have h3 :
+      (S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
+        (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2)))
+      = ((v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2))
+          + d ^ (n + 1) * ((a 0 : ℕ) * S2) := by
       ring
-    have hS1 : ∑ x : Fin n, (v x.succ : ℕ) * d ^ ((x:ℕ) + 1) =
-      d * ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ) := by
-      rw [Finset.mul_sum]
-      exact Finset.sum_congr rfl fun x _ => by rw [pow_succ]; ring
-    have hgap :
-        (∑ x : Fin n, (a x.rev.succ) * d ^ (x : ℕ)) * (v 0) + (a 0) * d ^ n * (v 0) +
-          ((∑ x  : Fin n, (a x.rev.succ:ℕ) * d ^ (x:ℕ)) * ∑ x  : Fin n, (v x.succ) * d ^ ((x:ℕ)+1) +
-            (a 0) * d ^ n * ∑ x  : Fin n, (v x.succ) * d ^ ((x : ℕ) + 1))
-      = ((∑ x : Fin n , (a x.rev.succ) * d ^ (x : ℕ)) * (v 0) + d ^ n * ((a 0) * (v 0)) +
-          d * ((∑ x  : Fin n, (a x.rev.succ) * d ^ (x : ℕ)) *
-          ∑ x : Fin n, (v x.succ:ℕ) * d ^ (x : ℕ)))
-        + d ^ (n + 1) * ((a 0) * ∑ x : Fin n, (v x.succ) * d ^ (x : ℕ)) := by
-      rw [hS1]; ring
-    rw [hE0, hgap]
-    exact (Nat.add_mul_mod_self_left _ _ _).symm
+    simp [h1, h2, h3]
