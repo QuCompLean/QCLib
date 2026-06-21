@@ -262,7 +262,7 @@ theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT 
     simp_rw [IQFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
     ext a
     -- Application on basis
-    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq_reindexed, Fin.rev_castSucc]
+    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq_reindexed]
     simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
     simp [Pi.single_apply, ← ite_and, cons_iff]
     -- Normalization
@@ -271,22 +271,18 @@ theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT 
     simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
     -- Elementary math (to be simplified)
-    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add, ζ_pow_eq_pow_iff_modEq]
-    simp [equivFin]
+    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
+      ζ_pow_eq_pow_iff_modEq, equivFin]
     nth_rw 2 [Fin.sum_univ_succ]
-    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc]
-    have h1 : (∑ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ))
-        = (v 0 : ℕ) * ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ) := by
-      simpa [Finset.mul_sum] using Finset.sum_congr rfl fun x _ => by ring
-    have h2 : (∑ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1))
-        = d * ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ) := by
-      simpa [Finset.mul_sum] using Finset.sum_congr rfl fun x _ => by ring
-    set S1 := ∑ x : Fin n, (a x.rev.succ) * d ^ (x : ℕ)
-    set S2 := ∑ x : Fin n, (v x.succ) * d ^ (x : ℕ)
-    have h3 :
-      (S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
-        (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2)))
-      = ((v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2))
-          + d ^ (n + 1) * ((a 0 : ℕ) * S2) := by
-      ring
-    simp [h1, h2, h3]
+    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc,
+      show ∀ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ)
+        = (v 0 : ℕ) * ((a x.rev.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
+      show ∀ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1)
+        = d * ((v x.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
+         ← Finset.mul_sum]
+    set S1 := ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ)
+    set S2 := ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ)
+    simp [show S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
+            (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2))
+          = (v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2)
+            + d ^ (n + 1) * ((a 0 : ℕ) * S2) by ring]
