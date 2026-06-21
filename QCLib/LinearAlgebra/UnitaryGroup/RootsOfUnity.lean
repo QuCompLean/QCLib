@@ -219,21 +219,8 @@ lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
   rw [Nat.pow_div (by lia) (by lia)] at h
   simp_all
 
--- TBD: Feels too manual & complicated. Try to base on general results.
--- Update: Now done in one of the QFT files.
-@[simp]
-theorem ζ_sum_ortho {n : ℕ} [NeZero n] (i j : Fin n) :
-    ∑ x : Fin n, (ζ n) ^ ((i : ℤ) * x) * starRingEnd ℂ (ζ n) ^ ((j : ℤ) * x)
-      = n * ite (i = j) 1 0 := by
-  simp_rw [ζ_star, _root_.inv_zpow', ← zpow_add₀ (a := (ζ n)) (by simp [ζ_def]),
-    ← sub_eq_add_neg, ← mul_sub_right_distrib, _root_.zpow_mul, zpow_natCast, ← Finset.sum_range]
-  by_cases hij : i = j
-  · simp_all
-  · rw [geom_sum_eq (x := (ζ n ^ (i - j : ℤ)))]
-    · simp only [hij, ↓reduceIte, mul_zero, div_eq_zero_iff, ← zpow_natCast, zpow_comm]
-      simp [zpow_natCast, (ζ_isPrimitiveRoot n).pow_eq_one]
-    · exact fun h => (show (i : ℤ) ≠ j by grind)
-        (sub_eq_zero.mp (Int.eq_zero_of_dvd_of_natAbs_lt_natAbs
-          (((ζ_isPrimitiveRoot n).zpow_eq_one_iff_dvd (i - j)).mp h) (by omega)))
+lemma uζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
+    uζ (a ^ (u + 1 : ℕ)) = uζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
+  simp [Subtype.ext_iff, ζ_pow_fin_rev (ha := ha)]
 
 end QFT
