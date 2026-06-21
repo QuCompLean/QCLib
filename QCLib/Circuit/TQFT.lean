@@ -295,6 +295,11 @@ theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT 
     simp_rw [IQFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
     ext a
     simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq]
-    simp [basisVector_def,  Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
-    simp [Pi.single_apply, ←ite_and, cons_iff]
+    simp [basisVector_def, Submonoid.smul_def,
+      mulVec_eq_sum, blockDiagonal_apply, funext_iff]
+    simp [Pi.single_apply, ← ite_and, cons_iff]
+    apply (starRingEnd ℂ).injective
+    field_simp
+    simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
+      div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
     sorry
