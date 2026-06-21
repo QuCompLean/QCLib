@@ -255,7 +255,7 @@ end CRCircuit
 
 public noncomputable section IQFTCircuit
 
-open UnitaryGroup
+open UnitaryGroup OuterProduct
 
 def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
   | 0 => 1
@@ -271,26 +271,30 @@ example (d : ℕ) [NeZero d] (v : Fin 2 → Fin d) : True := by
 
 def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
 
--- theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
---   rw [← mul_left_inj (revCircuit (Fin d) n), IQFTCircuit,
---     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
---   induction n with
---   | zero =>
---     ext i j
---     simp [IQFTRevCircuit, Subsingleton.elim i j]
---   | succ n ih =>
---     sorry
---     apply ext_smul_basis
---     intro v
---     simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, last_single_succ_apply_basis]
---     ext a
---     simp? [permSubsystemsHom_smul_unitary_smul_basis,
---       Function.comp_def, CRCircuit_eq, dftFin_apply_basis]
---     simp? [Submonoid.smul_def,
---       basisVector_def, Pi.single_apply, mulVec_eq_sum, diagonal_apply]
---     field_simp
---     simp [show (√(d ^ n) * √d) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ],
---       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out]),
---       show (Finset.Ioi (last n)).attach = ({} : Finset _) by grind
---     ]
---     simp [equivFin, Fin.sum_univ_castSucc, add_mul, mul_add]
+private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
+    ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
+    x = Fin.cons (v 0) (fun i : Fin n => a i.succ) := by
+  constructor
+  · rintro ⟨h, h0⟩
+    funext k
+    rcases k.eq_zero_or_eq_succ with rfl | ⟨i, rfl⟩ <;> simp_all
+  · rintro rfl
+    refine ⟨fun k hk => ?_, by simp⟩
+    rcases k.eq_zero_or_eq_succ with rfl | ⟨i, rfl⟩ <;> simp_all
+
+theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
+  rw [← mul_left_inj (revCircuit (Fin d) n), IQFTCircuit,
+    mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
+  induction n with
+  | zero =>
+    ext i j
+    simp [IQFTRevCircuit, Subsingleton.elim i j]
+  | succ n ih =>
+    apply ext_smul_basis
+    intro v
+    simp_rw [IQFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
+    ext a
+    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq]
+    simp [basisVector_def,  Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
+    simp [Pi.single_apply, ←ite_and, cons_iff]
+    sorry
