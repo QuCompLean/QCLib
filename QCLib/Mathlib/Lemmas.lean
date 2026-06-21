@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Algebra.CharP.Basic
 public import Mathlib.Algebra.Lie.OfAssociative -- `#min_imports` suggestions aren't really sensible
-
+public import Mathlib.Analysis.Complex.Exponential
 /-!
 
 # Misc lemmas
@@ -93,5 +93,10 @@ theorem _root_.Ring.neg_one_ne_one_of_char_zero_class {α : Type*} [Ring α] [Ch
   simp [Ring.neg_one_ne_one_of_char_ne_two]
 
 end NegOne
+
+open Complex in
+theorem Complex.exp_nat_mul' (x : ℂ) (n : ℕ) :
+    cexp (x * n) = cexp (x) ^ n := by
+  simp [← Complex.exp_nat_mul, mul_comm]
 
 end

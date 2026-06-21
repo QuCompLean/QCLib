@@ -197,6 +197,12 @@ theorem neg_scalar_eq_one_smul (s : ℂ) : ᵤ-1 • s = -s := by
 -- lemmas used (at some point) for QFT. TBD: clean up
 section QFT
 
+lemma ζ_pow_eq_pow_iff_modEq (a b c : ℕ) [NeZero a] :
+    ζ a ^ b = ζ a ^ c ↔ b ≡ c [MOD a] := by
+  rw [← coe_uζ]
+  norm_cast
+  simp [pow_eq_pow_iff_modEq]
+
 lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
     ζ m ^ (m / n) = ζ n := by
   obtain ⟨k, rfl⟩ := hdvd
@@ -205,22 +211,42 @@ lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
   ring_nf
   simp [mul_comm, ←mul_assoc, hk]
 
-lemma ζ_pow_succ (a k : ℕ) (ha : a ≠ 0) :
+lemma ζ_pow_succ (a k : ℕ) [ha : NeZero a] :
     ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
-  simpa [pow_succ', ha] using
-    ζ_pow_dvd a (a ^ (k + 1)) ha (pow_ne_zero (k + 1) ha) (dvd_pow_self a (by lia))
+  simpa [pow_succ', ha.out] using
+    ζ_pow_dvd a (a ^ (k + 1))
+      ha.out (pow_ne_zero (k + 1) ha.out) (dvd_pow_self a (by lia))
 
-lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
+lemma ζ_pow_succ' (a k : ℕ) [ha : NeZero a] :
+    ζ (a ^ (k + 1)) ^ a = ζ (a ^ k) := by
+  have ha' : (a : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr ha.out
+  simp only [ζ, ← Complex.exp_nat_mul]
+  congr 1
+  push_cast [pow_succ]
+  field_simp
+
+lemma ζ_pow_fin_rev (a n : ℕ) (u : Fin n) [ha : NeZero a] :
     ζ (a ^ (u + 1 : ℕ)) = ζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
   have h :=
     (ζ_pow_dvd (a ^ (u + 1 : ℕ)) (a ^ n)
-      (pow_ne_zero _ ha) (pow_ne_zero _ ha)
+      (pow_ne_zero _ ha.out) (pow_ne_zero _ ha.out)
       (Nat.pow_dvd_pow _ (Nat.succ_le_of_lt u.is_lt)))
-  rw [Nat.pow_div (by lia) (by lia)] at h
+  rw [Nat.pow_div (by lia) (by grind [ha.out])] at h
   simp_all
 
-lemma uζ_pow_fin_rev (a n : ℕ) (u : Fin n) (ha : a ≠ 0) :
+lemma uζ_pow_fin_rev (a n : ℕ) (u : Fin n) [ha : NeZero a] :
     uζ (a ^ (u + 1 : ℕ)) = uζ (a ^ n) ^ (a ^ (u.rev : ℕ)) := by
-  simp [Subtype.ext_iff, ζ_pow_fin_rev (ha := ha)]
+  simp [Subtype.ext_iff, ζ_pow_fin_rev]
+
+lemma ζ_pow_mul {n} [NeZero n] (a b : Fin n) :
+    ζ n ^ ((a * b : Fin n) : ℕ) = ζ n ^ ((a : ℕ) * (b : ℕ)) := by
+  simp [ζ_pow_eq_pow_iff_modEq, Fin.val_mul, Nat.mod_modEq]
+
+-- This exists, because `simp [pow_add]` affects
+-- both power and argument of `ζ (a ^ (n + 1)) ^ (b + c)`
+lemma ζ_pow_add (a b c) :
+    ζ a ^ (b + c) = ζ a ^ b * ζ a ^ c := by
+  simp [pow_add]
+
 
 end QFT
