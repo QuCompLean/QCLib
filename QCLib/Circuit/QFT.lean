@@ -27,10 +27,6 @@ lemma equivFin_apply_reindex {n d} [NeZero d] (v : Fin n → Fin d) :
   congr
   lia
 
-lemma equivFin_apply' {n d} (v : Fin n → Fin d) :
-    ((equivFin v) : ℕ) = ∑ i : Fin n, v i.rev * d ^ (i : ℕ) := by
-  simp [equivFin]
-
 end equivFin
 
 public section Aux
@@ -246,7 +242,6 @@ def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n wit
     (single 0 (idftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
 
 def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
-
 
 set_option linter.flexible false in
 theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
