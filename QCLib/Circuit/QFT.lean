@@ -234,13 +234,13 @@ open Finset
 
 variable {d n : ℕ} (k : ℕ)
 
+/-- The diagonal gate which multiples `|x>` with `e^{-i 2 π / d^k x}` -/
 def IR : 𝐔[Fin d] :=
   diagonalMonoidHom (fun x ↦ star ((uζ (d ^ k)) ^ (x : ℕ)))
 
 theorem CIR_diagonal :
     controllize d (IR k) =
-      diagonalMonoidHom (fun x : Fin d × Fin d ↦
-        star (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
+      diagonalMonoidHom (fun x : Fin d × Fin d ↦ star (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
   simp [IR, controllize_diagonal, pow_mul]
 
 theorem CIR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
@@ -248,6 +248,7 @@ theorem CIR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
       diagonalMonoidHom (fun x : Fin n → Fin d ↦ star (uζ (d ^ k) ^ (x j * x i : ℕ))) := by
   simp [CIR_diagonal, bipartite_diagonal]
 
+/-- The block of the inverse QFT that consists of controlled-`R` gates -/
 def CIRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
   ((Ioi i).attach.toList.map (
     fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (IR (j + 1 - i)))
@@ -266,7 +267,7 @@ theorem CIRCircuit_eq (i : Fin n) [hd : NeZero d] :
 
 theorem CIRCircuit_eq_reindexed (i : Fin n) [hd : NeZero d] :
     CIRCircuit d i = diagonalMonoidHom fun y : Fin n → Fin d ↦
-          star (uζ (d ^ n)) ^ (∑ j ∈ Finset.Iio i.rev, (d ^ (j + i : ℕ) * y i * y j.rev)) := by
+      star (uζ (d ^ n)) ^ (∑ j ∈ Finset.Iio i.rev, (d ^ (j + i : ℕ) * y i * y j.rev)) := by
   rw [CIRCircuit_eq]
   congr! 3 with x
   exact Finset.sum_equiv Fin.revPerm (by simp_all) (by simp)
@@ -278,11 +279,14 @@ public noncomputable section IQFTCircuit
 
 open UnitaryGroup OuterProduct
 
+/-- The circuit of the inverse QFT, using big-endian order for the right and little-endian order
+for the left index type. (The mixed order allows for a cleaner recursive definitions.) -/
 def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
   | 0 => 1
   | n + 1 =>
     (single 0 (idftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
 
+/-- The circuit of the inverse QFT -/
 def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
 
 set_option linter.flexible false in
