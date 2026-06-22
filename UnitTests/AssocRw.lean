@@ -60,8 +60,6 @@ example (a b c d : G) (h1 : a * b = c) (h2 : c * b = d) :
   assoc_rw [h1, h2]
 
 
-
-
 -- rewrite at single hyp vs at *
 example (a b c : Nat) (h : a + b = c) (h2 : a + b + c = c + c) :
     c + c = c + c := by
@@ -152,12 +150,11 @@ example (xs ys zs ws : List Nat) (h : xs ++ ys = ws) :
     xs ++ ys ++ zs = ws ++ zs := by
   assoc_rw [h]
 
--- test non equallities
+-- test non equalities
 -- these do not close with just ac_rfl but rfl closes it (also ac_nf closes them)
 example (α : Type) [Semigroup α] (a b c d : α) (s : Set α) (h : a * b = c) :
     (a * b * c) * d ∈ s ↔ (c * c) * d ∈ s := by
   assoc_rw [h]
-
 
 example (α : Type) [Semigroup α] [Preorder α] [CovariantClass α α (· * ·) (· ≤ ·)]
     (a b c d : α) (h : a * b = c) :
@@ -289,7 +286,7 @@ example (a b c d e f g h i j x : α) (h_eq : d * e * f * g * h = x)
   assoc_rw [h_eq] at hyp
   exact hyp
 
--- ssoc_rw_right produces different grouping than assoc_rw
+-- assoc_rw_right produces different grouping than assoc_rw
 
 -- Gold example: same goal, different hp shape
 -- assoc_rw needs  hp : P ((a * x) * e)
@@ -317,41 +314,49 @@ example (a b c d e f g h i j x : α) (h_eq : d * e * f * g * h = x)
 example (a b c d e x : α) (h : c * d * e = x) (P : α → Prop)
     (hp : P ((a * b) * x)) :
     P ((a * b) * ((c * d) * e)) := by
-  assoc_rw [h]; exact hp
+  assoc_rw [h]
+  exact hp
 
 example (a b c d e x : α) (h : c * d * e = x) (P : α → Prop)
     (hp : P ((a * b) * x)) :
     P ((a * b) * ((c * d) * e)) := by
-  assoc_rw_right [h]; exact hp
+  assoc_rw_right [h]
+  exact hp
 
 -- simple base cases
 example (a b x : α) (h : a * b = x) (P : α → Prop) (hp : P x) :
     P (a * b) := by
-  assoc_rw [h]; exact hp
+  assoc_rw [h]
+  exact hp
 
 example (a b c x : α) (h : a * b * c = x) (P : α → Prop) (hp : P x) :
     P ((a * b) * c) := by
-  assoc_rw [h]; exact hp
+  assoc_rw [h]
+  exact hp
 
 -- c * d rewrite with trailing element
 example (a b c d e x : α) (h : c * d = x) (P : α → Prop)
     (hp : P (a * (b * (x * e)))) :
     P (a * (b * (c * (d * e)))) := by
-  assoc_rw [h]; exact hp
+  assoc_rw [h]
+  exact hp
 
 -- c * d rewrite with two trailing elements
 example (a b c d e f x : α) (h : c * d = x) (P : α → Prop)
     (hp : P (a * (b * (x * (e * f))))) :
     P (a * (b * (c * (d * (e * f))))) := by
-  assoc_rw [h]; exact hp
+  assoc_rw [h]
+  exact hp
 
 -- four-element h, one trailing
 example (a b c d e f g x : α) (h : c * d * e * f = x) (P : α → Prop)
     (hp : P (a * (b * (x * g)))) :
     P (a * (b * (c * (d * (e * (f * g)))))) := by
-  assoc_rw [h]; exact hp
+  assoc_rw [h]
+  exact hp
 
 example (a b c d e f g x : α) (h : c * d * e * f = x) (P : α → Prop)
     (hp : P (a * (b * (x * g)))) :
     P (a * (b * (c * (d * (e * (f * g)))))) := by
-  assoc_rw_right [h]; exact hp
+  assoc_rw_right [h]
+  exact hp
