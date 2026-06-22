@@ -16,23 +16,43 @@ public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 A *quantum Fourier transform* is a discrete Fourier transform interpreted as a
 unitary map on a Hilbert space associated with a quantum system.
 
-For such a unitary to be physically meaningful, it needs to have an efficient gate decomposition.
+For such a unitary to be physically meaningful, it needs to have an efficient
+gate decomposition.
 
-In this file, we define a gate decomposition for the discrete Fourier transform on `ℤ_{d ^ n}`,
-represented by the DFT matrix with elements `U k l = √(N⁻¹) • stdAddChar (i * j)`. The circuit
-uses single- and two-body gates on an `n` qudit system.
+In this file, we define a gate decomposition for the discrete Fourier transform
+on `ℤ_{d ^ n}`.
+
+The definitions follow the (somewhat unfortunate) sign convention of https://en.wikipedia.org/wiki/Quantum_Fourier_transform. In particular, the normalized DFT matrix is taken to have elements
+
+ `DFT k l = √(N⁻¹) • stdAddChar (- k * l) = √(N⁻¹) • e^{- i 2 π / (d ^ n) k l}`
+
+whereas the unitary representating the QFT has elements
+
+ `QFT k l = √(N⁻¹) • stdAddChar (k * l) = √(N⁻¹) • e^{i 2 π / (d ^ n) k l}`,
+
+which is both the inverse and the element-wise conjugate of the DFT matrix.
 
 ## Main  definitions
 
-- `IQFCircuit n d` The circuit of the inverser quantum Fourier transform for `ℤ_{d ^ n}`
+- `QFCircuit n d` The circuit of the quantum Fourier transform for `ℤ_{d ^ n}`
 
 ## Main results
 
-- `IQFTCircuit_eq_QFT` The unitary resulting from the circuit equals the DFT matrix
+- `QFTCircuit_eq_QFT` The unitary resulting from the circuit equals the quantum
+Fourier transform
 
 ## Implementation notes
 
-We use a recursively-defined circuit. See e.g. https://arxiv.org/abs/quant-ph/0411069.
+By convention, the QFT uses big-endian order for representing elements of `ZMod d ^ n`
+in terms of tuples `Fin n → Fin d`.
+
+However, it is well-known that a version of the QFT using big-endian order for
+the right index type, and little-endian order for the left index type leads to a
+cleaner, recursive structure of the circuit. See e.g. https://arxiv.org/abs/quant-ph/0411069.
+
+As an intermediate step, we thus define `QFTRevCircuit`, which implements a
+circuit for this mixed convention.
+
 
 ## To do
 
@@ -41,6 +61,15 @@ We use a recursively-defined circuit. See e.g. https://arxiv.org/abs/quant-ph/04
 
 - This file introduces many versions of the DFT, with slightly different
 normalizations and index types. Maybe this can be reduced.
+
+- We're mixing Mathlib's `stdAddChar` with our own `RootsOfUnity` definitions.
+TBD: Rewrite in terms of Mathlib's implementation.
+
+- Elsewhere, we've started writing a general module for working with digit
+representations of elements of `ZMod (d ^ n)`. Porting this file to the general
+theory should clean things up.
+
+- TBD: This is a first implementation. Lots of clean-up potential.
 
 -/
 
@@ -92,12 +121,20 @@ private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
   simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
 
+-- remove?
 private lemma prod_star_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
     ∏ j > i, star (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
       star (uζ (d ^ n)) ^ (∑ j > i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
   rw [← Finset.prod_pow_eq_pow_sum]
   congr! 1 with j
   simp_rw [uζ_pow_fin_rev, star_pow, ← pow_mul, ←mul_assoc, pow_add]
+
+private lemma prod_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
+    ∏ j > i, (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
+      (uζ (d ^ n)) ^ (∑ j > i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
+  rw [← Finset.prod_pow_eq_pow_sum]
+  congr! 1 with j
+  simp_rw [uζ_pow_fin_rev, ← pow_mul, ←mul_assoc, pow_add]
 
 private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
@@ -193,6 +230,107 @@ theorem QFT_apply_product_basis (v : Fin n → Fin d) :
 
 end QFT
 
+public noncomputable section CRCircuit
+
+open Finset
+
+variable {d n : ℕ} (k : ℕ)
+
+/-- The diagonal gate which multiples `|x>` with `e^{i 2 π / d^k x}` -/
+def R : 𝐔[Fin d] :=
+  diagonalMonoidHom (fun x ↦ (uζ (d ^ k)) ^ (x : ℕ))
+
+theorem CR_diagonal :
+    controllize d (R k) =
+      diagonalMonoidHom (fun x : Fin d × Fin d ↦ (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
+  simp [R, controllize_diagonal, pow_mul]
+
+theorem CR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
+    bipartite i j (controllize d (R k)) hneq =
+      diagonalMonoidHom (fun x : Fin n → Fin d ↦ uζ (d ^ k) ^ (x j * x i : ℕ)) := by
+  simp [CR_diagonal, bipartite_diagonal]
+
+/-- The block of the QFT that consists of controlled-`R` gates -/
+def CRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
+  ((Ioi i).attach.toList.map (
+    fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (R (j + 1 - i)))
+  )).prod
+
+theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
+    CRCircuit d i =
+      diagonalMonoidHom fun y : Fin n → Fin d ↦
+          (uζ (d ^ n)) ^ (∑ j ∈ Finset.Ioi i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
+  simp_rw [← prod_uζ (hd := hd), ← Finset.prod_attach (s := Ioi i), CRCircuit,
+    CR_at_diagonal, ← prod_diagonal]
+  congr! 1
+  apply List.map_congr_left (fun a h ↦ ?_)
+  congr! 2
+  simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
+
+theorem CRCircuit_eq_reindexed (i : Fin n) [hd : NeZero d] :
+    CRCircuit d i = diagonalMonoidHom fun y : Fin n → Fin d ↦
+      (uζ (d ^ n)) ^ (∑ j ∈ Finset.Iio i.rev, (d ^ (j + i : ℕ) * y i * y j.rev)) := by
+  rw [CRCircuit_eq]
+  congr! 3 with x
+  exact Finset.sum_equiv Fin.revPerm (by simp_all) (by simp)
+
+end CRCircuit
+
+
+public noncomputable section QFTCircuit
+
+open UnitaryGroup OuterProduct
+
+/-- The circuit of the QFT, using big-endian order for the right index type, and
+little-endian order for the left index type. -/
+def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
+  | 0 => 1
+  | n + 1 =>
+    (single 0 (idftFin d)) * CRCircuit d 0 * (embedRight (QFTRevCircuit n d))
+
+/-- The circuit of the QFT -/
+def QFTCircuit (n d : ℕ) [NeZero d] := QFTRevCircuit n d * revCircuit (Fin d) n
+
+set_option linter.flexible false in
+theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
+  rw [← mul_left_inj (revCircuit (Fin d) n), QFTCircuit,
+    mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
+  induction n with
+  | zero =>
+    ext i j
+    simp [QFTRevCircuit, Subsingleton.elim i j]
+  | succ n ih =>
+    apply ext_smul_basis
+    intro v
+    simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
+    ext a
+    -- Application on basis
+    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CRCircuit_eq_reindexed]
+    simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
+    simp [Pi.single_apply, ← ite_and, cons_iff]
+    -- Normalization
+    field_simp
+    simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
+      div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
+    -- Elementary math (to be simplified)
+    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
+      ζ_pow_eq_pow_iff_modEq, equivFin]
+    nth_rw 2 [Fin.sum_univ_succ]
+    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc,
+      show ∀ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ)
+        = (v 0 : ℕ) * ((a x.rev.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
+      show ∀ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1)
+        = d * ((v x.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
+         ← Finset.mul_sum]
+    set S1 := ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ)
+    set S2 := ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ)
+    simp [show S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
+            (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2))
+          = (v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2)
+            + d ^ (n + 1) * ((a 0 : ℕ) * S2) by ring]
+
+
+end QFTCircuit
 
 public section IQFT
 
@@ -218,104 +356,3 @@ theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
      piOuterProduct_univ_sum]
 
 end IQFT
-
-
-public noncomputable section CRCircuit
-
-open Finset
-
-variable {d n : ℕ} (k : ℕ)
-
-/-- The diagonal gate which multiples `|x>` with `e^{-i 2 π / d^k x}` -/
-def IR : 𝐔[Fin d] :=
-  diagonalMonoidHom (fun x ↦ star ((uζ (d ^ k)) ^ (x : ℕ)))
-
-theorem CIR_diagonal :
-    controllize d (IR k) =
-      diagonalMonoidHom (fun x : Fin d × Fin d ↦ star (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
-  simp [IR, controllize_diagonal, pow_mul]
-
-theorem CIR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
-    bipartite i j (controllize d (IR k)) hneq =
-      diagonalMonoidHom (fun x : Fin n → Fin d ↦ star (uζ (d ^ k) ^ (x j * x i : ℕ))) := by
-  simp [CIR_diagonal, bipartite_diagonal]
-
-/-- The block of the inverse QFT that consists of controlled-`R` gates -/
-def CIRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
-  ((Ioi i).attach.toList.map (
-    fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (IR (j + 1 - i)))
-  )).prod
-
-theorem CIRCircuit_eq (i : Fin n) [hd : NeZero d] :
-    CIRCircuit d i =
-      diagonalMonoidHom fun y : Fin n → Fin d ↦
-          star (uζ (d ^ n)) ^ (∑ j ∈ Finset.Ioi i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
-  simp_rw [←  prod_star_uζ (hd := hd), ← Finset.prod_attach (s := Ioi i), CIRCircuit,
-    CIR_at_diagonal, ← prod_diagonal, ← star_pow]
-  congr! 1
-  apply List.map_congr_left (fun a h ↦ ?_)
-  congr! 2
-  simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
-
-theorem CIRCircuit_eq_reindexed (i : Fin n) [hd : NeZero d] :
-    CIRCircuit d i = diagonalMonoidHom fun y : Fin n → Fin d ↦
-      star (uζ (d ^ n)) ^ (∑ j ∈ Finset.Iio i.rev, (d ^ (j + i : ℕ) * y i * y j.rev)) := by
-  rw [CIRCircuit_eq]
-  congr! 3 with x
-  exact Finset.sum_equiv Fin.revPerm (by simp_all) (by simp)
-
-end CRCircuit
-
-
-public noncomputable section IQFTCircuit
-
-open UnitaryGroup OuterProduct
-
-/-- The circuit of the inverse QFT, using big-endian order for the right and little-endian order
-for the left index type. (The mixed order allows for a cleaner recursive definitions.) -/
-def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
-  | 0 => 1
-  | n + 1 =>
-    (single 0 (dftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
-
-/-- The circuit of the inverse QFT -/
-def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
-
-set_option linter.flexible false in
-theorem IQFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : IQFTCircuit n d = IQFT n d := by
-  rw [← mul_left_inj (revCircuit (Fin d) n), IQFTCircuit,
-    mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
-  induction n with
-  | zero =>
-    ext i j
-    simp [IQFTRevCircuit, Subsingleton.elim i j]
-  | succ n ih =>
-    apply ext_smul_basis
-    intro v
-    simp_rw [IQFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
-    ext a
-    -- Application on basis
-    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CIRCircuit_eq_reindexed]
-    simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
-    simp [Pi.single_apply, ← ite_and, cons_iff]
-    -- Normalization
-    apply (starRingEnd ℂ).injective
-    field_simp
-    simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
-      div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
-    -- Elementary math (to be simplified)
-    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
-      ζ_pow_eq_pow_iff_modEq, equivFin]
-    nth_rw 2 [Fin.sum_univ_succ]
-    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc,
-      show ∀ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ)
-        = (v 0 : ℕ) * ((a x.rev.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
-      show ∀ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1)
-        = d * ((v x.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
-         ← Finset.mul_sum]
-    set S1 := ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ)
-    set S2 := ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ)
-    simp [show S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
-            (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2))
-          = (v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2)
-            + d ^ (n + 1) * ((a 0 : ℕ) * S2) by ring]
