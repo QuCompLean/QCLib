@@ -92,12 +92,20 @@ private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
   simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
 
+-- remove?
 private lemma prod_star_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
     ∏ j > i, star (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
       star (uζ (d ^ n)) ^ (∑ j > i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
   rw [← Finset.prod_pow_eq_pow_sum]
   congr! 1 with j
   simp_rw [uζ_pow_fin_rev, star_pow, ← pow_mul, ←mul_assoc, pow_add]
+
+private lemma prod_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
+    ∏ j > i, (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
+      (uζ (d ^ n)) ^ (∑ j > i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
+  rw [← Finset.prod_pow_eq_pow_sum]
+  congr! 1 with j
+  simp_rw [uζ_pow_fin_rev, ← pow_mul, ←mul_assoc, pow_add]
 
 private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
@@ -192,6 +200,107 @@ theorem QFT_apply_product_basis (v : Fin n → Fin d) :
   simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
 
 end QFT
+
+public noncomputable section CRCircuit
+
+open Finset
+
+variable {d n : ℕ} (k : ℕ)
+
+/-- The diagonal gate which multiples `|x>` with `e^{i 2 π / d^k x}` -/
+def R : 𝐔[Fin d] :=
+  diagonalMonoidHom (fun x ↦ (uζ (d ^ k)) ^ (x : ℕ))
+
+theorem CR_diagonal :
+    controllize d (R k) =
+      diagonalMonoidHom (fun x : Fin d × Fin d ↦ (uζ (d ^ k)) ^ (x.2 * x.1 : ℕ)) := by
+  simp [R, controllize_diagonal, pow_mul]
+
+theorem CR_at_diagonal (i j : Fin n) (hneq : i ≠ j) {d : ℕ} (k : ℕ) :
+    bipartite i j (controllize d (R k)) hneq =
+      diagonalMonoidHom (fun x : Fin n → Fin d ↦ uζ (d ^ k) ^ (x j * x i : ℕ)) := by
+  simp [CR_diagonal, bipartite_diagonal]
+
+/-- The block of the QFT that consists of controlled-`R` gates -/
+def CRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
+  ((Ioi i).attach.toList.map (
+    fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (R (j + 1 - i)))
+  )).prod
+
+theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
+    CRCircuit d i =
+      diagonalMonoidHom fun y : Fin n → Fin d ↦
+          (uζ (d ^ n)) ^ (∑ j ∈ Finset.Ioi i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
+  simp_rw [← prod_uζ (hd := hd), ← Finset.prod_attach (s := Ioi i), CRCircuit,
+    CR_at_diagonal, ← prod_diagonal]
+  congr! 1
+  apply List.map_congr_left (fun a h ↦ ?_)
+  congr! 2
+  simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
+
+theorem CRCircuit_eq_reindexed (i : Fin n) [hd : NeZero d] :
+    CRCircuit d i = diagonalMonoidHom fun y : Fin n → Fin d ↦
+      (uζ (d ^ n)) ^ (∑ j ∈ Finset.Iio i.rev, (d ^ (j + i : ℕ) * y i * y j.rev)) := by
+  rw [CRCircuit_eq]
+  congr! 3 with x
+  exact Finset.sum_equiv Fin.revPerm (by simp_all) (by simp)
+
+end CRCircuit
+
+
+public noncomputable section IQFTCircuit
+
+open UnitaryGroup OuterProduct
+
+/-- The circuit of the QFT, using big-endian order for the right index type, and
+little-endian order for the left index type. -/
+def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
+  | 0 => 1
+  | n + 1 =>
+    (single 0 (idftFin d)) * CRCircuit d 0 * (embedRight (QFTRevCircuit n d))
+
+/-- The circuit of the QFT -/
+def QFTCircuit (n d : ℕ) [NeZero d] := QFTRevCircuit n d * revCircuit (Fin d) n
+
+set_option linter.flexible false in
+theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
+  rw [← mul_left_inj (revCircuit (Fin d) n), QFTCircuit,
+    mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
+  induction n with
+  | zero =>
+    ext i j
+    simp [QFTRevCircuit, Subsingleton.elim i j]
+  | succ n ih =>
+    apply ext_smul_basis
+    intro v
+    simp_rw [QFTRevCircuit, ih, ← smul_eq_mul, smul_assoc, embedRight_apply_basis]
+    ext a
+    -- Application on basis
+    simp [Function.comp_def, -permSubsystemsHom_smul_basis, CRCircuit_eq_reindexed]
+    simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
+    simp [Pi.single_apply, ← ite_and, cons_iff]
+    -- Normalization
+    apply (starRingEnd ℂ).injective
+    field_simp
+    simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
+      div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
+    -- Elementary math (to be simplified)
+    simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
+      ζ_pow_eq_pow_iff_modEq, equivFin]
+    nth_rw 2 [Fin.sum_univ_succ]
+    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc,
+      show ∀ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ)
+        = (v 0 : ℕ) * ((a x.rev.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
+      show ∀ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1)
+        = d * ((v x.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
+         ← Finset.mul_sum]
+    set S1 := ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ)
+    set S2 := ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ)
+    simp [show S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
+            (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2))
+          = (v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2)
+            + d ^ (n + 1) * ((a 0 : ℕ) * S2) by ring]
+
 
 
 public section IQFT
