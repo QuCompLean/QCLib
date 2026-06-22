@@ -78,7 +78,7 @@ public section equivFin
 
 open Equiv Fin
 
-/-- Equivalence between length-`n` tuple in `Fin d` and `Fin (d ^ n)`. Uses big-endian order. -/
+/-- Equivalence between `Fin n → Fin d` and `Fin (d ^ n)` using big-endian order. -/
 @[simps! -isSimp apply, expose]
 def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
   (arrowCongrLeftHom (Fin d) Fin.revPerm).trans finFunctionFinEquiv
@@ -119,14 +119,6 @@ private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
   rw [equivFin_apply_reindex]
   simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
-
--- remove?
-private lemma prod_star_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
-    ∏ j > i, star (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
-      star (uζ (d ^ n)) ^ (∑ j > i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
-  rw [← Finset.prod_pow_eq_pow_sum]
-  congr! 1 with j
-  simp_rw [uζ_pow_fin_rev, star_pow, ← pow_mul, ←mul_assoc, pow_add]
 
 private lemma prod_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
     ∏ j > i, (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
@@ -229,13 +221,14 @@ theorem QFT_apply_product_basis (v : Fin n → Fin d) :
 
 end QFT
 
+/- Theory of the "controlled-rotations" blocks in the QFT circuit -/
 public noncomputable section CRCircuit
 
 open Finset
 
 variable {d n : ℕ} (k : ℕ)
 
-/-- The diagonal gate which multiples `|x>` with `e^{i 2 π / d^k x}` -/
+/-- The diagonal gate which multiples `|x>` with `e^{i 2 π / d^k x}`, for `x : Fin d` -/
 def R : 𝐔[Fin d] :=
   diagonalMonoidHom (fun x ↦ (uζ (d ^ k)) ^ (x : ℕ))
 
@@ -255,7 +248,7 @@ def CRCircuit (d) (i : Fin n) : 𝐔[Fin n → Fin d] :=
     fun j : ↥(Ioi i) ↦ bipartite j.val i (controllize d (R (j + 1 - i)))
   )).prod
 
-theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
+private theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
     CRCircuit d i =
       diagonalMonoidHom fun y : Fin n → Fin d ↦
           (uζ (d ^ n)) ^ (∑ j ∈ Finset.Ioi i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
@@ -266,7 +259,7 @@ theorem CRCircuit_eq (i : Fin n) [hd : NeZero d] :
   congr! 2
   simp [pow_mul, ← uζ_pow_sub hd.out (by grind : i.val ≤ a + 1)]
 
-theorem CRCircuit_eq_reindexed (i : Fin n) [hd : NeZero d] :
+private theorem CRCircuit_eq_reindexed (i : Fin n) [hd : NeZero d] :
     CRCircuit d i = diagonalMonoidHom fun y : Fin n → Fin d ↦
       (uζ (d ^ n)) ^ (∑ j ∈ Finset.Iio i.rev, (d ^ (j + i : ℕ) * y i * y j.rev)) := by
   rw [CRCircuit_eq]
