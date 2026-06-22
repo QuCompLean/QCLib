@@ -1,10 +1,8 @@
 module
 
 public import Mathlib.Analysis.Fourier.ZMod
-public import QCLib.Circuit.Embed
-public import QCLib.Circuit.Gate.Qubit
 public import QCLib.Circuit.Permutation
-public import QCLib.Mathlib.Lemmas
+public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 
 
 open Matrix UnitaryGroup PiOuterProduct ComplexConjugate
