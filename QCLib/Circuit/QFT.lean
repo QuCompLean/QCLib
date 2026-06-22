@@ -112,24 +112,24 @@ private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
 
 end Aux
 
-public noncomputable section dftZMod
+public noncomputable section idftZMod
 
 open ZMod Complex Real
 
 variable (N : ℕ) [NeZero N]
 
 /-- The matrix representation of the inverse DFT for `ZMod N`, also known as the *Schur matrix* -/
-def Matrix.dftZMod : Matrix (ZMod N) (ZMod N) ℂ :=
+def Matrix.idftZMod : Matrix (ZMod N) (ZMod N) ℂ :=
   of fun i j ↦ conj ((dft (Pi.single j 1)) i)
 
 @[simp]
-theorem Matrix.dftZMod_apply_apply (i j : ZMod N) : dftZMod N i j = stdAddChar (i * j) := by
-  simp [dftZMod, ← AddChar.map_neg_eq_conj, dft_apply, Pi.single_apply, mul_comm]
+theorem Matrix.idftZMod_apply_apply (i j : ZMod N) : idftZMod N i j = stdAddChar (i * j) := by
+  simp [idftZMod, ← AddChar.map_neg_eq_conj, dft_apply, Pi.single_apply, mul_comm]
 
 /-- The inverse DFT for `ZMod N`, normalized and bundled as a unitary matrix
 with index type `ZMod N` -/
 @[simps coe, expose]
-def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • Matrix.dftZMod N, by
+def UnitaryGroup.idftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • Matrix.idftZMod N, by
   simp only [Real.sqrt_inv, mem_unitaryGroup_iff, star_smul, star_trivial, Algebra.mul_smul_comm,
     Algebra.smul_mul_assoc, smul_assoc_symm, smul_eq_mul,
     show (√↑N)⁻¹ * (√↑N)⁻¹ = (N : ℝ)⁻¹ by grind]
@@ -139,32 +139,33 @@ def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • Matrix.dftZMod N, 
 /-- The inverse DFT for `ZMod N`, normalized and bundled as a unitary matrix
 with index type `Fin N` -/
 @[simps! -isSimp coe]
-def UnitaryGroup.dftFin : 𝐔[Fin N] :=
-  reindexMonoidEquiv (ZMod.finEquiv N).symm (dftZMod N)
+def UnitaryGroup.idftFin : 𝐔[Fin N] :=
+  reindexMonoidEquiv (ZMod.finEquiv N).symm (idftZMod N)
 
 @[simp]
-theorem UnitaryGroup.dftFin_apply (a b) : dftFin N a b = √N⁻¹ • ζ N ^ (a * b : ℕ) := by
-  simp [dftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul, ← div_mul_eq_mul_div,
+theorem UnitaryGroup.idftFin_apply (a b) : idftFin N a b = √N⁻¹ • ζ N ^ (a * b : ℕ) := by
+  simp [idftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul, ← div_mul_eq_mul_div,
     exp_nat_mul', show cexp (2 / N * ↑π * I) = ζ N by grind [ζ_def], ζ_pow_mul]
 
-theorem UnitaryGroup.dftFin_apply_basis (v : Fin N) :
-    dftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * ζ N ^ (k * v : ℕ)) • δ[k] := by
-  ext
-  simp [basisVector_def, Submonoid.smul_def, Pi.single_apply]
-
-def UnitaryGroup.idftFin : 𝐔[Fin N] := star (dftFin N)
-
-@[simp]
-theorem UnitaryGroup.idftFin_apply (a b) : idftFin N a b = √N⁻¹ • conj (ζ N ^ (a * b : ℕ)) := by
-  simp [idftFin, mul_comm]
-
-@[simp]
 theorem UnitaryGroup.idftFin_apply_basis (v : Fin N) :
-    idftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * conj (ζ N ^ (k * v : ℕ))) • δ[k] := by
+    idftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * ζ N ^ (k * v : ℕ)) • δ[k] := by
   ext
   simp [basisVector_def, Submonoid.smul_def, Pi.single_apply]
 
-end dftZMod
+/-- The DFT for `ZMod N`, normalized and bundled as a unitary matrix with index type `Fin N` -/
+def UnitaryGroup.dftFin : 𝐔[Fin N] := star (idftFin N)
+
+@[simp]
+theorem UnitaryGroup.dftFin_apply (a b) : dftFin N a b = √N⁻¹ • conj (ζ N ^ (a * b : ℕ)) := by
+  simp [dftFin, mul_comm]
+
+@[simp]
+theorem UnitaryGroup.dftFin_apply_basis (v : Fin N) :
+    dftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * conj (ζ N ^ (k * v : ℕ))) • δ[k] := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, Pi.single_apply]
+
+end idftZMod
 
 public section QFT
 
@@ -173,13 +174,12 @@ variable (n d : ℕ) [hdz : NeZero d]
 /-- The QFT for `ZMod (d ^ n)`, normalized and bundled as a unitary matrix
 with index type `Fin n → Fin d` -/
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
-  reindexMonoidEquiv equivFin.symm (UnitaryGroup.dftFin (d ^ n))
+  reindexMonoidEquiv equivFin.symm (UnitaryGroup.idftFin (d ^ n))
 
 @[simp] theorem QFT_apply (a b) :
     QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
   simp [QFT]
 
--- TBD: Derive this from general statement
 theorem QFT_apply_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] = ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ)) • δ[k] := by
   simp [apply_basis, mul_comm]
@@ -276,7 +276,7 @@ for the left index type. (The mixed order allows for a cleaner recursive definit
 def IQFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
   | 0 => 1
   | n + 1 =>
-    (single 0 (idftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
+    (single 0 (dftFin d)) * CIRCircuit d 0 * (embedRight (IQFTRevCircuit n d))
 
 /-- The circuit of the inverse QFT -/
 def IQFTCircuit (n d : ℕ) [NeZero d] := IQFTRevCircuit n d * revCircuit (Fin d) n
