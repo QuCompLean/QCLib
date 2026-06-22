@@ -18,8 +18,7 @@ of `Fin n` acting on subsytems has a circuit decompostion.
 
 ## To do
 
-* Make independent of local dimension.
-* Add more results.
+- Add more results.
 
 -/
 
@@ -85,6 +84,5 @@ theorem revCircuit_involution {n d} :
   apply ext_smul_basis
   intro i
   simp [← smul_eq_mul, revRegister_eq]
-
 
 end RevCircuit
