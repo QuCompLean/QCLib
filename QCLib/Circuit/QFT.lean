@@ -65,11 +65,10 @@ normalizations and index types. Maybe this can be reduced.
 - We're mixing Mathlib's `stdAddChar` with our own `RootsOfUnity` definitions.
 TBD: Rewrite in terms of Mathlib's implementation.
 
-- Elsewhere, we've started writing a general module for working with digit
-representations of elements of `ZMod (d ^ n)`. Porting this file to the general
-theory should clean things up.
-
-- TBD: This is a first implementation. Lots of clean-up potential.
+- TBD: This is a first implementation. Lots of clean-up potential. In
+particular, elsewhere, we've started writing a general module for working with
+digit representations of elements of `ZMod (d ^ n)`. Porting this file to the
+general theory should clean things up.
 
 -/
 
@@ -328,7 +327,6 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
             (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2))
           = (v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2)
             + d ^ (n + 1) * ((a 0 : ℕ) * S2) by ring]
-
 
 end QFTCircuit
 

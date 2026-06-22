@@ -47,7 +47,7 @@ Some basic results on the `n`-qubit Pauli group.
 
 * `QCLib/Circuit/Gate/Qubit/QFT.lean`
 
-Work towards the quantum Fourier transform circuit. Incomplete.
+A first implementation of a QFT circuit. [This is still quite messy. Cleanup is ongoing.]
 
 * `QCLib/Circuit/Gate/Qubit/CZ.lean`
 
@@ -88,6 +88,9 @@ Braket formalism based on interpreting a ket `∣ψ⟩` as a linear map that sen
 
 Hilbert space instances on the `PiTensorProduct` of Hilbert spaces. Approach abandoned in favor of concrete vectors / matrices.
 
+* `UnitTests`
+
+Some tests.
 
 # Contributors
 
