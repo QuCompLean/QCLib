@@ -36,8 +36,11 @@ We use a recursively-defined circuit. See e.g. https://arxiv.org/abs/quant-ph/04
 
 ## To do
 
-While the circuit decomposition we provide is easily seen to be quadratic in
+- While the circuit decomposition we provide is easily seen to be quadratic in
 `n`, we have not yet formalized the scaling behavior.
+
+- This file introduces many versions of the DFT, with slightly different
+normalizations and index types. Maybe this can be reduced.
 
 -/
 
@@ -47,6 +50,7 @@ public section equivFin
 
 open Equiv Fin
 
+/-- Equivalence between length-`n` tuple in `Fin d` and `Fin (d ^ n)`. Uses big-endian order. -/
 @[simps! -isSimp apply, expose]
 def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
   (arrowCongrLeftHom (Fin d) Fin.revPerm).trans finFunctionFinEquiv
@@ -83,23 +87,21 @@ theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
 variable {n d : ℕ} [hd : NeZero d]
 
 private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
-   (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ))
-    =  ζ (d ^ n) ^ (u * equivFin x : ℕ) := by
+   (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ)) =  ζ (d ^ n) ^ (u * equivFin x : ℕ) := by
   rw [equivFin_apply_reindex]
-  simp [ζ_pow_fin_rev, ← pow_mul,
-    Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
+  simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
 
 private lemma prod_star_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZero d] :
-    ∏ j ∈ Finset.Ioi i, star (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
-      star (uζ (d ^ n)) ^ (∑ j ∈ Finset.Ioi i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
+    ∏ j > i, star (uζ (d ^ (j + 1 : ℕ))) ^ (d ^ (i : ℕ) * y i * y j) =
+      star (uζ (d ^ n)) ^ (∑ j > i, (d ^ (j.rev + i : ℕ) * y i * y j)) := by
   rw [← Finset.prod_pow_eq_pow_sum]
   congr! 1 with j
   simp_rw [uζ_pow_fin_rev, star_pow, ← pow_mul, ←mul_assoc, pow_add]
 
 private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
-    x = Fin.cons (v 0) (fun i : Fin n => a i.succ) := by
+      x = Fin.cons (v 0) (fun i : Fin n => a i.succ) := by
   constructor
   · rintro ⟨h, h0⟩
     funext k
@@ -124,23 +126,26 @@ def Matrix.dftZMod : Matrix (ZMod N) (ZMod N) ℂ :=
 theorem Matrix.dftZMod_apply_apply (i j : ZMod N) : dftZMod N i j = stdAddChar (i * j) := by
   simp [dftZMod, ← AddChar.map_neg_eq_conj, dft_apply, Pi.single_apply, mul_comm]
 
+/-- The inverse DFT for `ZMod N`, normalized and bundled as a unitary matrix
+with index type `ZMod N` -/
 @[simps coe, expose]
-def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • _root_.Matrix.dftZMod N, by
+def UnitaryGroup.dftZMod : 𝐔[ZMod N] := ⟨√(N⁻¹) • Matrix.dftZMod N, by
   simp only [Real.sqrt_inv, mem_unitaryGroup_iff, star_smul, star_trivial, Algebra.mul_smul_comm,
     Algebra.smul_mul_assoc, smul_assoc_symm, smul_eq_mul,
     show (√↑N)⁻¹ * (√↑N)⁻¹ = (N : ℝ)⁻¹ by grind]
   ext
   simp [Matrix.mul_apply, Matrix.one_apply, stdChar_orthogonal] ⟩
 
+/-- The inverse DFT for `ZMod N`, normalized and bundled as a unitary matrix
+with index type `Fin N` -/
 @[simps! -isSimp coe]
 def UnitaryGroup.dftFin : 𝐔[Fin N] :=
   reindexMonoidEquiv (ZMod.finEquiv N).symm (dftZMod N)
 
 @[simp]
 theorem UnitaryGroup.dftFin_apply (a b) : dftFin N a b = √N⁻¹ • ζ N ^ (a * b : ℕ) := by
-  simp [dftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul,
-    ← div_mul_eq_mul_div, exp_nat_mul', show cexp (2 / N * ↑π * I) = ζ N by grind [ζ_def],
-    ζ_pow_mul]
+  simp [dftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul, ← div_mul_eq_mul_div,
+    exp_nat_mul', show cexp (2 / N * ↑π * I) = ζ N by grind [ζ_def], ζ_pow_mul]
 
 theorem UnitaryGroup.dftFin_apply_basis (v : Fin N) :
     dftFin N • δ[v] = ∑ k : Fin N, (√N⁻¹ * ζ N ^ (k * v : ℕ)) • δ[k] := by
@@ -165,6 +170,8 @@ public section QFT
 
 variable (n d : ℕ) [hdz : NeZero d]
 
+/-- The QFT for `ZMod (d ^ n)`, normalized and bundled as a unitary matrix
+with index type `Fin n → Fin d` -/
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
   reindexMonoidEquiv equivFin.symm (UnitaryGroup.dftFin (d ^ n))
 
@@ -172,6 +179,7 @@ noncomputable def QFT : 𝐔[Fin n → Fin d] :=
     QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
   simp [QFT]
 
+-- TBD: Derive this from general statement
 theorem QFT_apply_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] = ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ)) • δ[k] := by
   ext w
@@ -183,7 +191,7 @@ theorem QFT_apply_basis (v : Fin n → Fin d) :
 theorem QFT_apply_product_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] =
       (√(d ^ n)⁻¹ : ℂ) •
-        ⨂ (i : Fin n), ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ) • δ[j] := by
+        ⨂ i : Fin n, ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ) • δ[j] := by
   simp_rw [QFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
   simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
 
