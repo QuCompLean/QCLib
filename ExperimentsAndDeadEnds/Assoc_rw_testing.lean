@@ -1,6 +1,12 @@
-import Qml.AssocRw
+/-
+Copyright (c) 2026 Georgios Afentakis. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Georgios Afentakis.
+-/
+import QCLib.Tactic.AssocRw
 import Mathlib
 
+-- Some tests may be redudant
 variable
   (G : Type) [Semigroup G]
   (X Y s : G)
@@ -15,14 +21,13 @@ example (a b c : ℕ) (h : a * b = c) : a * b * a = c * a := by
 example (a b c d : G) (h1 : a * b = c) (h2 : c * a = d) :
     a * b * a = d := by
   assoc_rw [h1, h2]
+-- check wether ← is processed properly
+example : X * Y * X = s * (X * X) * Y := by
+  assoc_rw [← h1, ← h2]
 -- ← rewrite using symm chain, check if metadata drop works
 example : X * Y * X = s * (X * X) * Y := by
   have h_symmw := h1.symm
   assoc_rw [← h_symmw.symm, h2.symm]
-
--- check wether ← is processed properly
-example : X * Y * X = s * (X * X) * Y := by
-  assoc_rw [← h1, ← h2]
 
 -- rewrite under function application
 example (f : G → G) : f (s * X * Y) * s = f (Y * X) * s := by
