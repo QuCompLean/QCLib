@@ -9,6 +9,7 @@ public import QCLib.Circuit.Gate.Bipartite
 public import QCLib.Logic.Equiv
 public import QCLib.LinearAlgebra.OuterProduct
 public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
+public import QCLib.Logic.Equiv
 
 /-!
 
@@ -229,44 +230,6 @@ theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i
 
 end bipartite
 
-section Fin
-
-variable {n : ℕ}
-variable {k : Type*} [DecidableEq k] [Fintype k]
-
--- relocate
-@[simps!]
-def Fin.consFunEquiv (n k) := (Equiv.prodComm _ _).trans (Fin.consEquiv (fun _ : Fin (n + 1) => k))
-
-@[simps!]
-def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
-  reindexMonoidEquiv (Fin.consFunEquiv n k) <| blockDiagonalMonoidHom (fun _ ↦ U)
-
-/-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
-realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
-theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    embedRight U • δ[v] =
-      ((U • δ[fun i : Fin n => v i.succ]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm := by
-  ext
-  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
-  rfl
-
-/-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
-realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
-@[simps!]
-def embedLeft (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
-  reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
-
-theorem embedLeft_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    embedLeft U • δ[v] =
-      ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ δ[v (Fin.last n)])
-      ∘ Fin.succFunEquiv k n := by
-  ext
-  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
-  rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
-
-end Fin
-
 
 section subtype
 
@@ -285,4 +248,103 @@ theorem subtype_apply_basis (p : ι → Prop) [DecidablePred p]
 
 end subtype
 
-end Matrix.UnitaryGroup
+section Fin
+
+variable {n : ℕ}
+variable {k : Type*} [DecidableEq k] [Fintype k]
+
+@[simps!]
+def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
+  reindexMonoidEquiv (Fin.consFunEquiv n k) <| blockDiagonalMonoidHom (fun _ ↦ U)
+
+/-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
+theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    embedRight U • δ[v] =
+      ((U • δ[fun i : Fin n => v i.succ]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
+  rfl
+
+/-! The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
+@[simps!]
+def embedLeft (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
+  reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
+
+theorem embedLeft_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    embedLeft U • δ[v] =
+      ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ δ[v (Fin.last n)])
+      ∘ Fin.succFunEquiv k n := by
+  ext
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
+  rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
+
+
+variable {m d : ℕ} (h : n ≤ m)
+
+/-- The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin m → k]` with
+    `n ≤ m` realized by acting with `U` on the first `n` subystems and trivially on the rest.
+    As it satisfies both identity and transitivity conditions, it forms a `Directed System`.
+-/
+@[simps! coe]
+def embedFin (U : 𝐔[Fin n → k]) : 𝐔[Fin m → k] :=
+  subtype (fun i : Fin m ↦ i.val < n) (reindexMonoidEquiv (finFunSubtypeEquiv k h) U)
+
+theorem embedFin_mul (U V : 𝐔[Fin n → k]) :
+    embedFin h (U * V) = embedFin h U * embedFin h V := by
+  ext
+  simp [embedFin, ← blockDiagonal_mul]
+
+@[simp]
+theorem embedFin_map_self (U : 𝐔[Fin n → k]) : embedFin (le_refl n) U = U := by
+  ext
+  simp [blockDiagonal_apply, funext_iff, finFunSubtypeEquiv, piCongrLeft']
+
+@[simp]
+theorem embedFin_trans {p} (U : 𝐔[Fin n → k]) (hn : n ≤ p) (hp : p ≤ m) :
+    embedFin hp (embedFin hn U) = embedFin (le_trans hn hp) U := by
+  ext a b
+  simp [embedFin, blockDiagonal_apply, funext_iff, finFunSubtypeEquiv, piCongrLeft']
+  split_ifs with h1 h2 h3 <;> try grind
+  obtain ⟨q, hq⟩ := not_forall.mp h3
+  by_cases hkq : p ≤ q
+  · have := h1 q
+    simp_all
+  · simp only [not_le] at hkq
+    have := h2 ⟨q, hkq⟩
+    exfalso
+    exact hq (by simp_all)
+
+-- TBD : Add DirectedSystem instance?
+
+theorem embedFin_single_castAdd (p) (i : Fin n) (U : 𝐔[k]) :
+    embedFin le_self_add (single i U) = single (i.castAdd p) U := by
+  ext i j
+  simp [blockDiagonal_apply, funext_iff, ← ite_and]
+  split_ifs with h1 h2 <;> try grind
+  exfalso
+  have ⟨x, hx⟩ := not_forall.mp h2
+  by_cases hnx : n ≤ x
+  · have := h1.1 x hnx
+    simp_all
+  · have := h1.2 ⟨x, by lia⟩ (by grind)
+    simp_all
+
+theorem embedFin_diagonalMonoidHom_castAdd (k : ℕ) (f : (Fin n → Fin d) → (unitary ℂ)) :
+    embedFin le_self_add (diagonalMonoidHom f)
+      = diagonalMonoidHom
+          (fun y : Fin (n + k) → Fin d ↦ f (fun i ↦ y (i.castAdd k))) := by
+  ext i j
+  simp [diagonal_apply, funext_iff]
+  split_ifs with h1 h2 <;> try grind
+  rfl
+
+/-- `embedFin` as `MonoidHom`. Could be useful in some contexts, when
+  homorophisms are necessary, such as `List.prod_map_hom` -/
+@[simps! -isSimp apply]
+def embedFinHom : 𝐔[Fin n → Fin d] →* 𝐔[Fin m → Fin d] :=
+  MonoidHom.mk' (embedFin h) (embedFin_mul _)
+
+end UnitaryGroup.Fin
+end Matrix
