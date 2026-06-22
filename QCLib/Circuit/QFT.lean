@@ -174,11 +174,7 @@ noncomputable def QFT : 𝐔[Fin n → Fin d] :=
 
 theorem QFT_apply_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] = ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ)) • δ[k] := by
-  ext w
-  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-    MulOpposite.op_one, Pi.smul_apply, col_apply, QFT_apply, Real.sqrt_inv, Complex.ofReal_inv,
-    one_smul, Finset.sum_apply, smul_eq_mul]
-  rw [Finset.sum_eq_single w] <;> grind
+  simp [apply_basis, mul_comm]
 
 theorem QFT_apply_product_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] =
@@ -203,11 +199,7 @@ noncomputable def IQFT : 𝐔[Fin n → Fin d] := star (QFT n d)
 theorem IQFT_apply_basis (v : Fin n → Fin d) :
     IQFT n d • δ[v] =
       ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ))) • δ[k] := by
-  ext w
-  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-    MulOpposite.op_one, Pi.smul_apply, col_apply, IQFT_apply, Real.sqrt_inv, Complex.ofReal_inv,
-    one_smul, Finset.sum_apply, smul_eq_mul]
-  rw [Finset.sum_eq_single w] <;> grind
+  simp [apply_basis, mul_comm]
 
 theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
     IQFT n d • δ[v] =

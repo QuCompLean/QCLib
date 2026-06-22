@@ -50,8 +50,8 @@ notation3:max "δ[" i:90 "] " => BasisVector i
 -- TBD: Get rid of this? Formulate in terms of `toLin` and general Bases? State
 -- for `MatrixLike` objects?
 -- More generally, decide whether to use `•` for actions on vectors
-theorem Matrix.UnitaryGroup.ext_smul_basis (ι : Type*) [Fintype ι] [DecidableEq ι]
-  (U V : Matrix.unitaryGroup ι ℂ) : (∀ i : ι, ((U • δ[i]) : ι → ℂ) = V • δ[i]) → U = V := by
+theorem Matrix.UnitaryGroup.ext_smul_basis {ι : Type*} [Fintype ι] [DecidableEq ι]
+  {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, ((U • δ[i]) : ι → ℂ) = V • δ[i]) → U = V := by
   simp only [basisVector_def, Pi.basisFun_apply, Subtype.ext_iff, Submonoid.smul_def,
     smul_eq_mulVec, mulVec_single, MulOpposite.op_one, one_smul]
   apply Matrix.ext_col
@@ -64,10 +64,16 @@ theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] 
 
 @[simp]
 theorem Matrix.diagonal_smul_basisVector
-  {ι : Type*} [Fintype ι] [DecidableEq ι] (d : ι → ℂ) (v : ι) :
+    {ι : Type*} [Fintype ι] [DecidableEq ι] (d : ι → ℂ) (v : ι) :
     Matrix.diagonal d • δ[v] = d v • δ[v] := by
   ext i
   simp [basisVector_def, Pi.basisFun_apply, Pi.single_apply]
+
+theorem Matrix.UnitaryGroup.apply_basis {ι : Type*} [Fintype ι]
+    [DecidableEq ι] {U : Matrix.unitaryGroup ι ℂ} (v : ι) :
+    U • δ[v] = ∑ i, U i v • δ[i] := by
+  ext
+  simp [basisVector_def, Pi.single_apply, Submonoid.smul_def]
 
 section SMul
 
