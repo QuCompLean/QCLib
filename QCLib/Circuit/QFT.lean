@@ -1,9 +1,45 @@
+/-
+Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Davood Tehrani, David Gross
+-/
 module
 
 public import Mathlib.Analysis.Fourier.ZMod
 public import QCLib.Circuit.Permutation
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 
+/-!
+
+# Quantum Fourier transform for `ℤ_{d ^ n}`.
+
+A *quantum Fourier transform* is a discrete Fourier transform interpreted as a
+unitary map on a Hilbert space associated with a quantum system.
+
+For such a unitary to be physically meaningful, it needs to have an efficient gate decomposition.
+
+In this file, we define a gate decomposition for the discrete Fourier transform on `ℤ_{d ^ n}`,
+represented by the DFT matrix with elements `U k l = √(N⁻¹) • stdAddChar (i * j)`. The circuit
+uses single- and two-body gates on an `n` qudit system.
+
+## Main  definitions
+
+- `IQFCircuit n d` The circuit of the inverser quantum Fourier transform for `ℤ_{d ^ n}`
+
+## Main results
+
+- `IQFTCircuit_eq_QFT` The unitary resulting from the circuit equals the DFT matrix
+
+## Implementation notes
+
+We use a recursively-defined circuit. See e.g. https://arxiv.org/abs/quant-ph/0411069.
+
+## To do
+
+While the circuit decomposition we provide is easily seen to be quadratic in
+`n`, we have not yet formalized the scaling behavior.
+
+-/
 
 open Matrix UnitaryGroup PiOuterProduct ComplexConjugate
 
