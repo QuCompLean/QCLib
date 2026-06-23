@@ -181,7 +181,7 @@ theorem ofDigits_digits {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
   simp [digits_def, ofDigits_def]
 
 -- TBD: Make `apply_val` non-simp?
-@[simps!?]
+@[simps!]
 def digitsEquiv {n d : ℕ} [NeZero d] : (ZMod (d ^ n)) ≃ (Fin n → Fin d) where
   toFun := digits
   invFun := Function.ofDigits
