@@ -399,14 +399,14 @@ theorem ofDigits_mul_ofDigitsBE [NeZero d] :
   simp
 
 -- TBD: Unite these
-theorem ofDigits_mul_ofDigitsBE_rec_aux1 [NeZero d] (k x : Fin (n + 1) → Fin d) :
+private theorem ofDigits_mul_ofDigitsBE_rec_aux1 [NeZero d] (k x : Fin (n + 1) → Fin d) :
     k.ofDigits * x.ofDigitsBE =
       (∑ j : Fin n, ∑ i ≤ j, ↑((k i.castSucc) * (x j.castSucc) * (d ^ (i + (j.rev : ℕ) + 1))))
       + (∑ i : Fin (n + 1), ↑((k i) * (x (Fin.last n)) * d ^ (i : ℕ))) := by
   conv_lhs => simp only [ofDigits_mul_ofDigitsBE, Fin.sum_univ_castSucc, Fin.sum_Iic_castSucc]
   congr <;> grind
 --
-theorem ofDigits_mul_ofDigitsBE_rec_aux2 [NeZero d] (k x : Fin (n + 1) → Fin d) :
+private theorem ofDigits_mul_ofDigitsBE_rec_aux2 [NeZero d] (k x : Fin (n + 1) → Fin d) :
     k.ofDigits * x.ofDigitsBE =
       (∑ j : Fin n, ∑ i ≤ j, (k i.castSucc) * (x j.castSucc) *
         ((d ^ (i + (j.rev : ℕ)) : ZMod (d ^ (n + 1))))) * d
@@ -429,7 +429,7 @@ end BigEndian
 
 /-- A character of order `d ^ n.succ` evaluated at `x * d` equals the character
 of order `d ^ n` evaluated at x. -/
-theorem stdAddChar_cast {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
+theorem stdAddChar_mul_cast_succ {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
     stdAddChar (x.cast * d : ZMod (d ^ (n + 1))) = stdAddChar x := by
   conv_rhs => rw [← natCast_zmod_val x]
   simp_rw [cast_eq_val, ← Nat.cast_mul, stdAddChar_apply, toCircle_natCast, pow_add]
@@ -440,7 +440,7 @@ theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin
   stdAddChar (k.ofDigits * x.ofDigitsBE) =
     stdAddChar ((Fin.init k).ofDigits * (Fin.init x).ofDigitsBE) *
       stdAddChar (∑ i, k i * x (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
-  rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_cast]
+  rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_mul_cast_succ]
 
 
 end ZMod
