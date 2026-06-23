@@ -436,11 +436,13 @@ theorem stdAddChar_mul_cast_succ {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
   push_cast
   field_simp [NeZero.ne _]
 
+/-- A recursive formula for the inverse DFT matrix. Note that the first
+`stdAddChar` on the rhs is of order `d ^ n`, while the other characters have
+order `d ^ (n + 1)`. -/
 theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
   stdAddChar (k.ofDigits * x.ofDigitsBE) =
     stdAddChar ((Fin.init k).ofDigits * (Fin.init x).ofDigitsBE) *
       stdAddChar (∑ i, k i * x (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
   rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_mul_cast_succ]
-
 
 end ZMod
