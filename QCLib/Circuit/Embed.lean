@@ -77,6 +77,20 @@ theorem single_apply_apply (i : ι) (U : 𝐔[k i]) (a b : Π i, k i) :
     single' i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
+theorem single'_reindexMonoidEquiv {k' : ι → Type*}
+    [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
+    (e : ∀ i, k i ≃ k' i) (i : ι) (U : 𝐔[k i]) :
+    single' i (reindexMonoidEquiv (e i) U) =
+    reindexMonoidEquiv (Equiv.piCongrRight e) (single' i U) := by
+  ext
+  simp [blockDiagonal_apply, funext_iff]
+
+theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k']
+    [Fintype k] [Fintype k'] (e : k ≃ k') (i : ι) (U : 𝐔[k]) :
+    single i (reindexMonoidEquiv e U) =
+    reindexMonoidEquiv (piCongrRight (fun _ : ι ↦ e)) (single i U) := by
+  simp [← single'_reindexMonoidEquiv]
+
 theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
     single' i (diagonalMonoidHom d) = diagonalMonoidHom (fun x ↦ d (x i)) := by
   ext
