@@ -3,7 +3,10 @@ Copyright (c) 2026 David Gross. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: David Gross
 -/
-import Mathlib
+module
+
+public import Mathlib.Data.ZMod.Basic
+public import Mathlib.Analysis.Fourier.ZMod
 
 /-!
 
@@ -36,6 +39,8 @@ in BE order.
 Clean up this mess.
 
 -/
+
+@[expose] public section
 
 section lemmas
 
@@ -446,3 +451,5 @@ theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin
   rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_mul_cast_succ]
 
 end ZMod
+
+end
