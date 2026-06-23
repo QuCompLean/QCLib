@@ -93,11 +93,23 @@ theorem QFTRev_apply (k l : Fin n → Fin d) :
 
 variable [NeZero n]
 
-theorem test (k l : Fin (n + 1) → Fin d) :
+theorem test1 (k l : Fin (n + 1) → Fin d) :
   QFTRev (n + 1) d k l = √((d ^ (n + 1))⁻¹) •
     (stdAddChar ((Fin.init k).ofDigits * (Fin.init l).ofDigitsBE) *
       stdAddChar (∑ i, k i * l (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1)))) := by
   rw [QFTRev_apply, idftRec]
+
+theorem test2 (k l : Fin (n + 1) → Fin d) :
+  QFTRev (n + 1) d k l = √(d⁻¹) •
+    (QFTRev n d (Fin.init k) (Fin.init l)) *
+      stdAddChar (∑ i, k i * l (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
+  rw [QFTRev_apply, idftRec]
+  have : √((d ^ (n + 1))⁻¹) = √(d⁻¹) * √((d ^ n)⁻¹) := by
+    rw [← Real.sqrt_mul (by positivity), ← mul_inv, mul_comm, pow_succ]
+  rw [this]
+  rw [← smul_eq_mul, smul_assoc, mul_comm, ← mul_smul_comm, ← QFTRev_apply, mul_comm, smul_mul_assoc]
+-- ↑ just chained assoc and comm lemmas until it worked... :/
+
 
 
 -- theorem QFTRev_apply' (k l : Fin n → Fin d) :
