@@ -157,7 +157,7 @@ theorem finEquiv_symm_cast_val {n : ℕ} [NeZero n] (x : Fin n) :
 
 end finEquiv
 
--- namespace to allow for dot notation
+-- Put in `Function` namespace to allow for dot notation
 def _root_.Function.ofDigits {n d : ℕ} (f : Fin n → Fin d) : (ZMod (d ^ n)) :=
   ((Fin.digitsEquiv.symm f) : ZMod (d ^ n))
 
