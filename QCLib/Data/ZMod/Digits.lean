@@ -17,17 +17,17 @@ numbers in `ℤ_{d^n}` in terms of their digits.
 
 ## Main definitions
 
-* `digitsEquiv : ZMod (d ^ n) ≃ (Fin n → Fin d)` represents `ZMod d ^ n` by digits,
-in little-endian order
+* `ZMod.digits : ZMod (d ^ n) → (Fin n → Fin d)` represents `ZMod d ^ n` by digits,
+in little-endian (LE) order
 
-* `digitsBEEquiv : ZMod (d ^ n) ≃ (Fin n → Fin d)` represents `ZMod d ^ n` by digits,
-in big-endian order
-
+* `ZMod.digitsBE : ZMod (d ^ n) → (Fin n → Fin d)` represents `ZMod d ^ n` by digits,
+in big-endian (BE) order
 
 ## Main results
 
 * `ofDigits_mul_ofDigitsBE_rec` a recursive formula for multiplying numbers in
-`ZMod d ^ n`, where one is given in BE and one in LE order.
+`ZMod d ^ n`, where the first factor is given in BE order and the second factor
+in LE order.
 
 * `idftRec` a recursive formula for the inverse DFT over `ℤ_{d^n}`
 
