@@ -22,7 +22,8 @@ gate decomposition.
 In this file, we define a gate decomposition for the discrete Fourier transform
 on `ℤ_{d ^ n}`.
 
-The definitions follow the (somewhat unfortunate) sign convention of https://en.wikipedia.org/wiki/Quantum_Fourier_transform. In particular, the normalized DFT matrix is taken to have elements
+The definitions follow the (somewhat unfortunate) sign convention of https://en.wikipedia.org/wiki/Quantum_Fourier_transform.
+In particular, the normalized DFT matrix is taken to have elements
 
  `DFT k l = √(N⁻¹) • stdAddChar (- k * l) = √(N⁻¹) • e^{- i 2 π / (d ^ n) k l}`
 
