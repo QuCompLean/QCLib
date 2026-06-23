@@ -157,36 +157,38 @@ theorem finEquiv_symm_cast_val {n : ℕ} [NeZero n] (x : Fin n) :
 
 end finEquiv
 
-def ofDigits {n d : ℕ} (f : Fin n → Fin d) : (ZMod (d ^ n)) :=
+-- namespace to allow for dot notation
+def _root_.Function.ofDigits {n d : ℕ} (f : Fin n → Fin d) : (ZMod (d ^ n)) :=
   ((Fin.digitsEquiv.symm f) : ZMod (d ^ n))
 
 theorem ofDigits_def {n d : ℕ} (f : Fin n → Fin d) :
-    ofDigits f = ((Fin.digitsEquiv.symm f) : ZMod (d ^ n)) := rfl
+    f.ofDigits = ((Fin.digitsEquiv.symm f) : ZMod (d ^ n)) := rfl
 
 def digits {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) : Fin n → Fin d :=
   fun i ↦ finFunctionFinEquiv.symm ((ZMod.finEquiv _).symm x) i
 
 theorem digits_def {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
-    digits x = Fin.digitsEquiv ((finEquiv (d ^ n)).symm x) := rfl
+    x.digits = Fin.digitsEquiv ((finEquiv (d ^ n)).symm x) := rfl
 
 theorem digits_ofDigits {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
-    digits (ofDigits f) = f := by
+    digits f.ofDigits = f := by
   ext i
   simp only [digits_def, ofDigits_def, finEquiv_symm_cast_val, Equiv.symm_symm,
     Equiv.symm_apply_apply]
 
 theorem ofDigits_digits {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
-    ofDigits (digits x) = x := by
+    x.digits.ofDigits = x := by
   simp [digits_def, ofDigits_def]
 
 -- TBD: Make `apply_val` non-simp?
-@[simps!]
+@[simps!?]
 def digitsEquiv {n d : ℕ} [NeZero d] : (ZMod (d ^ n)) ≃ (Fin n → Fin d) where
   toFun := digits
-  invFun := ofDigits
+  invFun := Function.ofDigits
   left_inv := ofDigits_digits
   right_inv := digits_ofDigits
-
+-- or use this as standard lemmas?
+theorem digitsEquiv_apply {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) : digitsEquiv x = x.digits := rfl
 
 -- collect trivial stuff now, reduce later
 section trivialities
@@ -262,28 +264,31 @@ theorem val_expansion {n m d : ℕ} [d.AtLeastTwo] [NeZero n] (hmn : m ≤ n) (f
   simp [hmn, val_digit_mul]
 
 theorem ofDigits_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
-    digitsEquiv.symm f = ∑ i, f i * (d ^ (i : ℕ) : ZMod (d ^ n)) := by
+    f.ofDigits = ∑ i, f i * (d ^ (i : ℕ) : ZMod (d ^ n)) := by
   simp [ofDigits_def]
 
 theorem digits_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
-    digitsEquiv (∑ i, (f i * (d ^ (i : ℕ) ) : ZMod (d ^ n))) = f := by
-  simpa only [Equiv.apply_symm_apply] using
-    (congrArg digitsEquiv (ofDigits_expansion f)).symm
+    (∑ i, (f i * (d ^ (i : ℕ)) : ZMod (d ^ n))).digits = f := by
+  have := (congrArg digitsEquiv (ofDigits_expansion f)).symm
+  rw [← digitsEquiv_apply, ← digitsEquiv_symm_apply] at *
+  simp only [this, Equiv.apply_symm_apply]
 
 theorem self_expansion {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
-    x = ∑ i, (x.digitsEquiv i) * (d ^ (i : ℕ) : ZMod (d ^ n)) := by
+    x = ∑ i, x.digits i * (d ^ (i : ℕ) : ZMod (d ^ n)) := by
   conv_lhs => rw [show x = digitsEquiv.symm (digitsEquiv x) by simp]
+  rw [digitsEquiv_symm_apply]
   simp only [ofDigits_expansion]
+  rw [← digitsEquiv_apply]
 
 -- Better than the simps theorem `_apply_val`.
-theorem digitsEquiv_apply {n d : ℕ} [hnz : NeZero d] (x : ZMod (d ^ n)) (i : Fin n) :
-    x.digitsEquiv i = ⟨(x.val / d ^ (i : ℕ)) % d, Nat.mod_lt _ ((Nat.pos_of_neZero d))⟩ := by
+theorem digitsEquiv_apply' {n d : ℕ} [hnz : NeZero d] (x : ZMod (d ^ n)) (i : Fin n) :
+    x.digits i = ⟨(x.val / d ^ (i : ℕ)) % d, Nat.mod_lt _ ((Nat.pos_of_neZero d))⟩ := by
   ext
-  simp
+  simp [← digitsEquiv_apply, digitsEquiv_apply_val]
 
 /-- Casting from `d ^ (n + 1)` to `d ^ n` removes the most significant digit -/
 theorem digits_predHom {n d : ℕ} [NeZero d] (x : ZMod (d ^ (n + 1))) :
-    digitsEquiv (predHom d n x) = Fin.init (digitsEquiv x) := by
+    (predHom d n x).digits = Fin.init x.digits := by
   conv_lhs => rw [self_expansion x]
   simp only [map_sum, map_mul]
   simp only [Fin.sum_univ_castSucc, Fin.val_last, predHom_ker']
@@ -291,7 +296,7 @@ theorem digits_predHom {n d : ℕ} [NeZero d] (x : ZMod (d ^ (n + 1))) :
 
 theorem cast_pred {n d : ℕ} [NeZero d] (x : ZMod (d ^ (n + 1))) :
     (x.cast : ZMod (d ^ n))
-      = ∑ i : Fin n, (x.digitsEquiv i.castSucc) * (d ^ (i : ℕ) : ZMod (d ^ n)) := by
+      = ∑ i : Fin n, (x.digits i.castSucc) * (d ^ (i : ℕ) : ZMod (d ^ n)) := by
   conv_lhs => rw [self_expansion x.cast]
   rw [← predHom_apply, digits_predHom]
   simp [Fin.init_def]
@@ -299,7 +304,7 @@ theorem cast_pred {n d : ℕ} [NeZero d] (x : ZMod (d ^ (n + 1))) :
 /-- Casting down, then casting up clears the most significant digit -/
 theorem cast_cast_pred {n d : ℕ} [NeZero n] [d.AtLeastTwo] (x : ZMod (d ^ (n + 1))) :
     (x.cast : ZMod (d ^ n)).cast
-      = ∑ i : Fin n, (x.digitsEquiv i.castSucc) * (d ^ (i : ℕ) : ZMod (d ^ (n + 1))) := by
+      = ∑ i : Fin n, (x.digits i.castSucc) * (d ^ (i : ℕ) : ZMod (d ^ (n + 1))) := by
   rw [cast_pred]
   apply val_injective
   rw [val_cast_succ_eq_val]
@@ -307,7 +312,7 @@ theorem cast_cast_pred {n d : ℕ} [NeZero n] [d.AtLeastTwo] (x : ZMod (d ^ (n +
 
 theorem mul_expansion {d n : ℕ} [NeZero n] [d.AtLeastTwo] (x : ZMod (d ^ (n + 1))) :
     (x * (d : ZMod (d ^ (n + 1)))) =
-       ∑ i : Fin n, (digitsEquiv x i.castSucc) * (d ^ ((i : ℕ) + 1) : ZMod (d ^ (n + 1))) := by
+       ∑ i : Fin n, (x.digits i.castSucc) * (d ^ ((i : ℕ) + 1) : ZMod (d ^ (n + 1))) := by
   conv_lhs => rw [self_expansion x]
   rw [Finset.sum_mul]
   simp_rw [mul_assoc, ← pow_succ]
@@ -319,28 +324,28 @@ theorem mul_eq_cast_cast_pred_mul {d n : ℕ} [NeZero n] [d.AtLeastTwo] (x : ZMo
   rw [mul_expansion, cast_cast_pred, Finset.sum_mul]
   grind
 
--- not used
-/-- Casting from `d ^ n` to `d ^ (n + 1)` adds a digit with value 0 -/
-theorem digits_cast {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
-    digitsEquiv (x.cast : ZMod (d ^ (n + 1))) = Fin.snoc (digitsEquiv x) 0 := by
-  ext i
-  simp only [digitsEquiv_apply_val, val_cast_succ_eq_val]
-  induction i using Fin.lastCases with
-  | last =>
-    have : x.val < d ^ n := by grind
-    simp [Nat.div_eq_zero_iff.mpr (Or.inr this)]
-  | cast i => simp
-
--- not used
-/-- Casting from `d ^ (n + 1)` to `d ^ n` and back sets the most significant digit to 0 -/
-theorem digits_predHom_cast {n d : ℕ} [NeZero d] (x : ZMod (d ^ (n + 1))) :
-    digitsEquiv ((predHom d n x).cast : ZMod (d ^ (n + 1)))
-      = Function.update (digitsEquiv x) (Fin.last n) 0 := by
-  simp only [digits_cast, digits_predHom]
-  ext i
-  induction i using Fin.lastCases with
-  | last => simp
-  | cast i => simp [Fin.init_def]
+---- not used
+--/-- Casting from `d ^ n` to `d ^ (n + 1)` adds a digit with value 0 -/
+--theorem digits_cast {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
+--    (x.cast : ZMod (d ^ (n + 1))).digits = Fin.snoc (digitsEquiv x) 0 := by
+--  ext i
+--  simp only [digitsEquiv_apply', val_cast_succ_eq_val]
+--  induction i using Fin.lastCases with
+--  | last =>
+--    have : x.val < d ^ n := by grind
+--    simp [Nat.div_eq_zero_iff.mpr (Or.inr this)]
+--  | cast i => simp
+--
+-- -- not used
+-- /-- Casting from `d ^ (n + 1)` to `d ^ n` and back sets the most significant digit to 0 -/
+-- theorem digits_predHom_cast {n d : ℕ} [NeZero d] (x : ZMod (d ^ (n + 1))) :
+--     digitsEquiv ((predHom d n x).cast : ZMod (d ^ (n + 1)))
+--       = Function.update x.digits (Fin.last n) 0 := by
+--   simp only [digits_cast, digits_predHom]
+--   ext i
+--   induction i using Fin.lastCases with
+--   | last => simp
+--   | cast i => simp [Fin.init_def]
 
 
 section BigEndian
@@ -353,7 +358,7 @@ def digitsBEEquiv {n d : ℕ} [NeZero d] : (ZMod (d ^ n)) ≃ (Fin n → Fin d) 
 
 -- TBD: Cleaner proof
 theorem digitsBEEquiv_symm_apply {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
-    digitsBEEquiv.symm f = (digitsEquiv.symm fun i ↦ f i.rev) := rfl
+    digitsBEEquiv.symm f = (fun i ↦ f i.rev).ofDigits := rfl
 
 theorem digitsBEEquiv_symm_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
     digitsBEEquiv.symm f = ∑ i : Fin n, (f i * d ^ (i.rev : ℕ) : ZMod (d ^ n)) := by
@@ -364,7 +369,7 @@ theorem digitsBEEquiv_symm_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d
 variable {n d} (k x : Fin n → Fin d)
 
 private theorem ofDigits_mul_ofDigitsBE_aux1 [NeZero d] :
-    digitsEquiv.symm k * digitsBEEquiv.symm x =
+    k.ofDigits * digitsBEEquiv.symm x =
       ∑ i, ∑ j, (k i) * (x j) * (d ^ (i + j.rev : ℕ) : (ZMod (d ^ n))) := by
   simp only [ofDigits_expansion, digitsBEEquiv_symm_expansion, Fintype.sum_mul_sum]
   grind
@@ -377,7 +382,7 @@ private theorem ofDigitsLF_mul_ofDigitsMF_aux2 (j : Fin n) :
 
 /-- Multiplication in `ZMod d ^ n` in terms of digits -/
 theorem ofDigits_mul_ofDigitsBE [NeZero d] :
-    digitsEquiv.symm k * digitsBEEquiv.symm x =
+    k.ofDigits * digitsBEEquiv.symm x =
       ∑ j, ∑ i ≤ j, (k i) * (x j) * (d ^ (i + (j.rev : ℕ)) : ZMod (d ^ n)) := by
   simp only [ofDigits_mul_ofDigitsBE_aux1]
   conv_lhs => rw [Finset.sum_comm]
@@ -388,14 +393,14 @@ theorem ofDigits_mul_ofDigitsBE [NeZero d] :
 
 -- TBD: Unite these
 theorem ofDigits_mul_ofDigitsBE_rec_aux1 [NeZero d] (k x : Fin (n + 1) → Fin d) :
-    digitsEquiv.symm k * digitsBEEquiv.symm x =
+    k.ofDigits * digitsBEEquiv.symm x =
       (∑ j : Fin n, ∑ i ≤ j, ↑((k i.castSucc) * (x j.castSucc) * (d ^ (i + (j.rev : ℕ) + 1))))
       + (∑ i : Fin (n + 1), ↑((k i) * (x (Fin.last n)) * d ^ (i : ℕ))) := by
   conv_lhs => simp only [ofDigits_mul_ofDigitsBE, Fin.sum_univ_castSucc, Fin.sum_Iic_castSucc]
   congr <;> grind
 --
 theorem ofDigits_mul_ofDigitsBE_rec_aux2 [NeZero d] (k x : Fin (n + 1) → Fin d) :
-    digitsEquiv.symm k * digitsBEEquiv.symm x =
+    k.ofDigits * digitsBEEquiv.symm x =
       (∑ j : Fin n, ∑ i ≤ j, (k i.castSucc) * (x j.castSucc) *
         ((d ^ (i + (j.rev : ℕ)) : ZMod (d ^ (n + 1))))) * d
           + (∑ i : Fin (n + 1), (k i) * (x (Fin.last n)) * (d ^ (i : ℕ) : ZMod (d ^ (n + 1)))) := by
@@ -404,13 +409,12 @@ theorem ofDigits_mul_ofDigitsBE_rec_aux2 [NeZero d] (k x : Fin (n + 1) → Fin d
 
 /-- A recursive formula for multiplication in `ZMod d ^ n` in terms of digits -/
 theorem ofDigits_mul_ofDigitsBE_rec [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
-    digitsEquiv.symm k * digitsBEEquiv.symm x =
-      (digitsEquiv.symm (Fin.init k) * digitsBEEquiv.symm (Fin.init x)).cast * d
+    k.ofDigits * digitsBEEquiv.symm x =
+      ((Fin.init k).ofDigits * digitsBEEquiv.symm (Fin.init x)).cast * d
         + (∑ i : Fin (n + 1), k i * x (Fin.last n) * (d ^ (i : ℕ) : ZMod (d ^ (n + 1)))) := by
   rw [ofDigits_mul_ofDigitsBE_rec_aux2, mul_eq_cast_cast_pred_mul]
   simp only [← castHom_apply, pow_div_pow_succ, map_sum, map_mul]
-  simp only [map_natCast, castHom_apply, pow_div_pow_succ, cast_pow, cast_natCast,
-    ofDigits_mul_ofDigitsBE, Fin.val_rev, Fin.init_def]
+  simp [ofDigits_mul_ofDigitsBE, Fin.init_def]
 
 end BigEndian
 
@@ -426,8 +430,8 @@ theorem stdAddChar_cast {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
   field_simp [NeZero.ne _]
 
 theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
-  stdAddChar (digitsEquiv.symm k * digitsBEEquiv.symm x) =
-    stdAddChar (digitsEquiv.symm (Fin.init k) * digitsBEEquiv.symm (Fin.init x)) *
+  stdAddChar (k.ofDigits * digitsBEEquiv.symm x) =
+    stdAddChar ((Fin.init k).ofDigits * digitsBEEquiv.symm (Fin.init x)) *
       stdAddChar (∑ i, k i * x (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
   rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_cast]
 
