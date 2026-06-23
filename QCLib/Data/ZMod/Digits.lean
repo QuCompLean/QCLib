@@ -1,4 +1,41 @@
+/-
+Copyright (c) 2026 David Gross. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: David Gross
+-/
 import Mathlib
+
+/-!
+
+# Representation of elements of `ZMod (d ^ n)` by digits
+
+This WIP file builds a theory of "digits" for elements of `ℤ_{d^n}`.
+
+The module is motivated by the observation that the structure of the quantum
+Fourier transform circuit reflects a certain recursive formula for multiplying
+numbers in `ℤ_{d^n}` in terms of their digits.
+
+## Main definitions
+
+* `digitsEquiv : ZMod (d ^ n) ≃ (Fin n → Fin d)` represents `ZMod d ^ n` by digits,
+in little-endian order
+
+* `digitsBEEquiv : ZMod (d ^ n) ≃ (Fin n → Fin d)` represents `ZMod d ^ n` by digits,
+in big-endian order
+
+
+## Main results
+
+* `ofDigits_mul_ofDigitsBE_rec` a recursive formula for multiplying numbers in
+`ZMod d ^ n`, where one is given in BE and one in LE order.
+
+* `idftRec` a recursive formula for the inverse DFT over `ℤ_{d^n}`
+
+## To do
+
+Clean up this mess.
+
+-/
 
 section lemmas
 
