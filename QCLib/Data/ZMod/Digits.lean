@@ -388,7 +388,7 @@ theorem stdAddChar_cast {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
   push_cast
   field_simp [NeZero.ne _]
 
-theorem QFTRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
+theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
   stdAddChar (digitsEquiv.symm k * digitsBEEquiv.symm x) =
     stdAddChar (digitsEquiv.symm (Fin.init k) * digitsBEEquiv.symm (Fin.init x)) *
       stdAddChar (∑ i, k i * x (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
