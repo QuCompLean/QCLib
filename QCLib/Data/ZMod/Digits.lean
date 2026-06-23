@@ -26,8 +26,8 @@ in big-endian (BE) order
 ## Main results
 
 * `ofDigits_mul_ofDigitsBE_rec` a recursive formula for multiplying numbers in
-`ZMod d ^ n`, where the first factor is given in BE order and the second factor
-in LE order.
+`ZMod d ^ n`, where the first factor is given in LE order and the second factor
+in BE order.
 
 * `idftRec` a recursive formula for the inverse DFT over `ℤ_{d^n}`
 
