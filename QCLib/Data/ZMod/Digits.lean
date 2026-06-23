@@ -371,6 +371,9 @@ abbrev _root_.Function.ofDigitsBE {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
 -- TBD: Cleaner proof
 theorem ofDigitsBE_apply {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
     f.ofDigitsBE = (fun i ↦ f i.rev).ofDigits := rfl
+-- or this?
+theorem ofDigitsBE_apply' {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
+    f.ofDigitsBE = (f ∘ Fin.revPerm).ofDigits := rfl
 
 theorem digitsBE_symm_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
     f.ofDigitsBE = ∑ i : Fin n, (f i * d ^ (i.rev : ℕ) : ZMod (d ^ n)) := by
@@ -430,25 +433,6 @@ theorem ofDigits_mul_ofDigitsBE_rec [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1)
 
 end BigEndian
 
--- This should go into QFT.lean
-
-/-- A character of order `d ^ n.succ` evaluated at `x * d` equals the character
-of order `d ^ n` evaluated at x. -/
-theorem stdAddChar_mul_cast_succ {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
-    stdAddChar (x.cast * d : ZMod (d ^ (n + 1))) = stdAddChar x := by
-  conv_rhs => rw [← natCast_zmod_val x]
-  simp_rw [cast_eq_val, ← Nat.cast_mul, stdAddChar_apply, toCircle_natCast, pow_add]
-  push_cast
-  field_simp [NeZero.ne _]
-
-/-- A recursive formula for the inverse DFT matrix. Note that the first
-`stdAddChar` on the rhs is of order `d ^ n`, while the other characters have
-order `d ^ (n + 1)`. -/
-theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
-  stdAddChar (k.ofDigits * x.ofDigitsBE) =
-    stdAddChar ((Fin.init k).ofDigits * (Fin.init x).ofDigitsBE) *
-      stdAddChar (∑ i, k i * x (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
-  rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_mul_cast_succ]
 
 end ZMod
 
