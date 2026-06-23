@@ -355,23 +355,30 @@ def digitsBEEquiv {n d : ℕ} [NeZero d] : (ZMod (d ^ n)) ≃ (Fin n → Fin d) 
   digitsEquiv.trans (Equiv.arrowCongr Fin.revPerm (Equiv.refl (Fin d)))
 
 -- TBD: API for converse
+-- TBD: Think about how to introduce these functions
+
+abbrev digitsBE {n d : ℕ} [NeZero d] (x : ZMod (d ^ n)) : (Fin n → Fin d) :=
+  digitsBEEquiv x
+
+abbrev _root_.Function.ofDigitsBE {n d : ℕ} [NeZero d] (f : Fin n → Fin d) : (ZMod (d ^ n)) :=
+  digitsBEEquiv.symm f
 
 -- TBD: Cleaner proof
-theorem digitsBEEquiv_symm_apply {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
-    digitsBEEquiv.symm f = (fun i ↦ f i.rev).ofDigits := rfl
+theorem ofDigitsBE_apply {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
+    f.ofDigitsBE = (fun i ↦ f i.rev).ofDigits := rfl
 
-theorem digitsBEEquiv_symm_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
-    digitsBEEquiv.symm f = ∑ i : Fin n, (f i * d ^ (i.rev : ℕ) : ZMod (d ^ n)) := by
-  simp only [digitsBEEquiv_symm_apply, ofDigits_expansion]
+theorem digitsBE_symm_expansion {n d : ℕ} [NeZero d] (f : Fin n → Fin d) :
+    f.ofDigitsBE = ∑ i : Fin n, (f i * d ^ (i.rev : ℕ) : ZMod (d ^ n)) := by
+  simp only [ofDigitsBE_apply, ofDigits_expansion]
   rw [Finset.sum_equiv Fin.revPerm] <;> simp
 
 -- Move up
 variable {n d} (k x : Fin n → Fin d)
 
 private theorem ofDigits_mul_ofDigitsBE_aux1 [NeZero d] :
-    k.ofDigits * digitsBEEquiv.symm x =
+    k.ofDigits * x.ofDigitsBE =
       ∑ i, ∑ j, (k i) * (x j) * (d ^ (i + j.rev : ℕ) : (ZMod (d ^ n))) := by
-  simp only [ofDigits_expansion, digitsBEEquiv_symm_expansion, Fintype.sum_mul_sum]
+  simp only [ofDigits_expansion, digitsBE_symm_expansion, Fintype.sum_mul_sum]
   grind
 
 private theorem ofDigitsLF_mul_ofDigitsMF_aux2 (j : Fin n) :
@@ -382,7 +389,7 @@ private theorem ofDigitsLF_mul_ofDigitsMF_aux2 (j : Fin n) :
 
 /-- Multiplication in `ZMod d ^ n` in terms of digits -/
 theorem ofDigits_mul_ofDigitsBE [NeZero d] :
-    k.ofDigits * digitsBEEquiv.symm x =
+    k.ofDigits * x.ofDigitsBE =
       ∑ j, ∑ i ≤ j, (k i) * (x j) * (d ^ (i + (j.rev : ℕ)) : ZMod (d ^ n)) := by
   simp only [ofDigits_mul_ofDigitsBE_aux1]
   conv_lhs => rw [Finset.sum_comm]
@@ -393,14 +400,14 @@ theorem ofDigits_mul_ofDigitsBE [NeZero d] :
 
 -- TBD: Unite these
 theorem ofDigits_mul_ofDigitsBE_rec_aux1 [NeZero d] (k x : Fin (n + 1) → Fin d) :
-    k.ofDigits * digitsBEEquiv.symm x =
+    k.ofDigits * x.ofDigitsBE =
       (∑ j : Fin n, ∑ i ≤ j, ↑((k i.castSucc) * (x j.castSucc) * (d ^ (i + (j.rev : ℕ) + 1))))
       + (∑ i : Fin (n + 1), ↑((k i) * (x (Fin.last n)) * d ^ (i : ℕ))) := by
   conv_lhs => simp only [ofDigits_mul_ofDigitsBE, Fin.sum_univ_castSucc, Fin.sum_Iic_castSucc]
   congr <;> grind
 --
 theorem ofDigits_mul_ofDigitsBE_rec_aux2 [NeZero d] (k x : Fin (n + 1) → Fin d) :
-    k.ofDigits * digitsBEEquiv.symm x =
+    k.ofDigits * x.ofDigitsBE =
       (∑ j : Fin n, ∑ i ≤ j, (k i.castSucc) * (x j.castSucc) *
         ((d ^ (i + (j.rev : ℕ)) : ZMod (d ^ (n + 1))))) * d
           + (∑ i : Fin (n + 1), (k i) * (x (Fin.last n)) * (d ^ (i : ℕ) : ZMod (d ^ (n + 1)))) := by
@@ -409,8 +416,8 @@ theorem ofDigits_mul_ofDigitsBE_rec_aux2 [NeZero d] (k x : Fin (n + 1) → Fin d
 
 /-- A recursive formula for multiplication in `ZMod d ^ n` in terms of digits -/
 theorem ofDigits_mul_ofDigitsBE_rec [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
-    k.ofDigits * digitsBEEquiv.symm x =
-      ((Fin.init k).ofDigits * digitsBEEquiv.symm (Fin.init x)).cast * d
+    k.ofDigits * x.ofDigitsBE =
+      ((Fin.init k).ofDigits * (Fin.init x).ofDigitsBE).cast * d
         + (∑ i : Fin (n + 1), k i * x (Fin.last n) * (d ^ (i : ℕ) : ZMod (d ^ (n + 1)))) := by
   rw [ofDigits_mul_ofDigitsBE_rec_aux2, mul_eq_cast_cast_pred_mul]
   simp only [← castHom_apply, pow_div_pow_succ, map_sum, map_mul]
@@ -430,8 +437,8 @@ theorem stdAddChar_cast {d n : ℕ} [NeZero d] (x : ZMod (d ^ n)) :
   field_simp [NeZero.ne _]
 
 theorem idftRec {n d : ℕ} [d.AtLeastTwo] [NeZero n] (k x : Fin (n + 1) → Fin d) :
-  stdAddChar (k.ofDigits * digitsBEEquiv.symm x) =
-    stdAddChar ((Fin.init k).ofDigits * digitsBEEquiv.symm (Fin.init x)) *
+  stdAddChar (k.ofDigits * x.ofDigitsBE) =
+    stdAddChar ((Fin.init k).ofDigits * (Fin.init x).ofDigitsBE) *
       stdAddChar (∑ i, k i * x (Fin.last n) * (d ^ (i : ℕ)) : ZMod (d ^ (n + 1))) := by
   rw [ofDigits_mul_ofDigitsBE_rec, AddChar.map_add_eq_mul, stdAddChar_cast]
 
