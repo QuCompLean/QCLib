@@ -286,6 +286,12 @@ realized by acting with `U` on the first `n` subsystems and trivially on the fin
 def embedLeft (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
   reindexMonoidEquiv (Fin.succFunEquiv k n).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
+theorem embedLeft_apply_apply (U : 𝐔[Fin n → k]) (v w : Fin (n + 1) → k) :
+    embedLeft U v w =
+      if v (Fin.last n) = w (Fin.last n) then U (Fin.init v) (Fin.init w) else 0 := by
+  simp [blockDiagonal_apply]
+  rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
+
 theorem embedLeft_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
     embedLeft U • δ[v] =
       ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ δ[v (Fin.last n)])
