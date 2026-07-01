@@ -1,13 +1,8 @@
-/-
-Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Davood Tehrani, David Gross
--/
 module
 
 public import Mathlib.Analysis.Fourier.ZMod
 public import QCLib.Circuit.Permutation
-public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
+public import QCLib.Data.Fin.Digits
 
 /-!
 
@@ -66,35 +61,16 @@ normalizations and index types. Maybe this can be reduced.
 - We're mixing Mathlib's `stdAddChar` with our own `RootsOfUnity` definitions.
 TBD: Rewrite in terms of Mathlib's implementation.
 
-- TBD: This is a first implementation. Lots of clean-up potential. In
+- TBD: This is a second implementation. Lots of clean-up potential. In
 particular, elsewhere, we've started writing a general module for working with
 digit representations of elements of `ZMod (d ^ n)`. Porting this file to the
 general theory should clean things up.
 
 -/
 
-open Matrix UnitaryGroup PiOuterProduct ComplexConjugate
 
-public section equivFin
+open Matrix UnitaryGroup PiOuterProduct ComplexConjugate Fin
 
-open Equiv Fin
-
-/-- Equivalence between `Fin n → Fin d` and `Fin (d ^ n)` using big-endian order. -/
-@[simps! -isSimp apply, expose]
-def equivFin {n d : ℕ} : (Fin n → Fin d) ≃ Fin (d ^ n) :=
-  (arrowCongrLeftHom (Fin d) Fin.revPerm).trans finFunctionFinEquiv
-
-lemma equivFin_apply_reindex {n d} [NeZero d] (v : Fin n → Fin d) :
-    ((equivFin v) : ℕ) = ∑ i : Fin n, (v i : ℕ) * d ^ (n - 1 - i : ℕ) := by
-  simp only [equivFin_apply, finFunctionFinEquiv_apply_val, arrowCongr_apply, coe_refl,
-    revPerm_symm, Function.comp_apply, revPerm_apply, id_eq]
-  apply Finset.sum_equiv Fin.revPerm (by simp) (fun i _ => ?_)
-  simp only [revPerm_apply, val_rev, mul_eq_mul_left_iff, val_eq_zero_iff]
-  left
-  congr
-  lia
-
-end equivFin
 
 public section Aux
 
@@ -116,8 +92,8 @@ theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
 variable {n d : ℕ} [hd : NeZero d]
 
 private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
-   (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ)) =  ζ (d ^ n) ^ (u * equivFin x : ℕ) := by
-  rw [equivFin_apply_reindex]
+   (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ)) =  ζ (d ^ n) ^ (u * ofDigitsBE x : ℕ) := by
+  rw [ofDigitsBE_apply_reindex]
   simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
 
@@ -127,6 +103,16 @@ private lemma prod_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZer
   rw [← Finset.prod_pow_eq_pow_sum]
   congr! 1 with j
   simp_rw [uζ_pow_fin_rev, ← pow_mul, ←mul_assoc, pow_add]
+
+private theorem ζ_ofDigitsBE_ofDigits (f g : Fin (n + 1) → Fin d) :
+    ζ (d ^ (n + 1)) ^ ((ofDigitsBE f : ℕ) * (ofDigits g : ℕ))
+      = ζ (d ^ (n + 1)) ^ (
+          (ofDigitsBE (tail f) : ℕ) * (g 0 : ℕ)
+          + d ^ n * ((f 0 : ℕ) * (g 0 : ℕ))
+          + d * (ofDigitsBE (tail f) : ℕ) * (ofDigits (tail g) : ℕ)
+        ) := by
+  rw [ofDigitsBE_ofDigits_rec, ζ_pow_eq_pow_iff_modEq]
+  simp [mul_comm, mul_assoc]
 
 private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
@@ -140,6 +126,7 @@ private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     rcases k.eq_zero_or_eq_succ with rfl | ⟨i, rfl⟩ <;> simp_all
 
 end Aux
+
 
 public noncomputable section idftZMod
 
@@ -203,20 +190,21 @@ variable (n d : ℕ) [hdz : NeZero d]
 /-- The QFT for `ZMod (d ^ n)`, normalized and bundled as a unitary matrix
 with index type `Fin n → Fin d` -/
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
-  reindexMonoidEquiv equivFin.symm (UnitaryGroup.idftFin (d ^ n))
+  reindexMonoidEquiv ofDigitsBE.symm (UnitaryGroup.idftFin (d ^ n))
 
 @[simp] theorem QFT_apply (a b) :
-    QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ) := by
+    QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (ofDigitsBE a * ofDigitsBE b : ℕ) := by
   simp [QFT]
 
 theorem QFT_apply_basis (v : Fin n → Fin d) :
-    QFT n d • δ[v] = ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ)) • δ[k] := by
+    QFT n d • δ[v] =
+      ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (ofDigitsBE v * ofDigitsBE k : ℕ)) • δ[k] := by
   simp [apply_basis, mul_comm]
 
 theorem QFT_apply_product_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] =
       (√(d ^ n)⁻¹ : ℂ) •
-        ⨂ i : Fin n, ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ) • δ[j] := by
+        ⨂ i : Fin n, ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((ofDigitsBE v) * j : ℕ) • δ[j] := by
   simp_rw [QFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
   simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
 
@@ -300,51 +288,13 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
     -- Application on basis
     simp [Function.comp_def, -permSubsystemsHom_smul_basis, CRCircuit_eq_reindexed]
     simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
-    simp [Pi.single_apply, ← ite_and, cons_iff]
+    simp [Pi.single_apply, ← ite_and, cons_iff, ζ_ofDigitsBE_ofDigits]
     -- Normalization
     field_simp
     simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
-    -- Elementary math (to be simplified)
+    -- Elementary Math
     simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
-      ζ_pow_eq_pow_iff_modEq, equivFin]
-    nth_rw 2 [Fin.sum_univ_succ]
-    simp [Fin.sum_univ_castSucc, mul_add, add_mul, Fin.rev_castSucc,
-      show ∀ x : Fin n, d ^ (x : ℕ) * (v 0 : ℕ) * (a x.rev.succ : ℕ)
-        = (v 0 : ℕ) * ((a x.rev.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
-      show ∀ x : Fin n, (v x.succ : ℕ) * d ^ ((x : ℕ) + 1)
-        = d * ((v x.succ : ℕ) * d ^ (x : ℕ)) from fun x => by ring,
-         ← Finset.mul_sum]
-    set S1 := ∑ x : Fin n, (a x.rev.succ : ℕ) * d ^ (x : ℕ)
-    set S2 := ∑ x : Fin n, (v x.succ : ℕ) * d ^ (x : ℕ)
-    simp [show S1 * (v 0 : ℕ) + (a 0 : ℕ) * d ^ n * (v 0 : ℕ) +
-            (S1 * (d * S2) + (a 0 : ℕ) * d ^ n * (d * S2))
-          = (v 0 : ℕ) * S1 + d ^ n * ((a 0 : ℕ) * (v 0 : ℕ)) + d * (S1 * S2)
-            + d ^ (n + 1) * ((a 0 : ℕ) * S2) by ring]
-
-end QFTCircuit
-
-public section IQFT
-
-variable (n d : ℕ) [hdz : NeZero d]
-
-noncomputable def IQFT : 𝐔[Fin n → Fin d] := star (QFT n d)
-
-@[simp] theorem IQFT_apply (a b) :
-    IQFT n d a b = √(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (equivFin a * equivFin b : ℕ)) := by
-  simp [IQFT, mul_comm]
-
-theorem IQFT_apply_basis (v : Fin n → Fin d) :
-    IQFT n d • δ[v] =
-      ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (equivFin v * equivFin k : ℕ))) • δ[k] := by
-  simp [apply_basis, mul_comm]
-
-theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
-    IQFT n d • δ[v] =
-      (√(d ^ n)⁻¹ : ℂ) • ⨂ (i : Fin n),
-        ∑ j : Fin d, conj (ζ (d ^ (i + 1 : ℕ)) ^ ((equivFin v) * j : ℕ)) • δ[j] := by
-  simp_rw [IQFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
-  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ,
-     piOuterProduct_univ_sum]
-
-end IQFT
+      ofDigitsBE_val_apply, tail, ofDigits_apply, Fin.rev_castSucc]
+    nth_rw 2 [Finset.sum_mul]
+    grind
