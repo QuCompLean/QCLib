@@ -58,3 +58,5 @@ theorem ofDigitsBE_ofDigits_rec (f g : Fin (n + 1) → Fin d) :
       + (f 0 : ℕ) * d ^ (n + 1) * (ofDigits (tail g) : ℕ) := by
   simp [ofDigits_val_rec, ofDigitsBE_val_rec]
   ring
+
+end Fin
