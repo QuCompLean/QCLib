@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Davood Tehrani, David Gross
+-/
 module
 
 public import Mathlib.Analysis.Fourier.ZMod
@@ -298,3 +303,29 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
       ofDigitsBE_val_apply, tail, ofDigits_apply, Fin.rev_castSucc]
     nth_rw 2 [Finset.sum_mul]
     grind
+
+
+public section IQFT
+
+variable (n d : ℕ) [hdz : NeZero d]
+
+noncomputable def IQFT : 𝐔[Fin n → Fin d] := star (QFT n d)
+
+@[simp] theorem IQFT_apply (a b) :
+    IQFT n d a b = √(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (ofDigitsBE a * ofDigitsBE b : ℕ)) := by
+  simp [IQFT, mul_comm]
+
+theorem IQFT_apply_basis (v : Fin n → Fin d) :
+    IQFT n d • δ[v] =
+      ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (ofDigitsBE v * ofDigitsBE k : ℕ))) • δ[k] := by
+  simp [apply_basis, mul_comm]
+
+theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
+    IQFT n d • δ[v] =
+      (√(d ^ n)⁻¹ : ℂ) • ⨂ (i : Fin n),
+        ∑ j : Fin d, conj (ζ (d ^ (i + 1 : ℕ)) ^ ((ofDigitsBE v) * j : ℕ)) • δ[j] := by
+  simp_rw [IQFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
+  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ,
+     piOuterProduct_univ_sum]
+
+end IQFT
