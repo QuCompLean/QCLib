@@ -22,7 +22,7 @@ gate decomposition.
 In this file, we define a gate decomposition for the discrete Fourier transform
 on `ℤ_{d ^ n}`.
 
-The definitions follow the (somewhat unfortunate) sign convention of https://en.wikipedia.org/wiki/Quantum_Fourier_transform.
+The definitions follow the (somewhat unfortunate) convention used in https://en.wikipedia.org/wiki/Quantum_Fourier_transform.
 In particular, the normalized DFT matrix is taken to have elements
 
  `DFT k l = √(N⁻¹) • stdAddChar (- k * l) = √(N⁻¹) • e^{- i 2 π / (d ^ n) k l}`
@@ -31,7 +31,7 @@ whereas the unitary representating the QFT has elements
 
  `QFT k l = √(N⁻¹) • stdAddChar (k * l) = √(N⁻¹) • e^{i 2 π / (d ^ n) k l}`,
 
-which is both the inverse and the element-wise conjugate of the DFT matrix.
+which is the inverse (or the element-wise conjugate) of the DFT matrix.
 
 ## Main  definitions
 
@@ -66,7 +66,7 @@ normalizations and index types. Maybe this can be reduced.
 - We're mixing Mathlib's `stdAddChar` with our own `RootsOfUnity` definitions.
 TBD: Rewrite in terms of Mathlib's implementation.
 
-- TBD: This is a second implementation. Lots of clean-up potential. In
+- TBD: This is a first implementation. Lots of clean-up potential. In
 particular, elsewhere, we've started writing a general module for working with
 digit representations of elements of `ZMod (d ^ n)`. Porting this file to the
 general theory should clean things up.
@@ -278,6 +278,11 @@ def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
 def QFTCircuit (n d : ℕ) [NeZero d] := QFTRevCircuit n d * revCircuit (Fin d) n
 
 set_option linter.flexible false in
+/-- The circuit realizes the QFT.
+
+Note: The proof is quite condensed and fragile. A re-implmentation based on
+systematic theory of digits of elements of `ZMod (d ^ n)` is currently being
+worked on. -/
 theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
   rw [← mul_left_inj (revCircuit (Fin d) n), QFTCircuit,
     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
@@ -298,7 +303,7 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
     field_simp
     simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
-    -- Elementary Math
+    -- Elementary math
     simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
       ofDigitsBE_val_apply, tail, ofDigits_apply, Fin.rev_castSucc]
     nth_rw 2 [Finset.sum_mul]
