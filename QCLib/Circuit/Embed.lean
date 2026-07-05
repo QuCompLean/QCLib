@@ -77,11 +77,10 @@ theorem single_apply_apply (i : ι) (U : 𝐔[k i]) (a b : Π i, k i) :
     single' i U a b = if ∀ k ≠ i, a k = b k then U (a i) (b i) else 0 := by
   simp [blockDiagonal_apply, funext_iff]
 
-theorem single'_reindexMonoidEquiv {k' : ι → Type*}
-    [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
+theorem single'_reindexMonoidEquiv {k' : ι → Type*} [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
     (e : ∀ i, k i ≃ k' i) (i : ι) (U : 𝐔[k i]) :
     single' i (reindexMonoidEquiv (e i) U) =
-    reindexMonoidEquiv (Equiv.piCongrRight e) (single' i U) := by
+      reindexMonoidEquiv (Equiv.piCongrRight e) (single' i U) := by
   ext
   simp [blockDiagonal_apply, funext_iff]
 
@@ -152,14 +151,14 @@ end single
 section bipartite
 
 -- TBD: Revisit argument order
-/-! The embedding of a unitary matrix `U : U[k i × k j]` into `𝐔[Π i, k i]`
+/-- The embedding of a unitary matrix `U : U[k i × k j]` into `𝐔[Π i, k i]`
 realized by acting with `U` on the `i`th and the `j`th index, and trivially on
 all other indices. -/
 @[simps!]
 def bipartite' (i j : ι) (U : 𝐔[k i × k j]) (h : i ≠ j := by grind) : 𝐔[Π i, k i] :=
   reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm <| blockDiagonalMonoidHom (fun _ ↦ U)
 
-/-! `Matrix.UnitaryGroup.bipartite'` bundled as a monoid homomorphism. -/
+/-- `Matrix.UnitaryGroup.bipartite'` bundled as a monoid homomorphism. -/
 def bipartiteMonoidHom' (i j : ι) (h : i ≠ j := by grind) : 𝐔[k i × k j] →* 𝐔[Π i, k i] :=
   (reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm).toMonoidHom.comp
     <| blockDiagonalMonoidHom.comp
@@ -172,7 +171,7 @@ theorem bipartiteMonoidHom_apply (i j : ι) (h : i ≠ j) (U : 𝐔[k i × k j])
   ext
   simp
 
-/-! The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]` realized
+/-- The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]` realized
 by acting with `U` on the `i`th and the `j`th index, and trivially on all other
 indices. -/
 abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
@@ -271,7 +270,7 @@ variable {k : Type*} [DecidableEq k] [Fintype k]
 def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
   reindexMonoidEquiv (Fin.consFunEquiv n k) <| blockDiagonalMonoidHom (fun _ ↦ U)
 
-/-! The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+/-- The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
 theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
     embedRight U • δ[v] =
@@ -280,7 +279,7 @@ theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
   rfl
 
-/-! The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+/-- The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
 @[simps!]
 def embedLeft (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
@@ -304,9 +303,8 @@ theorem embedLeft_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
 variable {m d : ℕ} (h : n ≤ m)
 
 /-- The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin m → k]` with
-    `n ≤ m` realized by acting with `U` on the first `n` subystems and trivially on the rest.
-    As it satisfies both identity and transitivity conditions, it forms a `Directed System`.
--/
+`n ≤ m` realized by acting with `U` on the first `n` subystems and trivially on the rest.
+As it satisfies both identity and transitivity conditions, it forms a `Directed System`. -/
 @[simps! coe]
 def embedFin (U : 𝐔[Fin n → k]) : 𝐔[Fin m → k] :=
   subtype (fun i : Fin m ↦ i.val < n) (reindexMonoidEquiv (finFunSubtypeEquiv k h) U)
@@ -361,7 +359,7 @@ theorem embedFin_diagonalMonoidHom_castAdd (k : ℕ) (f : (Fin n → Fin d) → 
   rfl
 
 /-- `embedFin` as `MonoidHom`. Could be useful in some contexts, when
-  homorophisms are necessary, such as `List.prod_map_hom` -/
+homorophisms are necessary, such as `List.prod_map_hom` -/
 @[simps! -isSimp apply]
 def embedFinHom : 𝐔[Fin n → Fin d] →* 𝐔[Fin m → Fin d] :=
   MonoidHom.mk' (embedFin h) (embedFin_mul _)

@@ -13,7 +13,7 @@ might be of interest to Mathlib. There is no implication that the results are
 already sufficiently polished to be upstreamed.
 
 * `QCLib/Mathlib/PiOuterProduct.lean`
-  `QCLib/Mathlib/UnitaryGroup/PiOuterProduct.lean`
+  `QCLib/Mathlib/UnitaryGroup/PiKronecker.lean`
 
 The files define tensor products of indexed families of concrete vectors (i.e.
 functions into a `CommMonoid`) and of (unitary) matrices. Most of the rest of the library
@@ -26,7 +26,7 @@ Quantum gate / circuits are modelled as unitary matrices. In addition to general
 results, these files also contain results for expressing the composition of
 diagonal unitaries in terms of their diagonals, and of permutation matrices in terms of the permutations they represent.
 
-There's also a messy file with results on complex numbers on the unit circle as objects of type `unitary ℂ` -- an approach which may or may not be a good idea.
+There's also a messy file `QCLib/UnitaryGroup/RootsOfUnity.lean` with results on complex numbers on the unit circle as objects of type `unitary ℂ` -- an approach which may or may not be a good idea.
 
 * `QCLib/Circuit/Gate/Qubit.lean`
 
