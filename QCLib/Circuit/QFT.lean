@@ -270,6 +270,7 @@ public noncomputable section QFTCircuit
 
 open UnitaryGroup OuterProduct
 
+-- The definition allows for `n = 0` or `d = 1`. These cases aren't of physical interest.
 /-- The circuit of the QFT, using big-endian order for the right index type, and
 little-endian order for the left index type. -/
 def QFTRevCircuit (n d : ℕ) [NeZero d] : 𝐔[Fin n → Fin d] := match n with
