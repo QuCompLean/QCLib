@@ -112,11 +112,11 @@ private lemma prod_uζ (d n : ℕ) (i : Fin n) (y : Fin n → Fin d) [hd : NeZer
   simp_rw [uζ_pow_fin_rev, ← pow_mul, ←mul_assoc, pow_add]
 
 private theorem ζ_ofDigitsBE_ofDigits (f g : Fin (n + 1) → Fin d) :
-    ζ (d ^ (n + 1)) ^ ((ofDigitsBE f : ℕ) * (ofDigits g : ℕ))
+    ζ (d ^ (n + 1)) ^ ((f.ofDigitsBE : ℕ) * g.ofDigits)
       = ζ (d ^ (n + 1)) ^ (
-          (ofDigitsBE (tail f) : ℕ) * (g 0 : ℕ)
-          + ((f 0 : ℕ) * (g 0 : ℕ)) * d ^ n
-          + (ofDigitsBE (tail f) : ℕ) * (ofDigits (tail g) : ℕ) * d
+          (ofDigitsBE (tail f) : ℕ) * g 0
+          + f 0 * g 0 * d ^ n
+          + (tail f).ofDigitsBE * (tail g).ofDigits * d
         ) := by
   rw [ofDigitsBE_ofDigits_rec, ζ_pow_eq_pow_iff_modEq]
   simp [mul_comm]
