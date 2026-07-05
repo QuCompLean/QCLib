@@ -50,11 +50,19 @@ notation3:max "δ[" i:90 "] " => BasisVector i
 -- TBD: Get rid of this? Formulate in terms of `toLin` and general Bases? State
 -- for `MatrixLike` objects?
 -- More generally, decide whether to use `•` for actions on vectors
+-- Move to other module?
+theorem Matrix.UnitaryGroup.ext_col {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {U V : Matrix.unitaryGroup ι ℂ} :
+    (∀ i : ι, (U : Matrix ι ι ℂ).col i = (V : Matrix ι ι ℂ).col i) → U = V := by
+  intro h
+  apply Subtype.ext
+  exact Matrix.ext_col h
+
 theorem Matrix.UnitaryGroup.ext_smul_basis {ι : Type*} [Fintype ι] [DecidableEq ι]
-  {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, ((U • δ[i]) : ι → ℂ) = V • δ[i]) → U = V := by
-  simp only [basisVector_def, Pi.basisFun_apply, Subtype.ext_iff, Submonoid.smul_def,
-    smul_eq_mulVec, mulVec_single, MulOpposite.op_one, one_smul]
-  apply Matrix.ext_col
+    {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, ((U • δ[i]) : ι → ℂ) = V • δ[i]) → U = V := by
+   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
+     MulOpposite.op_one, one_smul]
+   exact ext_col
 
 @[simp]
 theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] [DecidableEq ι]

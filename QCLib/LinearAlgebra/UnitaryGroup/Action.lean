@@ -54,7 +54,7 @@ instance [Inhabited n] : FaithfulSMul (unitary α) (unitaryGroup n α) where
 -/
 
 @[simp]
-theorem Matrix.unitaryGroup.smul_def {α m : Type*}
+theorem Matrix.unitaryGroup.smul_def {l α m : Type*}
     [Fintype m] [DecidableEq m] [CommRing α] [StarRing α]
     (U : unitaryGroup m α) (B : Matrix m l α) : U • B = (↑U : Matrix m m α) * B := by
   with_reducible_and_instances rfl

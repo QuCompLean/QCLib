@@ -60,6 +60,10 @@ theorem ζ_def : ζ n = cexp (2 * π * I / n) := by rfl
 theorem ζ_isPrimitiveRoot [hnz : NeZero n] : IsPrimitiveRoot (ζ n) n :=
   isPrimitiveRoot_exp n hnz.ne
 
+theorem pow_ζ (n x : ℕ) : ζ n ^ x = Complex.exp (2 * ↑Real.pi * Complex.I * x / n) := by
+  simp only [ζ_def, ← Complex.exp_nat_mul]
+  field_simp
+
 @[simp]
 theorem orderOf_ζ [NeZero n] : orderOf (ζ n) = n :=
   IsPrimitiveRoot.iff_orderOf.mp (ζ_isPrimitiveRoot n)

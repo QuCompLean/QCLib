@@ -128,8 +128,7 @@ theorem UnitaryGroup.prod_diagonal_map (l : List ι) (f : ι → n → unitary �
 theorem UnitaryGroup.prod_diagonal (s : Finset ι) (f : ι → n → unitary α) :
     (s.toList.map (fun i => diagonalMonoidHom (f i))).prod =
     diagonalMonoidHom (fun j => ∏ i ∈ s, f i j) := by
-  simp [prod_diagonal_map, Finset.prod_eq_multiset_prod,
-     ← Multiset.prod_toList, ]
+  simp [prod_diagonal_map, Finset.prod_eq_multiset_prod, ← Multiset.prod_toList]
 
 end Diagonal
 
