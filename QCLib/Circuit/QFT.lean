@@ -225,7 +225,7 @@ open Finset
 
 variable {d n : ℕ} (k : ℕ)
 
-/-- The diagonal gate which multiples `|x>` with `e^{i 2 π / d^k x}`, for `x : Fin d` -/
+/-- The diagonal gate which multiplies `|x>` with `e^{i 2 π / d^k x}`, for `x : Fin d` -/
 def R : 𝐔[Fin d] :=
   diagonalMonoidHom (fun x ↦ (uζ (d ^ k)) ^ (x : ℕ))
 
@@ -283,9 +283,7 @@ def QFTCircuit (n d : ℕ) [NeZero d] := QFTRevCircuit n d * revCircuit (Fin d) 
 set_option linter.flexible false in
 /-- The circuit realizes the QFT.
 
-Note: The proof is quite condensed and fragile. A re-implmentation based on
-systematic theory of digits of elements of `ZMod (d ^ n)` is currently being
-worked on. -/
+TBD: Break the proof into smaller, less fragile pieces -/
 theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
   rw [← mul_left_inj (revCircuit (Fin d) n), QFTCircuit,
     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
@@ -317,7 +315,7 @@ public section IQFT
 
 variable (n d : ℕ) [hdz : NeZero d]
 
-noncomputable def IQFT : 𝐔[Fin n → Fin d] := star (QFT n d)
+noncomputable def IQFT : 𝐔[Fin n → Fin d] := (QFT n d)⁻¹
 
 @[simp] theorem IQFT_apply (a b) :
     IQFT n d a b = √(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (a.ofDigitsBE * b.ofDigitsBE : ℕ)) := by
