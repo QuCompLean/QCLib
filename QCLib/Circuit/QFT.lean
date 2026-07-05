@@ -57,14 +57,14 @@ circuit for this mixed convention.
 
 ## To do
 
-- While the circuit decomposition we provide is easily seen to be quadratic in
-`n`, we have not yet formalized the scaling behavior.
+- While the circuit decomposition we provide is easily seen to have complexity
+quadratic in `n`, we have not yet formalized the scaling behavior.
 
 - This file introduces many versions of the DFT, with slightly different
 normalizations and index types. Maybe this can be reduced.
 
 - We're mixing Mathlib's `stdAddChar` with our own `RootsOfUnity` definitions.
-TBD: Rewrite in terms of Mathlib's implementation.
+Maybe settle on one?
 
 - TBD: This is a first implementation. Lots of clean-up potential. In
 particular, one should probably rephrase the circuit using `embedLeft`, so that
