@@ -92,7 +92,7 @@ open AddChar in
 theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
     ∑ x, stdAddChar (t * x) * conj (stdAddChar (s * x)) = if t = s then ↑N else 0 := by
   simp [← inv_apply_eq_conj, ← inv_apply', ← map_add_eq_mul, ← sub_eq_add_neg, ← sub_mul, mul_comm,
-    AddChar.sum_mulShift _ (isPrimitive_stdAddChar N), sub_eq_zero]
+    sum_mulShift _ (isPrimitive_stdAddChar N), sub_eq_zero]
 
 variable {n d : ℕ} [hd : NeZero d]
 
@@ -100,7 +100,7 @@ open Function
 
 private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
    (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ)) =  ζ (d ^ n) ^ (u * ofDigitsBE x : ℕ) := by
-  rw [ofDigitsBE_apply_reindex]
+  rw [val_ofDigitsBE_apply_reindex]
   simp [ζ_pow_fin_rev, ← pow_mul, Finset.prod_pow_eq_pow_sum, ← mul_assoc, mul_comm, Finset.mul_sum]
   lia
 
@@ -116,10 +116,8 @@ private theorem ζ_ofDigitsBE_ofDigits (f g : Fin (n + 1) → Fin d) :
       = ζ (d ^ (n + 1)) ^ (
           (ofDigitsBE (tail f) : ℕ) * g 0
           + f 0 * g 0 * d ^ n
-          + (tail f).ofDigitsBE * (tail g).ofDigits * d
-        ) := by
-  rw [ofDigitsBE_ofDigits_rec, ζ_pow_eq_pow_iff_modEq]
-  simp [mul_comm]
+          + (tail f).ofDigitsBE * (tail g).ofDigits * d ) := by
+  simp [ofDigitsBE_ofDigits_rec, ζ_pow_eq_pow_iff_modEq]
 
 private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
@@ -307,7 +305,7 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
     -- Elementary math
     simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
-      ofDigitsBE_val_apply, tail, Function.ofDigits_apply, Fin.rev_castSucc]
+      val_ofDigitsBE_apply, tail, Function.ofDigits_apply, Fin.rev_castSucc]
     nth_rw 2 [Finset.sum_mul]
     grind
 

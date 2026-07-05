@@ -18,15 +18,15 @@ namespace Fin
 def _root_.Function.ofDigitsBE : (Fin n → Fin d) ≃ Fin (d ^ n) :=
   (piCongrLeft' _ revPerm).trans finFunctionFinEquiv
 
-theorem ofDigitsBE_val_apply (f : Fin n → Fin d) :
-    f.ofDigitsBE = ∑ i : Fin n, (f i.rev) * d ^ (i : ℕ):= by
+theorem val_ofDigitsBE_apply (f : Fin n → Fin d) :
+    (f.ofDigitsBE : ℕ) = ∑ i : Fin n, (f i.rev) * d ^ (i : ℕ):= by
   simp [Function.ofDigitsBE, piCongrLeft', finFunctionFinEquiv]
 
-theorem ofDigitsBE_apply_reindex [NeZero d] (v : Fin n → Fin d) :
-    v.ofDigitsBE = ∑ i : Fin n, v i * d ^ (n - 1 - i) := by
-  rw [ofDigitsBE_val_apply]
-  apply Finset.sum_equiv Fin.revPerm (by simp) (fun i _ => ?_)
-  simp only [revPerm_apply, val_rev, mul_eq_mul_left_iff, val_eq_zero_iff]
+theorem val_ofDigitsBE_apply_reindex (v : Fin n → Fin d) :
+    (v.ofDigitsBE : ℕ) = ∑ i : Fin n, v i * d ^ (n - 1 - i) := by
+  rw [val_ofDigitsBE_apply]
+  apply Finset.sum_equiv Fin.revPerm (by simp) (fun i _ ↦ ?_)
+  simp only [revPerm_apply, val_rev, mul_eq_mul_left_iff]
   grind
 
 /-- Equivalence between `Fin n → Fin d` and `Fin (d ^ n)` using little-endian order. -/
@@ -38,16 +38,16 @@ def _root_.Function.ofDigits : (Fin n → Fin d) ≃ Fin (d ^ n) :=
 theorem ofDigitsBE_rev_eq_ofDigits (f : Fin n → Fin d) :
     (fun i ↦ f i.rev).ofDigitsBE = f.ofDigits := by
   ext
-  simp [ofDigitsBE_val_apply, Function.ofDigits_apply]
+  simp [val_ofDigitsBE_apply, Function.ofDigits_apply]
 
-lemma ofDigits_val_rec (g : Fin (n + 1) → Fin d) :
-    g.ofDigits = (g 0 : ℕ) + ((Fin.tail g).ofDigits : ℕ) * d := by
+lemma val_ofDigits_rec (g : Fin (n + 1) → Fin d) :
+    (g.ofDigits : ℕ) = (g 0 : ℕ) + (Fin.tail g).ofDigits * d := by
   simp [Function.ofDigits_apply, Fin.sum_univ_succ, Fin.tail, Finset.sum_mul]
   grind
 
-lemma ofDigitsBE_val_rec (f : Fin (n + 1) → Fin d) :
+lemma val_ofDigitsBE_rec (f : Fin (n + 1) → Fin d) :
     f.ofDigitsBE = (f 0 : ℕ) * d ^ n + (Fin.tail f).ofDigitsBE := by
-  simp [ofDigitsBE_val_apply, Fin.sum_univ_castSucc, add_comm, rev_castSucc, Fin.tail]
+  simp [val_ofDigitsBE_apply, Fin.sum_univ_castSucc, add_comm, rev_castSucc, Fin.tail]
 
 theorem ofDigitsBE_ofDigits_rec (f g : Fin (n + 1) → Fin d) :
     (f.ofDigitsBE : ℕ) * g.ofDigits =
@@ -55,7 +55,7 @@ theorem ofDigitsBE_ofDigits_rec (f g : Fin (n + 1) → Fin d) :
       + (f 0) * (g 0) * d ^ n
       + (tail f).ofDigitsBE * (tail g).ofDigits * d
       + (f 0) * (tail g).ofDigits * d ^ (n + 1) := by
-  simp [ofDigits_val_rec, ofDigitsBE_val_rec]
+  simp [val_ofDigits_rec, val_ofDigitsBE_rec]
   ring
 
 end Fin
