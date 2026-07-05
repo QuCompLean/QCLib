@@ -92,6 +92,13 @@ Hilbert space instances on the `PiTensorProduct` of Hilbert spaces. Approach aba
 
 Some tests.
 
+## Not yet included
+
+Results that are mainly done, but not yet included in the public repository:
+
+* A first formalization of Grover search by Georgios Afentakis.
+* More general theory of digits of numbers modulo `d ^ n`, and a simpler proof for the QFT circuit
+
 # Contributors
 
 Main authors:

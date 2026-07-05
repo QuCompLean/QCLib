@@ -159,7 +159,7 @@ macro_rules
 
 
 /- This is a hack for proving that a unitary isn't `1`. To be fixed. -/
-/- TBD: Sensible implementation. -/
+/- Update: George now has a sensible implementation. TBD: Move this one here. -/
 
 open Lean.Parser.Tactic in
 syntax (name := matrix_neq) "matrix_neq"
