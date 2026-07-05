@@ -1,8 +1,37 @@
+/-
+Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: David Gross, Davood Tehrani
+-/
 module
 
 public import Mathlib.Algebra.BigOperators.Fin
 public import Mathlib.Tactic.Ring.RingNF
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
+
+/-
+
+# Digit expansion for `Fin (d ^ n)`
+
+
+## Main definitions
+
+* `Function.ofDigitsBE` Equivalence between `Fin n → Fin d` and `Fin (d ^ n)` using big-endian order
+* `Function.ofDigits` Equivalence between `Fin n → Fin d` and `Fin (d ^ n)` using little-endian
+order
+
+## Main results
+
+* `ofDigitsBE_ofDigits_rec` A recursive formula for the product of two numbers
+in `Fin (d ^ n)`, one expressed in big-endian order and one expressed in
+little-endian order. This is used in the circuit decomposition of the quantum Fourier transform.
+
+## Todo
+
+The current implementation singles out the first digits, but we probably want to
+re-phrase this in terms of the last digit, to get cleaner recursive formulas.
+
+-/
 
 
 @[expose] public section
