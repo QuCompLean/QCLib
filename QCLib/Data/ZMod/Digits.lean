@@ -12,6 +12,8 @@ public import Mathlib.Analysis.Fourier.ZMod
 
 # Representation of elements of `ZMod (d ^ n)` by digits
 
+*Not currently used. Instead, the QFT is based on Data.Fin.Digits*
+
 This WIP file builds a theory of "digits" for elements of `ℤ_{d^n}`.
 
 The module is motivated by the observation that the structure of the quantum
