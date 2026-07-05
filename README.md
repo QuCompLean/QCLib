@@ -1,7 +1,9 @@
 # QCLib
 
 The aim of this library is to provide a framework for reasoning about quantum
-gates and quantum circuits. *It is very much in an "alpha" stage of development*.
+gates and quantum circuits. 
+
+*It is very much in an "alpha" stage of development*.
 
 
 ## Quick tour
@@ -22,15 +24,13 @@ builds on these definitions.
 * `QCLib/Mathlib/UnitaryGroup/Lemmas.lean` 
   `QCLib/Matrix/UnitaryGroup`
 
-Quantum gate / circuits are modelled as unitary matrices. In addition to general
-results, these files also contain results for expressing the composition of
-diagonal unitaries in terms of their diagonals, and of permutation matrices in terms of the permutations they represent.
+In QCLib, quantum gates are modelled as unitary matrices. These files contain general lemmas on unitaries.
 
-There's also a messy file `QCLib/UnitaryGroup/RootsOfUnity.lean` with results on complex numbers on the unit circle as objects of type `unitary ℂ` -- an approach which may or may not be a good idea.
+There's also a messy file `QCLib/UnitaryGroup/RootsOfUnity.lean` with results on complex numbers on the unit circle as objects of type `unitary ℂ`. It may or may not be a good idea to re-write these files in terms of e.g. `stdAddChar`.
 
 * `QCLib/Circuit/Gate/Qubit.lean`
 
-Chaotic file with lots of minor results on single qubit gates. Incorporates significant material from "Lean-QuantumInfo".
+Chaotic file with lots of minor results on single qubit gates. It incorporates significant material from "Lean-QuantumInfo".
 
 * `QCLib/Circuit/Gate/Qubit/Bipartite.lean`
 
@@ -103,14 +103,14 @@ Results that are mainly done, but not yet included in the public repository:
 
 Main authors:
 
-Davood Haji Taghi Tehrani [Paradoxy (Zulipchat)](https://leanprover.zulipchat.com/#user/900949)
-David Gross <david.gross@thp.uni-koeln.de>
+* Davood Haji Taghi Tehrani [Paradoxy (Zulipchat)](https://leanprover.zulipchat.com/#user/900949)
+* David Gross <david.gross@thp.uni-koeln.de>
 
 
 Contributors:
 
-Georgios Afentakis <gafentak@smail.uni-koeln.de>
-Andrés Goens <andres.goens@tu-darmstadt.de>
+* Georgios Afentakis <gafentak@smail.uni-koeln.de>
+* Andrés Goens <andres.goens@tu-darmstadt.de>
 
 
 ## License
