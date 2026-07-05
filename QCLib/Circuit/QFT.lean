@@ -67,9 +67,8 @@ normalizations and index types. Maybe this can be reduced.
 TBD: Rewrite in terms of Mathlib's implementation.
 
 - TBD: This is a first implementation. Lots of clean-up potential. In
-particular, elsewhere, we've started writing a general module for working with
-digit representations of elements of `ZMod (d ^ n)`. Porting this file to the
-general theory should clean things up.
+particular, one should probably rephrase the circuit using `embedLeft`, so that
+the recursive structure is easier to exploit.
 
 -/
 

@@ -261,23 +261,48 @@ theorem subtype_apply_basis (p : ι → Prop) [DecidablePred p]
 
 end subtype
 
+-- TBD: Phrase this section for dependent types.
 section Fin
 
 variable {n : ℕ}
-variable {k : Type*} [DecidableEq k] [Fintype k]
+variable {k : Type*}
 
+theorem tail_tprod_base_eq_tprod_univ (ψ : Fin (n + 1) → k → ℂ) :
+    (⨂ i, Fin.tail ψ i) ⊗ ψ 0 ∘ (Fin.consFunEquiv n k).symm = ⨂ i, ψ i := by
+  ext k
+  simp [Fin.tail_def, Fin.prod_univ_succ, mul_comm]
+
+variable [DecidableEq k] [Fintype k]
+
+/-- The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
+realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
 @[simps!]
 def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
   reindexMonoidEquiv (Fin.consFunEquiv n k) <| blockDiagonalMonoidHom (fun _ ↦ U)
 
-/-- The embedding of a unitary matrix `U : U[Fin n → k]` into `𝐔[Fin (n+1) → k]`
-realized by acting with `U` on the last `n` subsystems and trivially on the first one. -/
 theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    embedRight U • δ[v] =
-      ((U • δ[fun i : Fin n => v i.succ]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm := by
+    embedRight U • δ[v] = ((U • δ[Fin.tail v]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm := by
   ext
-  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
-  rfl
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply, Fin.tail_def]
+
+-- get rid of this pattern, in favor of the one below?
+theorem _root_.Equiv.comp_equiv_injective {α β R : Type*} {f g : α → R} (e : β ≃ α)
+    (h : f ∘ e = g ∘ e) : f = g := by
+  ext i
+  have ⟨j, hj⟩ := e.surjective i
+  rw [hj.symm]
+  exact congrFun h j
+--
+example {α β R : Type*} (f g : α → R) (e : α ≃ β)
+    (h : (Equiv.piCongrLeft (fun _ ↦ R) e f) = (Equiv.piCongrLeft (fun _ ↦ R) e g)) : f = g := by
+  apply (Equiv.piCongrLeft (fun _ ↦ R) e).injective
+  exact h
+
+theorem embedRight_apply_basis' (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
+    (embedRight U • δ[v]) ∘ (Fin.consFunEquiv n k) = (U • δ[Fin.tail v]) ⊗ δ[v 0] := by
+  apply Equiv.comp_equiv_injective (Fin.consFunEquiv n k).symm
+  rw [embedRight_apply_basis]
+  simp [Function.comp_def, Fin.tail_def]
 
 /-- The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/
@@ -292,11 +317,9 @@ theorem embedLeft_apply_apply (U : 𝐔[Fin n → k]) (v w : Fin (n + 1) → k) 
   rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
 
 theorem embedLeft_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    embedLeft U • δ[v] =
-      ((U • δ[fun i : Fin n => v i.castSucc]) ⊗ δ[v (Fin.last n)])
-      ∘ Fin.succFunEquiv k n := by
+    embedLeft U • δ[v] = ((U • δ[Fin.init v]) ⊗ δ[v (Fin.last n)]) ∘ Fin.succFunEquiv k n := by
   ext
-  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
+  simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply, Fin.init_def]
   rfl -- There seems to be no connection between Fin.last n and Fin.natAdd n 0
 
 
