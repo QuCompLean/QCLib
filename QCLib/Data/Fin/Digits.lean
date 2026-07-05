@@ -26,11 +26,9 @@ order
 in `Fin (d ^ n)`, one expressed in big-endian order and one expressed in
 little-endian order. This is used in the circuit decomposition of the quantum Fourier transform.
 
-## Todo
-
-The current implementation singles out the first digits, but we probably want to
-re-phrase this in terms of the last digit, to get cleaner recursive formulas.
-
+* `ofDigits_ofDigitsBE_rec`  A recursive formula for the product of two numbers
+in `Fin (d ^ n)`, one expressed in little-endian order and one expressed in big-endian order.
+This can be used in the circuit decomposition of the quantum Fourier transform.
 -/
 
 
@@ -85,6 +83,33 @@ theorem ofDigitsBE_ofDigits_rec (f g : Fin (n + 1) → Fin d) :
       + (tail f).ofDigitsBE * (tail g).ofDigits * d
       + (f 0) * (tail g).ofDigits * d ^ (n + 1) := by
   simp [val_ofDigits_rec, val_ofDigitsBE_rec]
+  ring
+
+lemma val_ofDigits_rec' (g : Fin (n + 1) → Fin d) :
+    (g.ofDigits : ℕ) = (init g).ofDigits + g (last n) * d ^ n := by
+  simp [Function.ofDigits_apply, Fin.sum_univ_castSucc, Fin.init]
+
+lemma val_ofDigitsBE_rec' (f : Fin (n + 1) → Fin d) :
+    (f.ofDigitsBE : ℕ) = d * (init f).ofDigitsBE + f (last n) := by
+  simp [val_ofDigitsBE_apply, Fin.sum_univ_succ, add_comm,
+    Finset.mul_sum, Fin.init, rev_succ]
+  grind
+
+lemma ofDigits_ofDigitsBE_rec (f g : Fin (n + 1) → Fin d) :
+    (g.ofDigits : ℕ) * f.ofDigitsBE =
+      d * (init g).ofDigits * (init f).ofDigitsBE
+        + f (last n) * g.ofDigits
+        + g (last n) * (init f).ofDigitsBE * d ^ (n + 1) := by
+  rw [val_ofDigits_rec', val_ofDigitsBE_rec']
+  ring
+
+theorem ofDigits_ofDigitsBE_rec' (f g : Fin (n + 1) → Fin d) :
+    (g.ofDigits : ℕ) * f.ofDigitsBE =
+      d * (init g).ofDigits * (init f).ofDigitsBE
+        + f (last n) * (init g).ofDigits
+        + d ^ n * f (last n) * g (last n)
+        + g (last n) * (init f).ofDigitsBE * d ^ (n + 1) := by
+  rw [ofDigits_ofDigitsBE_rec, Nat.add_right_cancel_iff, val_ofDigits_rec']
   ring
 
 end Fin
