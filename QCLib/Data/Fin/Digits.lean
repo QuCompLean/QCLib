@@ -99,8 +99,8 @@ lemma val_ofDigitsBE_rec' (f : Fin (n + 1) → Fin d) :
 
 theorem ofDigits_ofDigitsBE_rec (f g : Fin (n + 1) → Fin d) :
     (g.ofDigits : ℕ) * f.ofDigitsBE =
-      d * (init g).ofDigits* (init f).ofDigitsBE
-        + f (last n)  * g.ofDigits
+      d * (init g).ofDigits * (init f).ofDigitsBE
+        + f (last n) * g.ofDigits
         + g (last n) * (init f).ofDigitsBE * d ^ (n + 1) := by
   rw [val_ofDigits_rec' g, val_ofDigitsBE_rec' f]
   ring
