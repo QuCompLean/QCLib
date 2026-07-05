@@ -208,12 +208,13 @@ theorem QFT_apply_basis (v : Fin n → Fin d) :
       ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (v.ofDigitsBE * k.ofDigitsBE : ℕ)) • δ[k] := by
   simp [apply_basis, mul_comm]
 
-theorem QFT_apply_product_basis (v : Fin n → Fin d) :
-    QFT n d • δ[v] =
-      (√(d ^ n)⁻¹ : ℂ) •
-        ⨂ i : Fin n, ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ (v.ofDigitsBE * j : ℕ) • δ[j] := by
-  simp_rw [QFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
-  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
+theorem QFT_apply_basis_eq_tprod (v : Fin n → Fin d) :
+    QFT n d • δ[v] = ⨂ i : Fin n,
+      (√d⁻¹ : ℂ) • ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ (v.ofDigitsBE * j : ℕ) • δ[j] := by
+  simp_rw [piOuterProduct_smul_univ, QFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul,
+    smul_assoc]
+  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum,
+    Real.sqrt_pow]
 
 end QFT
 
@@ -327,12 +328,12 @@ theorem IQFT_apply_basis (v : Fin n → Fin d) :
       ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (v.ofDigitsBE * k.ofDigitsBE : ℕ))) • δ[k] := by
   simp [apply_basis, mul_comm]
 
-theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
-    IQFT n d • δ[v] =
-      (√(d ^ n)⁻¹ : ℂ) • ⨂ (i : Fin n),
-        ∑ j : Fin d, conj (ζ (d ^ (i + 1 : ℕ)) ^ (v.ofDigitsBE * j : ℕ)) • δ[j] := by
-  simp_rw [IQFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
-  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ,
-     piOuterProduct_univ_sum]
+theorem IQFT_apply_basis_eq_tprod (v : Fin n → Fin d) :
+    IQFT n d • δ[v] = ⨂ i : Fin n,
+      (√d⁻¹ : ℂ) • ∑ j : Fin d, conj ζ (d ^ (i + 1 : ℕ)) ^ (v.ofDigitsBE * j : ℕ) • δ[j] := by
+  simp_rw [piOuterProduct_smul_univ, IQFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul,
+    smul_assoc]
+  simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum,
+    Real.sqrt_pow]
 
 end IQFT

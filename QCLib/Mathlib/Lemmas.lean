@@ -5,9 +5,12 @@ Authors: David Gross, Davood Tehrani
 -/
 module
 
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
 public import Mathlib.Algebra.CharP.Basic
 public import Mathlib.Algebra.Lie.OfAssociative -- `#min_imports` suggestions aren't really sensible
 public import Mathlib.Analysis.Complex.Exponential
+
 /-!
 
 # Misc lemmas
@@ -98,5 +101,9 @@ open Complex in
 theorem Complex.exp_nat_mul' (x : ℂ) (n : ℕ) :
     cexp (x * n) = cexp (x) ^ n := by
   simp [← Complex.exp_nat_mul, mul_comm]
+
+-- Is this in Mathlib?
+theorem Real.sqrt_pow {x : ℝ} (hx : 0 ≤ x) (n : ℕ) : √(x ^ n) = √x ^ n := by
+  simp_rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_mul hx, mul_comm]
 
 end
