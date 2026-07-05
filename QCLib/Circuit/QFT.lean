@@ -68,8 +68,8 @@ TBD: Rewrite in terms of Mathlib's implementation.
 
 - TBD: This is a first implementation. Lots of clean-up potential. In
 particular, elsewhere, we've started writing a general module for working with
-digit representations of elements of `ZMod (d ^ n)`. Porting this file to the
-general theory should clean things up.
+digit representations of elements of `ZMod (d ^ n)`. This theory should clean up
+the present file.
 
 -/
 
@@ -280,9 +280,7 @@ def QFTCircuit (n d : ℕ) [NeZero d] := QFTRevCircuit n d * revCircuit (Fin d) 
 set_option linter.flexible false in
 /-- The circuit realizes the QFT.
 
-Note: The proof is quite condensed and fragile. A re-implmentation based on
-systematic theory of digits of elements of `ZMod (d ^ n)` is currently being
-worked on. -/
+TBD: Make the proof less condensed and fragile. -/
 theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
   rw [← mul_left_inj (revCircuit (Fin d) n), QFTCircuit,
     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]

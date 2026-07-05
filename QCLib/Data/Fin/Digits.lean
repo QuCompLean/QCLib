@@ -1,8 +1,19 @@
+/-
+Copyright (c) 2026 David Gross, Davood Tehrani. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Davood Tehrani, David Gross
+-/
 module
 
 public import Mathlib.Algebra.BigOperators.Fin
 public import Mathlib.Tactic.Ring.RingNF
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
+
+/-!
+
+# Digits of numbers mod `d ^ n`
+
+-/
 
 
 @[expose] public section
@@ -24,11 +35,9 @@ theorem ofDigitsBE_val_apply (f : Fin n → Fin d) :
 theorem ofDigitsBE_apply_reindex [NeZero d] (v : Fin n → Fin d) :
     ((ofDigitsBE v) : ℕ) = ∑ i : Fin n, (v i : ℕ) * d ^ (n - 1 - i : ℕ) := by
   rw [ofDigitsBE_val_apply]
-  apply Finset.sum_equiv Fin.revPerm (by simp) (fun i _ => ?_)
+  refine Finset.sum_equiv Fin.revPerm (by simp) (fun i _ ↦ ?_)
   simp only [revPerm_apply, val_rev, mul_eq_mul_left_iff, val_eq_zero_iff]
-  left
-  congr
-  lia
+  grind
 
 /-- Equivalence between `Fin n → Fin d` and `Fin (d ^ n)` using little-endian order. -/
 @[simps! -isSimp apply symm_apply]
