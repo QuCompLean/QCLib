@@ -41,8 +41,8 @@ theorem ofDigitsBE_rev_eq_ofDigits (f : Fin n → Fin d) :
   simp [ofDigitsBE_val_apply, Function.ofDigits_apply]
 
 lemma ofDigits_val_rec (g : Fin (n + 1) → Fin d) :
-    g.ofDigits = (g 0 : ℕ) + d * ((Fin.tail g).ofDigits : ℕ) := by
-  simp [Function.ofDigits_apply, Fin.sum_univ_succ, Fin.tail, Finset.mul_sum]
+    g.ofDigits = (g 0 : ℕ) + ((Fin.tail g).ofDigits : ℕ) * d := by
+  simp [Function.ofDigits_apply, Fin.sum_univ_succ, Fin.tail, Finset.sum_mul]
   grind
 
 lemma ofDigitsBE_val_rec (f : Fin (n + 1) → Fin d) :
@@ -53,8 +53,8 @@ theorem ofDigitsBE_ofDigits_rec (f g : Fin (n + 1) → Fin d) :
     (f.ofDigitsBE : ℕ) * g.ofDigits =
       (tail f).ofDigitsBE * g 0
       + (f 0) * (g 0) * d ^ n
-      + d * (tail f).ofDigitsBE * (tail g).ofDigits
-      + (f 0) * d ^ (n + 1) * (tail g).ofDigits := by
+      + (tail f).ofDigitsBE * (tail g).ofDigits * d
+      + (f 0) * (tail g).ofDigits * d ^ (n + 1) := by
   simp [ofDigits_val_rec, ofDigitsBE_val_rec]
   ring
 

@@ -115,11 +115,11 @@ private theorem ζ_ofDigitsBE_ofDigits (f g : Fin (n + 1) → Fin d) :
     ζ (d ^ (n + 1)) ^ ((ofDigitsBE f : ℕ) * (ofDigits g : ℕ))
       = ζ (d ^ (n + 1)) ^ (
           (ofDigitsBE (tail f) : ℕ) * (g 0 : ℕ)
-          + d ^ n * ((f 0 : ℕ) * (g 0 : ℕ))
-          + d * (ofDigitsBE (tail f) : ℕ) * (ofDigits (tail g) : ℕ)
+          + ((f 0 : ℕ) * (g 0 : ℕ)) * d ^ n
+          + (ofDigitsBE (tail f) : ℕ) * (ofDigits (tail g) : ℕ) * d
         ) := by
   rw [ofDigitsBE_ofDigits_rec, ζ_pow_eq_pow_iff_modEq]
-  simp [mul_comm, mul_assoc]
+  simp [mul_comm]
 
 private lemma cons_iff {n d} (a x v : Fin (n + 1) → Fin d) :
     ((∀ (k : Fin (n + 1)), ¬k = 0 → x k = a k) ∧ x 0 = v 0) ↔
