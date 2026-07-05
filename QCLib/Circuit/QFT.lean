@@ -68,8 +68,8 @@ TBD: Rewrite in terms of Mathlib's implementation.
 
 - TBD: This is a first implementation. Lots of clean-up potential. In
 particular, elsewhere, we've started writing a general module for working with
-digit representations of elements of `ZMod (d ^ n)`. This theory should clean up
-the present file.
+digit representations of elements of `ZMod (d ^ n)`. Porting this file to the
+general theory should clean things up.
 
 -/
 
@@ -95,6 +95,8 @@ theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
     AddChar.sum_mulShift _ (isPrimitive_stdAddChar N), sub_eq_zero]
 
 variable {n d : ℕ} [hd : NeZero d]
+
+open Function
 
 private theorem ζ_aux (x : Fin n → Fin d) (u : Fin (d ^ n)) :
    (∏ i : Fin n, ζ (d ^ (i + 1 : ℕ)) ^ (u * (x i) : ℕ)) =  ζ (d ^ n) ^ (u * ofDigitsBE x : ℕ) := by
@@ -195,21 +197,21 @@ variable (n d : ℕ) [hdz : NeZero d]
 /-- The QFT for `ZMod (d ^ n)`, normalized and bundled as a unitary matrix
 with index type `Fin n → Fin d` -/
 noncomputable def QFT : 𝐔[Fin n → Fin d] :=
-  reindexMonoidEquiv ofDigitsBE.symm (UnitaryGroup.idftFin (d ^ n))
+  reindexMonoidEquiv Function.ofDigitsBE.symm (UnitaryGroup.idftFin (d ^ n))
 
 @[simp] theorem QFT_apply (a b) :
-    QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (ofDigitsBE a * ofDigitsBE b : ℕ) := by
+    QFT n d a b = √(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (a.ofDigitsBE * b.ofDigitsBE : ℕ) := by
   simp [QFT]
 
 theorem QFT_apply_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] =
-      ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (ofDigitsBE v * ofDigitsBE k : ℕ)) • δ[k] := by
+      ∑ k, (√(d ^ n)⁻¹ * (ζ (d ^ n)) ^ (v.ofDigitsBE * k.ofDigitsBE : ℕ)) • δ[k] := by
   simp [apply_basis, mul_comm]
 
 theorem QFT_apply_product_basis (v : Fin n → Fin d) :
     QFT n d • δ[v] =
       (√(d ^ n)⁻¹ : ℂ) •
-        ⨂ i : Fin n, ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ ((ofDigitsBE v) * j : ℕ) • δ[j] := by
+        ⨂ i : Fin n, ∑ j : Fin d, ζ (d ^ (i + 1 : ℕ)) ^ (v.ofDigitsBE * j : ℕ) • δ[j] := by
   simp_rw [QFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
   simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ, piOuterProduct_univ_sum]
 
@@ -280,7 +282,9 @@ def QFTCircuit (n d : ℕ) [NeZero d] := QFTRevCircuit n d * revCircuit (Fin d) 
 set_option linter.flexible false in
 /-- The circuit realizes the QFT.
 
-TBD: Make the proof less condensed and fragile. -/
+Note: The proof is quite condensed and fragile. A re-implmentation based on
+systematic theory of digits of elements of `ZMod (d ^ n)` is currently being
+worked on. -/
 theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d := by
   rw [← mul_left_inj (revCircuit (Fin d) n), QFTCircuit,
     mul_assoc, revCircuit_involution, mul_one, revCircuit_eq_revPermSubsystems]
@@ -303,7 +307,7 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
       div_left_inj' (show (√(d ^ (n + 1)) : ℂ) ≠ 0 by simp [hd.out])]
     -- Elementary math
     simp [← ζ_pow_succ d n, ← ζ_pow_succ' d n, ← pow_mul, ← pow_add,
-      ofDigitsBE_val_apply, tail, ofDigits_apply, Fin.rev_castSucc]
+      ofDigitsBE_val_apply, tail, Function.ofDigits_apply, Fin.rev_castSucc]
     nth_rw 2 [Finset.sum_mul]
     grind
 
@@ -315,18 +319,18 @@ variable (n d : ℕ) [hdz : NeZero d]
 noncomputable def IQFT : 𝐔[Fin n → Fin d] := star (QFT n d)
 
 @[simp] theorem IQFT_apply (a b) :
-    IQFT n d a b = √(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (ofDigitsBE a * ofDigitsBE b : ℕ)) := by
+    IQFT n d a b = √(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (a.ofDigitsBE * b.ofDigitsBE : ℕ)) := by
   simp [IQFT, mul_comm]
 
 theorem IQFT_apply_basis (v : Fin n → Fin d) :
     IQFT n d • δ[v] =
-      ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (ofDigitsBE v * ofDigitsBE k : ℕ))) • δ[k] := by
+      ∑ k, (√(d ^ n)⁻¹ * conj ((ζ (d ^ n)) ^ (v.ofDigitsBE * k.ofDigitsBE : ℕ))) • δ[k] := by
   simp [apply_basis, mul_comm]
 
 theorem IQFT_apply_product_basis (v : Fin n → Fin d) :
     IQFT n d • δ[v] =
       (√(d ^ n)⁻¹ : ℂ) • ⨂ (i : Fin n),
-        ∑ j : Fin d, conj (ζ (d ^ (i + 1 : ℕ)) ^ ((ofDigitsBE v) * j : ℕ)) • δ[j] := by
+        ∑ j : Fin d, conj (ζ (d ^ (i + 1 : ℕ)) ^ (v.ofDigitsBE * j : ℕ)) • δ[j] := by
   simp_rw [IQFT_apply_basis, basisVector_eq_prod, ← smul_eq_mul, smul_assoc]
   simp [← Finset.smul_sum, ← ζ_aux, ← piOuterProduct_smul_univ,
      piOuterProduct_univ_sum]
