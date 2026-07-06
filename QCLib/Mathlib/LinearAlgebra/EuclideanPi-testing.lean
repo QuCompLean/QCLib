@@ -11,4 +11,11 @@ variable {l : ι → Type*} [∀ i, Fintype (l i)]
 variable {f : (i : ι) → EuclideanSpace ℂ (l i)}
 
 instance : PiOuterProduct (fun i ↦ EuclideanSpace ℂ (l i)) (EuclideanSpace ℂ (Π i, l i)) where
-  tprod := fun f ↦ WithLp.toLp 2 (⨂ i, ((f i) : (l i → ℂ)))
+  tprod f := WithLp.toLp 2 (⨂ i, ((f i) : (l i → ℂ)))
+
+
+#synth SMul (Matrix (Fin 2) (Fin 2) ℂ) (EuclideanSpace ℂ (Fin 2))
+
+#check Metric.sphere (0 : (EuclideanSpace ℝ (Fin 2))) 1
+
+#synth SMul (Matrix.unitaryGroup (Fin 2) ℝ) ((Metric.sphere (0 : (EuclideanSpace ℝ (Fin 2))) 1))
