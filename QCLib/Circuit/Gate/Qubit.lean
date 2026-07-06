@@ -9,7 +9,6 @@ public import Mathlib.LinearAlgebra.Matrix.Hermitian
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 public import QCLib.LinearAlgebra.StdBasis
 public import QCLib.Misc.OrderOf
-public import Mathlib.Analysis.InnerProductSpace.PiL2
 
 import QCLib.Misc.IntCast
 
@@ -78,7 +77,8 @@ noncomputable def T : 𝐔[Qubit] :=
 
 noncomputable def R (k : ℕ) : 𝐔[Qubit] := ⟨!![1, 0; 0, ζ (2^k)], by
   rw [Matrix.mem_unitaryGroup_iff]
-  matrix_expand ⟩
+  matrix_expand
+  ⟩
 
 @[matrixExpand]
 theorem H_eq : H.val = (√(1/2) : ℂ) • !![1, 1; 1, -1] := by rfl
@@ -290,8 +290,6 @@ def pls : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] + δ[1])
 def mns : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] - δ[1])
 def lft : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] + I • δ[1])
 def rgt : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] - I • δ[1])
-
-def upl2 : EuclideanSpace
 
 end
 

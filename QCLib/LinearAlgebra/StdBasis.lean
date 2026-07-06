@@ -38,9 +38,6 @@ This file also collects `•` application
 noncomputable def BasisVector {ι : Type*} [Finite ι] (i : ι) : (ι → ℂ) :=
   Pi.basisFun ℂ ι i
 
-noncomputable def l2BasisVector {ι : Type*} [Finite ι] (i : ι) : (ι → ℂ) :=
-  Pi.basisFun ℂ ι i
-
 @[matrixExpand]
 theorem basisVector_def (ι : Type*) [Finite ι] (i : ι) :
   BasisVector i = Pi.basisFun ℂ ι i := by rfl
