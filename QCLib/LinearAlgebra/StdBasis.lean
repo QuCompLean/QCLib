@@ -39,6 +39,20 @@ open EuclideanSpace
 
 variable {ι : Type*} [Fintype ι]
 
+namespace PiOuterProduct
+
+variable {α : Type*} [CommMonoid α] (l : ι → Type*)
+
+instance : PiOuterProduct (fun i => EuclideanSpace α (l i)) (EuclideanSpace α (Π i, l i)) where
+  tprod f := WithLp.toLp 2 (⨂ i, ((f i) : (l i → α)))
+
+@[simp]
+theorem piOuterProduct_ofLp_apply (f : (i : ι) → EuclideanSpace α (l i)) (j) :
+    (⨂ i, f i ).ofLp j = ∏ i, f i (j i) := by
+  simp [PiOuterProduct.tprod, ← Multiset.prod_eq_foldr]
+
+end PiOuterProduct
+
 noncomputable def BasisVector (i : ι) :=
   basisFun ι ℂ i
 
