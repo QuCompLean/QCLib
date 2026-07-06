@@ -39,7 +39,7 @@ open EuclideanSpace
 
 variable {ι : Type*} [Fintype ι]
 
-noncomputable def BasisVector (i : ι) : (ι → ℂ) :=
+noncomputable def BasisVector (i : ι) :=
   basisFun ι ℂ i
 
 @[matrixExpand]
@@ -55,32 +55,33 @@ notation3:max "δ[" i:90 "] " => BasisVector i
 -- for `MatrixLike` objects?
 -- More generally, decide whether to use `•` for actions on vectors
 -- Move to other module?
-theorem Matrix.UnitaryGroup.ext_col {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem Matrix.UnitaryGroup.ext_col [DecidableEq ι]
     {U V : Matrix.unitaryGroup ι ℂ} :
     (∀ i : ι, (U : Matrix ι ι ℂ).col i = (V : Matrix ι ι ℂ).col i) → U = V := by
   intro h
   apply Subtype.ext
   exact Matrix.ext_col h
 
-theorem Matrix.UnitaryGroup.ext_smul_basis {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, ((U • δ[i]) : ι → ℂ) = V • δ[i]) → U = V := by
-   simpa [basisVector_def, Submonoid.smul_def] using ext_col
+variable [DecidableEq ι]
+
+theorem Matrix.UnitaryGroup.ext_smul_basis [Nonempty ι]
+    {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, (U • δ[i]) = V • δ[i]) → U = V := by
+  simp [basisVector_def, basisFun_apply, Submonoid.smul_def, ]
+  sorry
 
 @[simp]
-theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] [DecidableEq ι]
+theorem Matrix.UnitaryGroup.diagonal_smul_basisVector
     (d : ι → unitary ℂ) (i : ι) : (diagonalMonoidHom d) • δ[i] = (d i) • δ[i] := by
   ext j
   simp [Submonoid.smul_def, basisVector_def, Pi.single_apply]
 
 @[simp]
-theorem Matrix.diagonal_smul_basisVector
-    {ι : Type*} [Fintype ι] [DecidableEq ι] (d : ι → ℂ) (v : ι) :
+theorem Matrix.diagonal_smul_basisVector (d : ι → ℂ) (v : ι) :
     Matrix.diagonal d • δ[v] = d v • δ[v] := by
   ext i
   simp [basisVector_def, basisFun_apply, Pi.single_apply]
 
-theorem Matrix.UnitaryGroup.apply_basis {ι : Type*} [Fintype ι]
-    [DecidableEq ι] {U : Matrix.unitaryGroup ι ℂ} (v : ι) :
+theorem Matrix.UnitaryGroup.apply_basis {U : Matrix.unitaryGroup ι ℂ} (v : ι) :
     U • δ[v] = ∑ i, U i v • δ[i] := by
   ext
   simp [basisVector_def, Pi.single_apply, Submonoid.smul_def]
