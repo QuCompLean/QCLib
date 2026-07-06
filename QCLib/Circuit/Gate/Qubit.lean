@@ -284,19 +284,19 @@ open Matrix
 -- Unexpose?
 @[expose] noncomputable section
 
-def up : (Qubit → ℂ) := δ[0]
-def dn : (Qubit → ℂ) := δ[1]
-def pls : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] + δ[1])
-def mns : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] - δ[1])
-def lft : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] + I • δ[1])
-def rgt : (Qubit → ℂ) := ((√2)⁻¹ : ℂ) • (δ[0] - I • δ[1])
+def up := δ[(0 : Qubit)]
+def dn := δ[(1 : Qubit)]
+def pls := ((√2)⁻¹ : ℂ) • (δ[(0 : Qubit)] + δ[1])
+def mns := ((√2)⁻¹ : ℂ) • (δ[(0 : Qubit)] - δ[1])
+def lft := ((√2)⁻¹ : ℂ) • (δ[(0 : Qubit)] + I • δ[1])
+def rgt := ((√2)⁻¹ : ℂ) • (δ[(0 : Qubit)] - I • δ[1])
 
 end
 
-example : pls = (√2)⁻¹ • ![1, 1] := by matrix_expand [pls]
-example : mns = (√2)⁻¹ • ![1, -1] := by matrix_expand [mns]
-example : lft = (√2)⁻¹ • ![1, I] := by matrix_expand [lft]
-example : rgt = (√2)⁻¹ • ![1, -I] := by matrix_expand [rgt]
+example : pls = (√2)⁻¹ • !₂[1, 1] := by matrix_expand [pls]
+example : mns = (√2)⁻¹ • !₂[1, -1] := by matrix_expand [mns]
+example : lft = (√2)⁻¹ • !₂[1, I] := by matrix_expand [lft]
+example : rgt = (√2)⁻¹ • !₂[1, -I] := by matrix_expand [rgt]
 
 /-
 # Actions
