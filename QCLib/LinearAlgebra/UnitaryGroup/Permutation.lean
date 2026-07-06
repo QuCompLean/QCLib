@@ -89,7 +89,7 @@ theorem permSubsystemsHom_smul_eq (σ : Perm ι) (v : (ι → n) → R) :
 @[simp]
 theorem permSubsystemsHom_smul_basis (σ : Perm ι) (k : ι → n) :
     (permSubsystemsHom ℂ n σ) • δ[k] = δ[arrowCongrLeftHom n σ k] := by
-  simp [permSubsystemsHom_smul_eq]
+  simp [permSubsystemsHom]
 
 @[simp]
 theorem permSubsystemsHom_mul_unitary_apply
@@ -109,12 +109,13 @@ theorem permSubsystemsHom_apply (σ : Perm ι) (i j : ι → n) :
     (permSubsystemsHom R n σ) i j = if i ∘ ⇑σ = j then 1 else 0 := by
   simp [permSubsystemsHom, arrowCongr]
 
+-- simplify
 @[simp]
 theorem permSubsystemsHom_smul_unitary_smul_basis
     (σ : Perm ι) (U : unitaryGroup (ι → n) ℂ) (v : ι → n) (k : ι → n) :
     ((permSubsystemsHom ℂ n σ * U) • δ[v]) k = U (k ∘ σ) v := by
-  rw [← smul_eq_mul, smul_assoc]
-  simp [Matrix.mulVec_eq_sum, basisVector_def, Submonoid.smul_def]
+  simp [basisVector_def, Submonoid.smul_def, permSubsystemsHom,
+    PEquiv.toMatrix_toPEquiv_mul, arrowCongr]
 
 @[simp]
 theorem unitary_smul_permSubsystemsHom_smul_basis
