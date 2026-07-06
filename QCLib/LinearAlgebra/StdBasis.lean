@@ -5,7 +5,7 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-public import Mathlib.LinearAlgebra.StdBasis
+public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import QCLib.Mathlib.LinearAlgebra.PiOuterProduct
 public import QCLib.LinearAlgebra.UnitaryGroup.Basic
 
@@ -33,14 +33,18 @@ This file also collects `•` application
 
 -/
 
-@[expose] public section
+public section
 
-noncomputable def BasisVector {ι : Type*} [Finite ι] (i : ι) : (ι → ℂ) :=
-  Pi.basisFun ℂ ι i
+open EuclideanSpace
+
+variable {ι : Type*} [Fintype ι]
+
+noncomputable def BasisVector (i : ι) : (ι → ℂ) :=
+  basisFun ι ℂ i
 
 @[matrixExpand]
-theorem basisVector_def (ι : Type*) [Finite ι] (i : ι) :
-  BasisVector i = Pi.basisFun ℂ ι i := by rfl
+theorem basisVector_def (i : ι) :
+  BasisVector i = basisFun ι ℂ i := by rfl
 
 -- TBD: scope
 /-- The computational basis. -/
@@ -60,9 +64,7 @@ theorem Matrix.UnitaryGroup.ext_col {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem Matrix.UnitaryGroup.ext_smul_basis {ι : Type*} [Fintype ι] [DecidableEq ι]
     {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, ((U • δ[i]) : ι → ℂ) = V • δ[i]) → U = V := by
-   simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-     MulOpposite.op_one, one_smul]
-   exact ext_col
+   simpa [basisVector_def, Submonoid.smul_def] using ext_col
 
 @[simp]
 theorem Matrix.UnitaryGroup.diagonal_smul_basisVector (ι : Type*) [Fintype ι] [DecidableEq ι]
@@ -75,7 +77,7 @@ theorem Matrix.diagonal_smul_basisVector
     {ι : Type*} [Fintype ι] [DecidableEq ι] (d : ι → ℂ) (v : ι) :
     Matrix.diagonal d • δ[v] = d v • δ[v] := by
   ext i
-  simp [basisVector_def, Pi.basisFun_apply, Pi.single_apply]
+  simp [basisVector_def, basisFun_apply, Pi.single_apply]
 
 theorem Matrix.UnitaryGroup.apply_basis {ι : Type*} [Fintype ι]
     [DecidableEq ι] {U : Matrix.unitaryGroup ι ℂ} (v : ι) :
@@ -95,6 +97,6 @@ open scoped PiOuterProduct
 
 theorem basisVector_eq_prod {d} {n : ℕ} (k : Fin n → Fin d) : δ[k] = ⨂ i, δ[(k i)] := by
   ext
-  simp [basisVector_def, Pi.single_eq_prod]
+  simp [basisVector_def, ← Pi.single_eq_prod, ← Pi.single_apply]
 
 end Qubits
