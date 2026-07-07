@@ -110,9 +110,7 @@ example [CommMonoid α] (f : (i : ι) → EuclideanSpace α (l i)) (j) :
 
 -- remove? geometrically, the all-ones vector isn't distinguished in an l2 space.
 @[simp]
-theorem piOuterProduct_one [CommMonoid α] :
-    (⨂ i, (WithLp.toLp 2 (1 : l i → α) : EuclideanSpace α (l i)))
-      = (WithLp.toLp 2 (1 : (Π i, l i) → α) : EuclideanSpace α (Π i, l i)) := by
+theorem piOuterProduct_one [CommMonoid α] : (⨂ i, (1 : EuclideanSpace α (l i))) = 1 := by
   apply ext
   simp
 
