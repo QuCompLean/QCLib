@@ -20,10 +20,13 @@ import QCLib.Mathlib.Lemmas
 * `BasisVector`, a synonym for `Pi.basisFun ℂ`
 * `Qubit` for `Fin 2`, so that the vector space for a single qubit is `Qubit → ℂ`
 * `Register n` for `(Fin n) → Qubit`, so that the vector space for `n` qubits is `Register n → ℂ`
+* `PiOuterPrdocutInst` A type class instance that provides outer product notation
+  for dependent families of `EuclideanSpace` vectors.
 
 ## Main results
 
 * `basisVector_eq_prod` standard basis functions factorize
+* `PiOuterProduct.toMultilinearMap` Outer products as multilinear maps.
 
 This file also collects `•` application
 
@@ -35,23 +38,89 @@ This file also collects `•` application
 
 public section
 
-open EuclideanSpace
+open EuclideanSpace PiOuterProduct Function
 
 variable {ι : Type*} [Fintype ι]
 
-namespace PiOuterProduct
+namespace EuclideanSpace
 
-variable {α : Type*} [CommMonoid α] (l : ι → Type*)
+variable {α : Type*} (l : ι → Type*)
 
-instance : PiOuterProduct (fun i => EuclideanSpace α (l i)) (EuclideanSpace α (Π i, l i)) where
+@[simp]
+theorem ofLp_update_apply {ι : Type*} [DecidableEq ι] {l : ι → Type*}
+    (f : Π i, EuclideanSpace α (l i)) (i' : ι) (x : EuclideanSpace α (l i'))
+    (j : Π i, l i) (i : ι) :
+    (update f i' x i).ofLp (j i)
+      = update (fun i ↦ (f i).ofLp (j i)) i' (x.ofLp (j i')) i :=
+  apply_update (fun i (v : EuclideanSpace α (l i)) ↦ v.ofLp (j i)) f i' x i
+
+instance PiOuterPrdocutInst [CommMonoid α] :
+    PiOuterProduct (fun i => EuclideanSpace α (l i)) (EuclideanSpace α (Π i, l i)) where
   tprod f := WithLp.toLp 2 (⨂ i, ((f i) : (l i → α)))
 
 @[simp]
-theorem piOuterProduct_ofLp_apply (f : (i : ι) → EuclideanSpace α (l i)) (j) :
-    (⨂ i, f i ).ofLp j = ∏ i, f i (j i) := by
+theorem piOuterProduct_apply [CommMonoid α] (f : (i : ι) → EuclideanSpace α (l i)) (j) :
+    (⨂ i, f i).ofLp j = ∏ i, f i (j i) := by
   simp [PiOuterProduct.tprod, ← Multiset.prod_eq_foldr]
 
-end PiOuterProduct
+@[simp]
+theorem piOuterProduct_one [CommMonoid α] :
+    (⨂ i, (WithLp.toLp 2 (1 : l i → α) : EuclideanSpace α (l i)))
+      = (WithLp.toLp 2 (1 : (Π i, l i) → α) : EuclideanSpace α (Π i, l i)) := by
+  ext j
+  simp
+
+@[simp]
+theorem piOuterProduct_zero [CommMonoidWithZero α] (f : Π i, EuclideanSpace α (l i))
+    (h : ∃ i, f i = (WithLp.toLp 2 (0 : l i → α) : EuclideanSpace α (l i))) :
+    (⨂ i, f i) = (WithLp.toLp 2 (0 : (Π i, l i) → α) : EuclideanSpace α (Π i, l i)) := by
+  ext j
+  obtain ⟨i, hi⟩ := h
+  rw [piOuterProduct_apply]
+  exact Finset.prod_eq_zero (Finset.mem_univ i) (by simp [hi])
+
+@[simp]
+theorem piOuterProduct_smul [CommSemiring α] [DecidableEq ι]
+    (f : Π i, EuclideanSpace α (l i)) (i : ι) (s : α)
+    (x : EuclideanSpace α (l i)) :
+    (⨂ j, (update f i (s • x)) j) = s • (⨂ j, (update f i x) j) := by
+  ext
+  simp [Finset.prod_update_of_mem, mul_assoc]
+
+-- Lean only synthesizes `Add` under `SeminormedAddCommGroup` assumption.
+-- See `PiLp.add_apply`. Investigate why?
+@[simp]
+theorem piOuterProduct_add [DecidableEq ι] [CommMonoid α]
+    [SeminormedAddCommGroup α] [RightDistribClass α]
+    (f : Π i, EuclideanSpace α (l i)) (i : ι) (x y : EuclideanSpace α (l i)) :
+    (⨂ j, (update f i (x + y)) j) = (⨂ j, (update f i x) j) + (⨂ j, (update f i y) j) := by
+  ext
+  simp [Finset.prod_update_of_mem, add_mul]
+
+@[simps, expose]
+def PiOuterProduct.toMultilinearMap [SeminormedCommRing α] :
+    MultilinearMap α (fun i => EuclideanSpace α (l i)) (EuclideanSpace α (Π i, l i)) where
+  toFun f := ⨂ i, f i
+  map_update_add' := by simp
+  map_update_smul' := by simp
+
+theorem piOuterProduct_smul_univ [SeminormedCommRing α] (c : ι → α)
+    (f : Π i, EuclideanSpace α (l i)) :
+    (⨂ i, c i • f i) = (∏ i, c i) • (⨂ i, f i) := by
+  simp [← EuclideanSpace.PiOuterProduct.toMultilinearMap_apply, MultilinearMap.map_smul_univ]
+
+theorem piOuterProduct_smul_const [SeminormedCommRing α] (a : α)
+    (f : Π i, EuclideanSpace α (l i)) :
+    (⨂ i, a • f i) = a ^ (Fintype.card ι) • (⨂ i, f i) := by
+  simp [piOuterProduct_smul_univ]
+
+theorem piOuterProduct_univ_sum [DecidableEq ι] [SeminormedCommRing α] {κ : Type*} [Fintype κ]
+    (g : (i : ι) → κ → EuclideanSpace α (l i)) :
+    (⨂ i, ∑ j : κ, g i j) = ∑ k : (ι → κ), ⨂ i, g i (k i) := by
+  ext x
+  simp [piOuterProduct_apply, Fintype.prod_sum]
+
+end EuclideanSpace
 
 noncomputable def BasisVector (i : ι) :=
   basisFun ι ℂ i
