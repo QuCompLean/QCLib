@@ -136,7 +136,7 @@ theorem piOuterProduct_apply [CommMonoid α] (v : Π i, (l i → α)) (r : Π i,
   simp [piOuterProduct_def, ← Multiset.prod_eq_foldr]
 
 @[simp]
-theorem piOuterProduct_one [CommMonoidWithZero α] : (⨂ i, (1 : m i → α)) = 1 := by ext; simp
+theorem piOuterProduct_one [CommMonoid α] : (⨂ i, (1 : m i → α)) = 1 := by ext; simp
 
 @[simp]
 theorem piOuterProduct_zero [CommMonoidWithZero α] (v : Π i, (l i → α)) (h : ∃ i, v i = 0) :
