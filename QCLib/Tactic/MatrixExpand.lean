@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Davood Tehrani, David Gross. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Davood Tehrani, David Gross, Andrés Goens
+Authors: Davood Tehrani, David Gross, George Afentakis, Andrés Goens
 -/
 module
 
@@ -23,7 +23,9 @@ import Mathlib.LinearAlgebra.StdBasis
 `*_def` lemmas can be tagged by `matrixExpand` to allow automatic unfolding of
 definitions in `matrix_expand`.
 
-`matrix_neq` is a simple tactic for proving inequality of a unitary matrix an identity.
+`matrix_neq` is a metaprogramming tactic for proving inequality of small matrices indexed by a
+concrete `Fintype`. This is done by specialising the equality hypothesis for each index
+until a contradition is found.
 
 
 # Origin & Problems
@@ -52,10 +54,6 @@ elements of `Fin n → Fin d`. This explicit enumeration avoids the additional a
 introduced by the default Fintype instance and provides a representation that is
 more amenable to simplification.
 
-
-# TBD
-
-Finding replacement for `matrix_neq`.
 
 -/
 
@@ -91,10 +89,6 @@ theorem Finset.sum_vecCons {M} [AddCommMonoid M] {n m : ℕ} (f : (Fin n.succ �
   rw [hb, Finset.sum_biUnion (hdis)]
   simp [e]
 
--- Used in hack below.
-theorem matrix_neq_of_diag_neq {n α : Type*} (U V : Matrix n n α)
-    (hneq : ∃ i : n, ¬(U i i = V i i)) : ¬U = V := by
-  grind
 
 end
 
@@ -157,25 +151,115 @@ macro_rules
       <;> norm_cast
       <;> norm_num)
 
+-- matrix_neq proves two matrices are unequal by contradiction. It assumes the
+-- matrices are equal, then specialises that equality hypothesis via congr_fun
+-- at every index combination (using matrix_exp_at_hyp), simplifying each
+-- with the same simp set as matrix_expand until one yields a contradiction.
 
-/- This is a hack for proving that a unitary isn't `1`. To be fixed. -/
-/- Update: George now has a sensible implementation. TBD: Move this one here. -/
+-- Recursively unpacks a List literal expression into a Lean list of expressions.
+-- Multiset (what finset.val returns) can be handled using bare List.cons List.nil and Quot.mk.
+partial def peelListLit (e : Expr) : MetaM (List Expr) := do
+  match (← whnf e).getAppFnArgs with
+  | (``List.cons, #[_, a, tl]) => return a :: (← peelListLit tl)
+  | (``List.nil, _)            => return []
+  | (``Quot.mk,  #[_, _, l])   => peelListLit l
+  | _ => throwError "could not enumerate {e}"
 
-open Lean.Parser.Tactic in
-syntax (name := matrix_neq) "matrix_neq"
-  (" [" ((simpStar <|> simpErase <|> simpLemma),*,?) "]")? : tactic
+-- Enumerates all elements of a Fintype by extracting Finset.val.
+def elemsOfType (type : Expr) : MetaM (List Expr) := do
+  let inst ← synthInstance (← mkAppM ``Fintype #[type]) --find the typeclass of fintype
+  let elems ← mkAppOptM ``Fintype.elems #[type, inst]
+  let val   ← mkAppM ``Finset.val #[elems]
+  (← peelListLit val).mapM (reduce ·)
 
--- `Subtype.ext_iff` reduces unitaries to matrices
--- `ne_eq` reduces `a ≠ b` to `¬a=b`
+-- Enumerates elements of a type, with a fast path for Fin n → Fin d using piFinList
+-- instead of going through Fintype, then falls back to elemsOfType.
+--- this is indended to emulate the (first | fin_cases (piFinList_complete i) | fin_cases i)
+-- behaviour in matrix_expand
+def elemsOrPi (type : Expr) : MetaM (List Expr) := do
+  match ← withTransparency .all (whnf type) with
+  | .forallE _ dom cod _ =>
+    match (← withTransparency .all (whnf dom)).getAppFnArgs, -- unfold
+          (← withTransparency .all (whnf cod)).getAppFnArgs with
+    | (``Fin, #[n]), (``Fin, #[d]) => peelListLit (← mkAppM ``piFinList #[n, d])
+    | _, _                         => elemsOfType type
+  | _ => elemsOfType type
+
+-- For each combination of elements across the argument types, builds a chain of
+-- congr_fun applications to specialise hypothesis h at concrete index values.
+-- e.g. for indices (0, 1): congr_fun (congr_fun h 0) 1
+open Lean.Elab.Term in
+private def mkCongrApplications (h : Ident) (argTys : List Expr) : TermElabM (List Syntax.Term) :=
+ do
+  let elemsPerArg ← argTys.mapM (liftMetaM ∘ elemsOrPi)
+  let combos := elemsPerArg.foldl (fun acc es => do
+    let xs ← acc
+    let e ← es
+    pure (xs ++ [e])) [[]]
+  combos.mapM fun args => do
+    args.zip argTys |>.foldlM (fun stx (e, ty) => do
+      let hint ← mkExpectedTypeHint e ty
+      let s    ← exprToSyntax hint
+      `(congr_fun $stx $s)) h
+
+open Lean.Elab.Term in
+def buildApplications (h : Ident) (lhsTy : Expr) : TermElabM (List Syntax.Term) :=
+  forallBoundedTelescope lhsTy (some 2) fun args body => do
+    let n := args.size
+    if n == 0 then throwError "LHS type must have arity 1 or 2, got {lhsTy}"
+    if (← whnf body).isForall then throwError "LHS type has arity > {n}, got {lhsTy}"
+    let argTys ← args.toList.mapM (liftMetaM ∘ inferType)
+    mkCongrApplications h argTys
+
+def MatrixExpandHyp (hName : Ident) (app : Syntax.Term)
+    (rulesArr : Array (TSyntax `Lean.Parser.Tactic.simpLemma)) : TacticM Unit := do
+  evalTactic (← `(tactic| have $hName := $app))
+  evalTactic (← `(tactic|
+    simp [matrixExpand, Matrix.mul_apply, Matrix.one_apply, Matrix.mulVec_add,
+          Matrix.mulVec_smul, Matrix.one_apply,
+          Finset.sum_vecCons, Pi.single_apply,
+          Submonoid.smul_def,
+          Pi.basisFun_apply, Fintype.sum_prod_type,
+          Subsingleton.elim _ ![],
+          $rulesArr,*] at $hName:ident))
+  if (← getGoals).isEmpty then return
+  evalTactic (← `(tactic|
+    (try field_simp at $hName:ident) <;> (try ring_nf at $hName:ident) <;>
+    (try norm_cast at $hName:ident) <;> (try norm_num at $hName:ident)))
+
+-- matrix_exp_at_hyp can be used as a standalone tactic
+-- and specialise an equality hypothesis at every index combination and simp-normalize each case.
+-- Not entirely sure of the usecase, it might make sense to only use it internally in matrix_neq
+
+/-- Proves a goal by specialising an equality hypothesis between matrices at every index
+combination via `congr_fun`, then simplifies each resulting hypothesis. -/
+syntax (name := matrix_exp_at_hyp) "matrix_exp_at_hyp"
+  (" [" Lean.Parser.Tactic.simpLemma,* "]")? (" at " ident)? : tactic
+
+open Lean.Elab.Term in
+@[tactic matrix_exp_at_hyp] elab_rules : tactic
+  | `(tactic| matrix_exp_at_hyp $[[$rules,*]]? at $h) => withMainContext do
+    let rulesArr := (rules.map (·.getElems)).getD #[]
+    let hTy ← instantiateMVars (← (← getFVarId h).getType)
+    let some (_, lhs, _) := hTy.eq? | throwError "matrix_exp_at_hyp: hypothesis is not an equality"
+    let lhsTy ← whnf (← instantiateMVars (← inferType lhs))
+    let applications ← buildApplications h lhsTy
+    (List.zipWith (·, ·) (List.range applications.length) applications).forM fun (idx, app) => do
+      if (← getGoals).isEmpty then return
+      MatrixExpandHyp (mkIdent (Name.mkSimple s!"h_{idx}")) app rulesArr
+
+/-- Proves matrices are not equal by contradiction. Assuming equallity it
+specialises and simplifies at every index combination via `matrix_exp_at_hyp`/`congr_fun`. -/
+syntax (name := matrix_neq) "matrix_neq" (" [" Lean.Parser.Tactic.simpLemma,* "]")? : tactic
+
 macro_rules
-| `(tactic| matrix_neq $[[$rules,*]]? ) => do
-  let rules' := rules.getD ⟨#[]⟩
-  `(tactic|
-    simp only [Subtype.ext_iff, ne_eq, $[$rules'],* ] <;>
-    apply matrix_neq_of_diag_neq <;>
-    simp <;>
-    norm_cast
-  )
+  | `(tactic| matrix_neq $[[$rules,*]]?) => do
+    let rules' := rules.getD ⟨#[]⟩
+    let h := mkIdent `h
+    `(tactic|
+      (by_contra $h; first
+         | (rw [Subtype.ext_iff] at $h:ident; matrix_exp_at_hyp [$rules',*] at $h)
+         | matrix_exp_at_hyp [$rules',*] at $h))
 
 
 end Lean.Elab.Tactic
