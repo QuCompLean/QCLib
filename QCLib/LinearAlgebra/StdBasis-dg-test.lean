@@ -86,6 +86,7 @@ namespace EuclideanSpace
 
 variable {α : Type*} (l : ι → Type*)
 
+@[ext]
 theorem ext {α n : Type*} {x y : EuclideanSpace α n} (h : x.ofLp = y.ofLp) : x = y :=
   WithLp.ofLp_injective 2 h
 
@@ -113,7 +114,7 @@ example [CommMonoid α] (f : (i : ι) → EuclideanSpace α (l i)) (j) :
 theorem piOuterProduct_one [CommMonoid α] :
     (⨂ i, (WithLp.toLp 2 (1 : l i → α) : EuclideanSpace α (l i)))
       = (WithLp.toLp 2 (1 : (Π i, l i) → α) : EuclideanSpace α (Π i, l i)) := by
-  apply ext
+  ext1
   simp
 
 @[simp]
@@ -150,19 +151,19 @@ def PiOuterProduct.toMultilinearMap [SeminormedCommRing α] :
 theorem piOuterProduct_smul_univ [SeminormedCommRing α] (c : ι → α)
     (f : Π i, EuclideanSpace α (l i)) :
     (⨂ i, c i • f i) = (∏ i, c i) • (⨂ i, f i) := by
-  apply ext
+  ext1
   simp [_root_.piOuterProduct_smul_univ]
 
 theorem piOuterProduct_smul_const [SeminormedCommRing α] (a : α)
     (f : Π i, EuclideanSpace α (l i)) :
     (⨂ i, a • f i) = a ^ (Fintype.card ι) • (⨂ i, f i) := by
-  apply ext
+  ext1
   simp [_root_.piOuterProduct_smul_const]
 
 theorem piOuterProduct_univ_sum [DecidableEq ι] [SeminormedCommRing α] {κ : Type*} [Fintype κ]
     (g : (i : ι) → κ → EuclideanSpace α (l i)) :
     (⨂ i, ∑ j : κ, g i j) = ∑ k : (ι → κ), ⨂ i, g i (k i) := by
-  apply ext
+  ext1
   simp [_root_.piOuterProduct_univ_sum]
 
 end EuclideanSpace
