@@ -71,3 +71,11 @@ theorem hadarmardBasisVector_eq_prod (k : Register n) :
   simp_rw [Z_pow_pls, HH_aux, piOuterProduct_smul_const, piOuterProduct_univ_sum,
     piOuterProduct_smul_univ, HadamardBasisVector, basisVector_eq_prod, Fintype.card_fin,
     Finset.prod_pow_eq_pow_sum]
+
+lemma HH_first_row_eq (r : Register n) : (HH n) 0 r = ((√2)⁻¹)^n := by
+  have h (x) : ![(√2 : ℂ)⁻¹, (↑√2)⁻¹] x = (↑√2)⁻¹ := by
+    fin_cases x <;> simp
+  simp [-smul_apply, HH, H_eq, h]
+
+lemma HH_smul_zero_apply (v : Register n → ℂ) : (HH n  • v) 0 = ((√2)⁻¹ : ℂ)^n * ∑ k, v k := by
+  simp [Matrix.unitaryGroup.smul_vec_def, Matrix.mulVec, dotProduct, HH_first_row_eq,Finset.mul_sum]
