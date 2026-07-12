@@ -55,13 +55,11 @@ noncomputable def HadamardBasisVector (k : Register n) :=
 private theorem HH_aux (y : Fin 2) :
     (δ[0] + (-1 : ℂ) ^ (y : ℕ) • δ[1]) = ∑ j : Fin 2, (-1 : ℂ) ^ ((y * j) : ℕ) • δ[j] := by
   simp
-#check piKroneckerUnitary_smul_vec
+
 -- TBD: `simp` runs into a loop. Investigate.
 theorem HH_apply (k : Register n) : (HH n) • δ[k] = HadamardBasisVector n k := by
-  simp_rw [HH_def, HadamardBasisVector, basisVector_eq_prod]
---  simp_rw [piKroneckerUnitary_smul_vec]
-  simp_rw [EuclideanSpace.piKroneckerUnitary_smul_vec]
-  simp_rw [H_apply,
+  simp_rw [HH_def, HadamardBasisVector, basisVector_eq_prod,
+    UnitaryGroup.piKroneckerUnitary_smul_vec, H_apply,
     piOuterProduct_smul_const, HH_aux, piOuterProduct_univ_sum, Fintype.card_fin,
     piOuterProduct_smul_univ, Finset.prod_pow_eq_pow_sum]
 

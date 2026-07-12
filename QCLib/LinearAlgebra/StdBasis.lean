@@ -211,7 +211,7 @@ theorem Matrix.UnitaryGroup.apply_basis {U : Matrix.unitaryGroup ι ℂ} (v : ι
   simp [basisVector_def, Pi.single_apply, Submonoid.smul_def]
 
 @[simp]
-theorem Matrix.UnitaryGroup.EuclideanSpace.piKroneckerUnitary_smul_vec
+theorem Matrix.UnitaryGroup.piKroneckerUnitary_smul_vec
     (l : ι → Type*) [∀ i, DecidableEq (l i)] [∀ i, Fintype (l i)]
     (U : Π i, unitaryGroup (l i) ℂ)
     (v : (i : ι) → EuclideanSpace ℂ (l i)) :
