@@ -175,7 +175,7 @@ theorem Matrix.UnitaryGroup.ext_col [DecidableEq ι]
 variable [DecidableEq ι]
 
 open Matrix in
-theorem Matrix.unitaryGroup.smul_euclidean_vec_def
+theorem Matrix.unitaryGroup.EuclideanSpace.smul_def
     {α m : Type*} [Fintype m] [DecidableEq m] [CommRing α] [StarRing α]
     (U : unitaryGroup m α) (v : EuclideanSpace α m) : U • v = WithLp.toLp 2 (↑U *ᵥ v.ofLp) := by
   ext
@@ -183,7 +183,7 @@ theorem Matrix.unitaryGroup.smul_euclidean_vec_def
 
 open Matrix in
 @[simp]
-theorem Matrix.unitaryGroup.smul_euclidean_vec_coe
+theorem Matrix.unitaryGroup.EuclideanSpace.smul_coe
   {α m : Type*} [Fintype m] [DecidableEq m] [CommRing α] [StarRing α]
     (U : unitaryGroup m α) (v : EuclideanSpace α m) : ((U • v) : m → α) = (↑U *ᵥ v.ofLp) := by
   ext
@@ -191,7 +191,7 @@ theorem Matrix.unitaryGroup.smul_euclidean_vec_coe
 
 theorem Matrix.UnitaryGroup.ext_smul_basis
     {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, (U • δ[i]) = V • δ[i]) → U = V := by
-  simpa [basisVector_def, Matrix.unitaryGroup.smul_euclidean_vec_def] using ext_col
+  simpa [basisVector_def, Matrix.unitaryGroup.EuclideanSpace.smul_def] using ext_col
 
 @[simp]
 theorem Matrix.UnitaryGroup.diagonal_smul_basisVector
@@ -209,6 +209,15 @@ theorem Matrix.UnitaryGroup.apply_basis {U : Matrix.unitaryGroup ι ℂ} (v : ι
     U • δ[v] = ∑ i, U i v • δ[i] := by
   ext
   simp [basisVector_def, Pi.single_apply, Submonoid.smul_def]
+
+@[simp]
+theorem Matrix.UnitaryGroup.EuclideanSpace.piKroneckerUnitary_smul_vec
+    (l : ι → Type*) [∀ i, DecidableEq (l i)] [∀ i, Fintype (l i)]
+    (U : Π i, unitaryGroup (l i) ℂ)
+    (v : (i : ι) → EuclideanSpace ℂ (l i)) :
+    (⨂ i, U i) • (⨂ i, v i) = (⨂ i, (U i) • (v i)) := by
+  ext1
+  simp
 
 section SMul
 

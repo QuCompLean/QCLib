@@ -54,8 +54,8 @@ noncomputable def HadamardBasisVector (k : Register n) :=
 
 private theorem HH_aux (y : Fin 2) :
     (δ[0] + (-1 : ℂ) ^ (y : ℕ) • δ[1]) = ∑ j : Fin 2, (-1 : ℂ) ^ ((y * j) : ℕ) • δ[j] := by
-  simp [Pi.smul_def]
-
+  simp
+#check piKroneckerUnitary_smul_vec
 -- TBD: `simp` runs into a loop. Investigate.
 theorem HH_apply (k : Register n) : (HH n) • δ[k] = HadamardBasisVector n k := by
   simp_rw [HH_def, HadamardBasisVector, basisVector_eq_prod]
