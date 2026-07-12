@@ -121,7 +121,7 @@ theorem piOuterProductMap_apply (v : Π i, l i → α) (r : Π i, l i) :
 
 end PiOuterProductMap
 
-section PiOuterProduct
+namespace Pi
 
 /-- Tensor product of a family of vectors -/
 instance [CommMonoid α] : PiOuterProduct (fun i ↦ (l i → α)) ((Π i, l i) → α) where
@@ -147,17 +147,16 @@ theorem piOuterProduct_zero [CommMonoidWithZero α] (v : Π i, (l i → α)) (h 
 
 variable [CommSemiring α]
 
-open Function in
 @[simp]
 theorem piOuterProduct_smul [DecidableEq ι] (v : Π i, (l i → α)) (i : ι) (s : α) (x : l i → α) :
-    (⨂ j, (update v i (s • x)) j) = s • (⨂ j, (update v i x) j) := by
+    (⨂ j, (Function.update v i (s • x)) j) = s • (⨂ j, (Function.update v i x) j) := by
   ext
   simp [Function.update_apply_eq_update, Finset.prod_update_of_mem, mul_assoc]
 
-open Function in
 @[simp]
 theorem piOuterProduct_add [DecidableEq ι] (v : Π i, (l i → α)) (i : ι) (x y : l i → α) :
-    (⨂ j, (update v i (x + y) j)) = (⨂ j, (update v i x) j) + (⨂ j, (update v i y) j) := by
+    (⨂ j, (Function.update v i (x + y) j)) =
+      (⨂ j, (Function.update v i x) j) + (⨂ j, (Function.update v i y) j) := by
   ext
   simp [Function.update_apply_eq_update, Finset.prod_update_of_mem, add_mul]
 
@@ -184,7 +183,7 @@ theorem piOuterProduct_univ_sum [DecidableEq ι] {κ : Type*} [Fintype κ]
   ext x
   simp [Fintype.prod_sum]
 
-end PiOuterProduct
+end Pi
 
 /-
 # Tensor product of matrices

@@ -29,7 +29,7 @@ a.k.a. the Hadamard basis.
 
 @[expose] public section
 
-open Qubit Matrix
+open Qubit Matrix EuclideanSpace
 open scoped PiOuterProduct
 
 variable (n : ℕ)
