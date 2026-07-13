@@ -56,8 +56,11 @@ open scoped ENNReal
 
 variable (p : ℝ≥0∞) (K K' : Type*) {K'' : Type*} (V : Type*) {V' V'' : Type*}
 
-@[to_additive (attr := simps)]
+@[to_additive]
 instance instOne [One V] : One (WithLp p V) := (WithLp.equiv p V).one
+
+lemma zero_def (p : ENNReal) (V : Type u_4) [Zero V] : 0 = (WithLp.equiv p V).symm 0 := rfl
+lemma one_def (p : ENNReal) (V : Type u_4) [One V] : 1 = (WithLp.equiv p V).symm 1 := rfl
 
 end WithLpMissingInstances.WithLp
 
@@ -96,14 +99,16 @@ example [CommMonoid α] (f : (i : ι) → EuclideanSpace α (l i)) (j) :
 @[simp]
 theorem piOuterProduct_one [CommMonoid α] : (⨂ i, (1 : EuclideanSpace α (l i))) = 1 := by
   ext1
-  simp
+  simp only [WithLp.one_def, WithLp.equiv_symm_apply, ofLp_injective, Pi.piOuterProduct_one]
 
 @[simp]
 theorem piOuterProduct_zero [CommMonoidWithZero α] (f : Π i, EuclideanSpace α (l i))
     (h : ∃ i, f i = 0) : (⨂ i, f i) = 0 := by
   ext j
   obtain ⟨i, hi⟩ := h
-  simpa using Finset.prod_eq_zero (Finset.mem_univ i) (by simp [hi])
+  simpa [WithLp.zero_def] using
+    Finset.prod_eq_zero (Finset.mem_univ i)
+      (by simp [hi, WithLp.zero_def])
 
 @[simp]
 theorem piOuterProduct_smul [CommSemiring α] [DecidableEq ι]

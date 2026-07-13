@@ -38,7 +38,7 @@ Choose a namespace.
 
 public section
 
-open Complex Matrix Qubit
+open Complex Matrix Qubit EuclideanSpace
 
 open scoped PiOuterProduct
 
