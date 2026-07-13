@@ -284,10 +284,11 @@ def embedRight (U : 𝐔[Fin n → k]) : 𝐔[Fin (n + 1) → k] :=
   reindexMonoidEquiv (Fin.consFunEquiv n k) <| blockDiagonalMonoidHom (fun _ ↦ U)
 
 theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
-    embedRight U • δ[v] = ((U • δ[Fin.tail v]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm := by
+    (embedRight U • δ[v] : EuclideanSpace ℂ (Fin (n + 1) → k)) =
+      WithLp.toLp 2 (((U • δ[Fin.tail v]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm) := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply, Fin.tail_def]
-
+  
 -- get rid of this pattern, in favor of the one below?
 theorem _root_.Equiv.comp_equiv_injective {α β R : Type*} {f g : α → R} (e : β ≃ α)
     (h : f ∘ e = g ∘ e) : f = g := by

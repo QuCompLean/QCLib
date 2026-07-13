@@ -73,7 +73,7 @@ the recursive structure is easier to exploit.
 -/
 
 
-open Matrix UnitaryGroup PiOuterProduct ComplexConjugate Fin
+open Matrix UnitaryGroup PiOuterProduct ComplexConjugate Fin EuclideanSpace
 
 
 public section Aux
@@ -296,8 +296,9 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
     ext a
     -- Application on basis
     simp [Function.comp_def, -permSubsystemsHom_smul_basis, CRCircuit_eq_reindexed]
-    simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
-    simp [Pi.single_apply, ← ite_and, cons_iff, ζ_ofDigitsBE_ofDigits]
+    simp? [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply]
+    -- simp [basisVector_def, Submonoid.smul_def, mulVec_eq_sum, blockDiagonal_apply, funext_iff]
+    -- simp [Pi.single_apply, ← ite_and, cons_iff, ζ_ofDigitsBE_ofDigits]
     -- Normalization
     field_simp
     simp [show (√d * √(d ^ n)) = (√(d ^ (n + 1)) : ℂ) by simp [pow_succ'],
@@ -307,7 +308,6 @@ theorem QFTCircuit_eq_QFT (n d : ℕ) [hd : NeZero d] : QFTCircuit n d = QFT n d
       val_ofDigitsBE_apply, tail, Function.ofDigits_apply, Fin.rev_castSucc]
     nth_rw 2 [Finset.sum_mul]
     grind
-
 
 public section IQFT
 
