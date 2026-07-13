@@ -100,9 +100,11 @@ theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
 theorem single_apply_basis (v : Π i, k i) (j : ι) (U : 𝐔[k j]) :
     single' j U • δ[v] = ∑ q, U q (v j) • δ[update v j q] := by
   ext k
-  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-    MulOpposite.op_one, Pi.smul_apply, col_apply, single_apply_apply, one_smul,
-    Finset.sum_apply, Pi.single_apply, smul_eq_mul, funext_iff]
+  simp only [basisVector_def, EuclideanSpace.basisFun_apply, Submonoid.smul_def, single'_coe,
+    WithLp.ofLp_smul, PiLp.ofLp_single, smul_eq_mulVec, mulVec_single, MulOpposite.op_one,
+    Pi.smul_apply, col_apply, submatrix_apply, piSplitAt_apply, ne_eq, blockDiagonal_apply,
+    funext_iff, Subtype.forall, smul_ite, one_smul, smul_zero, WithLp.ofLp_sum, Finset.sum_apply,
+    Pi.single_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
   split_ifs
   · rw [Finset.sum_eq_single (k j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
@@ -201,9 +203,11 @@ theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
 theorem bipartite_apply_basis (i j : ι) (A : 𝐔[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j A h • δ[v] = ∑ q, A q (v i, v j) • δ[update (update v i q.1) j q.2] := by
   ext w
-  simp only [basisVector_def, Pi.basisFun_apply, Submonoid.smul_def, smul_eq_mulVec, mulVec_single,
-    MulOpposite.op_one, Pi.smul_apply, col_apply, bipartite_apply_apply, one_smul, Finset.sum_apply,
-    Pi.single_apply, smul_eq_mul, funext_iff]
+  simp only [basisVector_def, EuclideanSpace.basisFun_apply, Submonoid.smul_def, bipartite'_coe,
+    WithLp.ofLp_smul, PiLp.ofLp_single, smul_eq_mulVec, mulVec_single, MulOpposite.op_one,
+    Pi.smul_apply, col_apply, submatrix_apply, piSplitAtPair_apply, ne_eq, blockDiagonal_apply,
+    funext_iff, Subtype.forall, forall_and_index, smul_ite, one_smul, smul_zero, WithLp.ofLp_sum,
+    Finset.sum_apply, Pi.single_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
   split_ifs
   · rw [Finset.sum_eq_single (w i, w j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
@@ -227,7 +231,7 @@ theorem controllize_of_zero {n} (U : 𝐔[Qubit]) (i j : Fin n) (h : i ≠ j)
   by_cases hw : v = w
   all_goals
     simp_all [basisVector_def, Submonoid.smul_def, funext_iff, blockDiagonal_apply,
-      Pi.single_apply, Matrix.one_apply]
+      Matrix.one_apply]
     try grind
 
 @[simp]
@@ -237,8 +241,7 @@ theorem controllize_of_one {n : ℕ} (U : 𝐔[Qubit]) (i j : Fin n.succ) (h : i
   ext w
   by_cases hw : v = w
   all_goals
-    simp_all [basisVector_def, Submonoid.smul_def, funext_iff, blockDiagonal_apply,
-      Pi.single_apply]
+    simp_all [basisVector_def, Submonoid.smul_def, funext_iff, blockDiagonal_apply]
     grind
 
 end bipartite
@@ -301,8 +304,7 @@ example {α β R : Type*} (f g : α → R) (e : α ≃ β)
 theorem embedRight_apply_basis' (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
     (embedRight U • δ[v]) ∘ (Fin.consFunEquiv n k) = (U • δ[Fin.tail v]) ⊗ δ[v 0] := by
   apply Equiv.comp_equiv_injective (Fin.consFunEquiv n k).symm
-  rw [embedRight_apply_basis]
-  simp [Function.comp_def, Fin.tail_def]
+  simp [embedRight_apply_basis (U := U), Function.comp_def, Fin.tail_def]
 
 /-- The embedding of a unitary matrix `U : 𝐔[Fin n → k]` into `𝐔[Fin (n+1) → k]`
 realized by acting with `U` on the first `n` subsystems and trivially on the final one. -/

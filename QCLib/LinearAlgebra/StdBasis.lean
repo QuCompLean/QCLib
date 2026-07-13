@@ -194,6 +194,13 @@ theorem Matrix.unitaryGroup.EuclideanSpace.smul_coe
   ext
   simp [Submonoid.smul_def]
 
+@[simp]
+theorem Matrix.unitaryGroup.EuclideanSpace.smul_apply
+  {α m : Type*} [Fintype m] [DecidableEq m] [CommRing α] [StarRing α]
+    (U : unitaryGroup m α) (v : EuclideanSpace α m) :
+      WithLp.toLp 2 (U • v) = U • (WithLp.toLp 2 v) := by
+  simp
+
 theorem Matrix.UnitaryGroup.ext_smul_basis
     {U V : Matrix.unitaryGroup ι ℂ} : (∀ i : ι, (U • δ[i]) = V • δ[i]) → U = V := by
   simpa [basisVector_def, Matrix.unitaryGroup.EuclideanSpace.smul_def] using ext_col
