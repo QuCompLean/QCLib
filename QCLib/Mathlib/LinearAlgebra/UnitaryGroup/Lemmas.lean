@@ -10,6 +10,7 @@ public import Mathlib.Algebra.Lie.OfAssociative
 public import Mathlib.LinearAlgebra.Matrix.Reindex
 public import Mathlib.LinearAlgebra.Matrix.ZPow
 public import Mathlib.LinearAlgebra.UnitaryGroup
+public import Mathlib.Analysis.CStarAlgebra.Matrix
 
 /-!
 
@@ -112,6 +113,24 @@ def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α w
   map_one' := by simp
   map_mul' := by simp
 
+section
+
+variable {n : Type*} [Fintype n] [DecidableEq n]
+variable {𝕜 : Type*} [RCLike 𝕜]
+
+@[simp]
+theorem _root_.Unitary.toEuclideanLinCLM_mem_unitary (U : Matrix.unitaryGroup n 𝕜) :
+    (toEuclideanCLM (n := n) (𝕜 := 𝕜) (U : Matrix n n 𝕜)) ∈
+      unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) := by
+  rw [Unitary.mem_iff]
+  constructor <;> simp [← StarHomClass.map_star, ← map_mul]
+
+noncomputable def _root_.Unitary.diagonalMonoidHom :
+    (n → unitary 𝕜) →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
+  (Unitary.map (StarMonoidHom.ofClass (toEuclideanCLM (𝕜 := 𝕜)))).toMonoidHom.comp
+    UnitaryGroup.diagonalMonoidHom
+
+end
 -- Relocate?
 
 omit [DecidableEq ι]
