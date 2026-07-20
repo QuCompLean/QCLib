@@ -132,5 +132,4 @@ theorem star_permSubsystemsHom_eq_inv (σ : Perm ι) :
 
 end Matrix.UnitaryGroup
 
-
 end
