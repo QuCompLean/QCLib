@@ -28,5 +28,5 @@ theorem orderOf_Z [hd : d.AtLeastTwo] : orderOf (Z d) = d :=
     apply ((orderOf_eq_iff hd.toNeZero.pos).mp (orderOf_uζ d)).right m hmd hm
     rw [Z, ← Unitary.diagonalMonoidHom_one, ← map_pow,
       Function.Injective.eq_iff Unitary.diagonalMonoidHom_injective] at hz
-    simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun hz (1 : Fin d)
+    simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun hz 1
   )
