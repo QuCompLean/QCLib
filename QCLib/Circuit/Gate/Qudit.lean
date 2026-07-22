@@ -21,7 +21,7 @@ theorem orderOf_finRotate [hd : d.AtLeastTwo] :
 
 def Z : 𝐔ᶠ[Fin d] := diagonalMonoidHom (fun k => (uζ d) ^ (k : ℕ))
 
-def X : 𝐔ᶠ[Fin d] := permHom (finRotate d)
+def X : 𝐔ᶠ[Fin d] := permHom ℂ (finRotate d)
 
 @[simp]
 theorem Z_apply (k : Fin d) : (Z d) δ[k] = ((uζ d) ^ (k : ℕ)) • δ[k] := by
@@ -44,25 +44,23 @@ theorem Z_pow [NeZero d] : (Z d) ^ d = 1 := by
 theorem X_pow [hd : d.AtLeastTwo] : (X d) ^ d = 1 := by
   simp [X, ((orderOf_eq_iff hd.toNeZero.pos).mp (orderOf_finRotate d)).left]
 
+@[simp]
 theorem orderOf_Z [hd : d.AtLeastTwo] : orderOf (Z d) = d :=
   (orderOf_eq_iff hd.toNeZero.pos).mpr (by
     simp only [Z_pow, ne_eq, true_and]
-    intro m hmd hm hz
+    intro m hmd hm h
     apply ((orderOf_eq_iff hd.toNeZero.pos).mp (orderOf_uζ d)).right m hmd hm
     rw [Z, ← diagonalMonoidHom_one, ← map_pow,
-      Function.Injective.eq_iff diagonalMonoidHom_injective] at hz
-    simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun hz 1
+      Function.Injective.eq_iff diagonalMonoidHom_injective] at h
+    simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun h 1
   )
-
--- theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
---   (orderOf_eq_iff hd.toNeZero.pos).mpr (by
---     simp only [X_pow, ne_eq, true_and]
---     intro m hmd hm hx
---     simp [X, permHom] at hx
---     apply_fun Subtype.val at hx
---     apply_fun ContinuousLinearMap.toLinearMap at hx
---     have := LinearMap.congr_fun hx 0
---     rw [ContinuousLinearMap.coe_coe, map_zero, OneMemClass.coe_one,
---       ContinuousLinearMap.coe_one, Module.End.one_apply] at this
---     sorry
---   )
+  
+@[simp]
+theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
+  (orderOf_eq_iff hd.toNeZero.pos).mpr (by
+    simp only [X_pow, ne_eq, true_and]
+    intro m hmd hm h
+    apply ((orderOf_eq_iff hd.toNeZero.pos).mp (orderOf_finRotate d)).right m hmd hm
+    apply permHom_injective
+    simpa [X] using h
+  )

@@ -2,6 +2,7 @@ module
 
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
+public import QCLib.LinearAlgebra.StdBasis
 
 @[expose] public noncomputable section
 
@@ -54,7 +55,34 @@ theorem diagonalMonoidHom_injective :
   ext x
   exact congr_fun (by simpa [Subtype.ext_iff, Unitary.diagonalMonoidHom] using h) x
 
+variable (𝕜) in
 /-- Permutations of basis vectors as continuous linearmaps. -/
 @[simps! -isSimp apply]
 def permHom : Perm n →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
   UnitaryGroup.toUnitaryEuclideanCLM.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
+
+@[simp]
+theorem permHom_apply_basis (i : n) (σ : Perm n) :
+    permHom ℂ σ δ[i] = δ[σ i] := by
+  ext
+  simp [permHom_apply, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe]
+  grind
+
+-- mpr is added to make usage of `a = b` that appears as a hypothesis more convenient.
+omit [DecidableEq n] in
+theorem ContinuousLinearMap.ext_basis_iff
+    {a b : unitary ((EuclideanSpace ℂ n) →L[ℂ] (EuclideanSpace ℂ n))} :
+    (∀ i : n, a δ[i] = b δ[i]) ↔ a = b := by
+  refine ⟨fun h => ?_, fun i => ?_⟩
+  · ext v : 2
+    rw [← (EuclideanSpace.basisFun n ℂ).sum_repr v]
+    simp_rw [basisVector_def] at h
+    simp [h]
+  · simp_all
+
+theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
+  intro σ τ h
+  ext i
+  simp only [← ContinuousLinearMap.ext_basis_iff, permHom_apply_basis] at h
+  apply Module.Basis.injective (EuclideanSpace.basisFun n ℂ).toBasis
+  simpa [basisVector_def] using (h i)
