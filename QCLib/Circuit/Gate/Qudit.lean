@@ -32,7 +32,7 @@ theorem Z_apply (k : Fin d) : (Z d) δ[k] = ((uζ d) ^ (k : ℕ)) • δ[k] := b
 @[simp]
 theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
   ext
-  simp [X, basisVector_def, permHom, UnitaryGroup.toUnitaryEuclideanCLM]
+  simp [X, basisVector_def, permHom_apply, UnitaryGroup.toUnitaryEuclideanCLM_coe]
   grind
 
 @[simp]

@@ -55,5 +55,6 @@ theorem diagonalMonoidHom_injective :
   exact congr_fun (by simpa [Subtype.ext_iff, Unitary.diagonalMonoidHom] using h) x
 
 /-- Permutations of basis vectors as continuous linearmaps. -/
+@[simps! -isSimp apply]
 def permHom : Perm n →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
   UnitaryGroup.toUnitaryEuclideanCLM.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
