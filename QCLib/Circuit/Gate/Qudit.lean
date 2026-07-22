@@ -68,5 +68,5 @@ theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
   obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne d)
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp [← pow_succ', Fin.val_add_one]
-  aesop (add safe simp ((orderOf_eq_iff (by simp)).mp (orderOf_uζ (n + 1))))
+  simpa [← pow_succ', Fin.val_add_one] using fun h => by
+    simp_all [((orderOf_eq_iff (by simp)).mp (orderOf_uζ (n + 1)))]
