@@ -3,7 +3,12 @@ module
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
 
-@[expose] public section
+@[expose] public noncomputable section
+
+instance {𝕜 E}
+    [Semiring 𝕜] [TopologicalSpace E] [AddCommMonoid E] [Module 𝕜 E] [StarMul (E →L[𝕜] E)]
+    : CoeFun (unitary (E →L[𝕜] E)) (fun _ => E → E) where
+  coe u := (↑u : E →L[𝕜] E)
 
 open Matrix Equiv
 
@@ -18,7 +23,7 @@ theorem Matrix.toEuclideanLinCLM_mem_unitary (U : Matrix.unitaryGroup n 𝕜) :
   constructor <;> simp [← StarHomClass.map_star, ← map_mul]
 
 @[simps -isSimp coe]
-noncomputable def Matrix.UnitaryGroup.toUnitaryEuclideanCLM :
+def Matrix.UnitaryGroup.toUnitaryEuclideanCLM :
     unitaryGroup n 𝕜 →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) where
   toFun U := ⟨Matrix.toEuclideanCLM (n := n) (𝕜 := 𝕜) U, by simp⟩
   map_one' := by simp
@@ -27,7 +32,7 @@ noncomputable def Matrix.UnitaryGroup.toUnitaryEuclideanCLM :
 
 namespace Unitary
 
-noncomputable def diagonalMonoidHom :
+def diagonalMonoidHom :
     (n → unitary 𝕜) →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
   (Unitary.map (StarMonoidHom.ofClass (toEuclideanCLM (𝕜 := 𝕜)))).comp
     ⟨UnitaryGroup.diagonalMonoidHom, by intro d; apply Subtype.ext; simp⟩
@@ -49,7 +54,6 @@ theorem diagonalMonoidHom_injective :
   ext x
   exact congr_fun (by simpa [Subtype.ext_iff, Unitary.diagonalMonoidHom] using h) x
 
-@[simps! apply]
-noncomputable def permHom : Perm n →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
+/-- Permutations of basis vectors as continuous linearmaps. -/
+def permHom : Perm n →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
   UnitaryGroup.toUnitaryEuclideanCLM.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
-
