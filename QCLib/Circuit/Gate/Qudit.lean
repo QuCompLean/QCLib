@@ -120,7 +120,8 @@ theorem UnitaryGroup.idftFin_apply (a b) : idftFin d a b = √d⁻¹ • ζ d ^ 
   simp [idftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul, ← div_mul_eq_mul_div,
     Complex.exp_nat_mul', show cexp (2 / d * ↑π * I) = ζ d by grind [ζ_def], ζ_pow_mul]
 
--- Using `H` symbol avoids the sign confusion caused by classical dft vs quantum dft
+/- Using `H` symbol avoids the sign confusion caused by classical dft vs quantum dft.
+  Refer to `arXiv:2307.10095`.-/
 /-- Generalized Hadamard Gate for Qudits. -/
 def H : 𝐔ᶠ[Fin d] :=
   UnitaryGroup.toUnitaryEuclideanCLM (UnitaryGroup.idftFin d)
