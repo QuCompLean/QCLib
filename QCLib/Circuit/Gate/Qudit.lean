@@ -1,12 +1,15 @@
 module
 
 public import QCLib.LinearAlgebra.StdBasis
+public import QCLib.LinearAlgebra.Unitary
+
 public import Mathlib.Analysis.CStarAlgebra.Matrix
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
+public import Mathlib.Logic.Equiv.Fin.Rotate
 
 @[expose] public noncomputable section
 
-open Unitary
+open Unitary Matrix
 
 variable (d : ℕ)
 
@@ -30,3 +33,5 @@ theorem orderOf_Z [hd : d.AtLeastTwo] : orderOf (Z d) = d :=
       Function.Injective.eq_iff diagonalMonoidHom_injective] at hz
     simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun hz 1
   )
+
+def X : 𝐔ᶠ[Fin d] := permHom (finRotate d)

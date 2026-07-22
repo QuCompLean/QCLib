@@ -113,43 +113,6 @@ def UnitaryGroup.diagonalMonoidHom : (n → unitary α) →* unitaryGroup n α w
   map_one' := by simp
   map_mul' := by simp
 
-section
-
-variable {n : Type*} [Fintype n] [DecidableEq n]
-variable {𝕜 : Type*} [RCLike 𝕜]
-
-@[simp]
-theorem _root_.Unitary.toEuclideanLinCLM_mem_unitary (U : Matrix.unitaryGroup n 𝕜) :
-    (toEuclideanCLM (n := n) (𝕜 := 𝕜) (U : Matrix n n 𝕜)) ∈
-      unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) := by
-  rw [Unitary.mem_iff]
-  constructor <;> simp [← StarHomClass.map_star, ← map_mul]
-
-noncomputable def _root_.Unitary.diagonalMonoidHom :
-    (n → unitary 𝕜) →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
-  (Unitary.map (StarMonoidHom.ofClass (toEuclideanCLM (𝕜 := 𝕜)))).comp
-    ⟨UnitaryGroup.diagonalMonoidHom, by intro d; apply Subtype.ext; simp⟩
-
-@[simp]
-theorem _root_.Unitary.diagonalMonoidHom_apply {e j} (v : n → unitary 𝕜) :
-    ((Unitary.diagonalMonoidHom v) : EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n) e j
-      = v j * e.ofLp j := by
-  simp [Unitary.diagonalMonoidHom, mulVec_eq_sum, diagonal_apply, mul_comm]
-
-theorem _root_.Unitary.diagonalMonoidHom_one :
-    Unitary.diagonalMonoidHom (fun _ : n ↦ (1 : unitary 𝕜)) = 1 := by
-  ext
-  simp
-
-theorem _root_.Unitary.diagonalMonoidHom_injective :
-    Function.Injective (Unitary.diagonalMonoidHom (n := n) (𝕜 := 𝕜)) := by
-  refine (injective_iff_map_eq_one Unitary.diagonalMonoidHom).mpr (fun a h ↦ ?_)
-  ext x
-  exact congr_fun (by simpa [Subtype.ext_iff, Unitary.diagonalMonoidHom] using h) x
-
-end
--- Relocate?
-
 omit [DecidableEq ι]
 
 theorem UnitaryGroup.prod_diagonal_map (l : List ι) (f : ι → n → unitary α) :
