@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Fourier.ZMod
 
 @[expose] public noncomputable section
 
-open Unitary Matrix
+open Unitary Matrix ContinuousLinearMap
 
 variable (d : ℕ)
 
@@ -30,6 +30,32 @@ theorem Z_apply (k : Fin d) : (Z d) δ[k] = ((ζ d) ^ (k : ℕ)) • δ[k] := by
   ext
   simp [Z, basisVector_def]
   grind
+
+@[simp]
+theorem inv_Z_apply (k : Fin d) : (Z d)⁻¹ δ[k] = ((ζ d) ^ (- k : ℤ)) • δ[k] := by
+  ext
+  simp [← Unitary.star_eq_inv, Z, ← map_star, ζ_star, basisVector_def]
+  grind
+
+/- Since apply lemmas are expressed for `ContinuousLinearMap`s, the automatic coercion
+  of `ContinuousLinearMap` to plain functions should be prevented (otherwise _apply lemmas
+  will not work).
+-/
+attribute [-simp] coe_comp' coe_pow' coe_mul'
+attribute [simp] ContinuousLinearMap.mul_def ContinuousLinearMap.comp_apply
+
+@[simp]
+theorem Z_pow_apply (k : Fin d) (m : ℤ) :
+  ((Z d) ^ m) δ[k] = ((ζ d) ^ (k : ℕ)) ^ m • δ[k] := by
+  induction m with
+  | zero => simp
+  | succ n ih =>
+    simp [_root_.zpow_add_one, -zpow_natCast, ih, zpow_add_one₀, mul_comm, ζ_def]
+  | pred n ih =>
+    simp only [_root_.zpow_sub_one, Submonoid.coe_mul, mul_def, ContinuousLinearMap.comp_apply,
+      inv_Z_apply, map_smul, ih, smul_assoc_symm, smul_eq_mul]
+    simp_rw [← neg_add', _root_.zpow_neg, ←_root_.mul_inv_rev]
+    norm_cast
 
 @[simp]
 theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
@@ -125,7 +151,7 @@ end aux
 
 
 /- Refer to `https://arxiv.org/pdf/2607.06675` for sign convention. -/
-/-- Quantum Fourier transformation. For d = 2, it reduces to Hadamard gate. -/
+/-- Quantum Fourier transformation for a single qudit. For d = 2, it reduces to Hadamard gate. -/
 def 𝓕 : 𝐔ᶠ[Fin d] :=
   UnitaryGroup.toUnitaryEuclideanCLM (UnitaryGroup.idftFin d)
 
@@ -147,3 +173,12 @@ theorem 𝓕_conj_X : 𝓕 d * X d * (𝓕 d)⁻¹ = Z d := by
 @[simp]
 theorem 𝓕_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
   simp [mul_assoc, ← 𝓕_mul_Z_eq_X_mul_𝓕]
+
+
+-- def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
+
+-- theorem 𝓕_conj_𝓓 (k m : ℤ) (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
+--     𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d (-k) m := by
+--   rw [←mul_left_inj (𝓕 d), inv_mul_cancel_right]
+--   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
+--   simp [𝓓]
