@@ -68,7 +68,7 @@ theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
 
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp [-smul_assoc, ←pow_succ']
+  simp [←pow_succ']
 
 section DFT
 
@@ -134,3 +134,7 @@ theorem H_mul_Z_eq_X_mul_H : H d * X d = Z d * H d := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
   simp [mul_assoc, ←pow_add, ←mul_add_one]
   simp [pow_mul']
+
+@[simp]
+theorem H_conj_X : H d * X d * (H d)⁻¹ = Z d := by
+  simp
