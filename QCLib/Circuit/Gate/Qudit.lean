@@ -44,7 +44,7 @@ attribute [simp] ContinuousLinearMap.mul_def ContinuousLinearMap.comp_apply
 theorem Z_pow_apply (k : Fin d) (m : ℤ) :
     ((Z d) ^ m) δ[k] = ((ζ d) ^ (k : ℕ)) ^ m • δ[k] := by
   ext
-  simp [Z, ← map_zpow, basisVector_def,   coe_zpow]
+  simp [Z, ← map_zpow, basisVector_def, coe_zpow]
   grind
 
 @[simp]
@@ -74,6 +74,25 @@ theorem inv_X_apply (k : Fin d) [NeZero d] : (X d)⁻¹ δ[k] = δ[(k - 1)] := b
   rw [← show (X d) δ[(k - 1)] = δ[k] by simp,
     ← ContinuousLinearMap.comp_apply, ← mul_def, ←MulMemClass.coe_mul]
   simp
+
+@[simp]
+theorem finRotate_pow_apply (k m : Fin d) [NeZero d] : (finRotate d ^ (m : ℕ)) k = k + m := by
+  change ((⇑(finRotate d))^[↑m]) k = _
+  simp [← finCycle_eq_finRotate_iterate]
+
+@[simp]
+theorem X_pow_apply (k : Fin d) [NeZero d] (m : Fin d) :
+    ((X d) ^ (m : ℤ)) δ[k] = δ[(k + m)] := by
+  ext
+  simp [X]
+
+set_option linter.unusedSimpArgs false in -- Linter Bug!
+@[simp]
+theorem X_pow_apply' (k : Fin d) [NeZero d] (m : Fin d) :
+    ((X d) ^ (-m : ℤ)) δ[k] = δ[(k - m)] := by
+  simp [← show ((X d) ^ (m : ℤ)) δ[(k - m)] = δ[k] by simp [-zpow_natCast],
+  ← ContinuousLinearMap.comp_apply, ← mul_def, ← SubmonoidClass.coe_pow,
+   ← MulMemClass.coe_mul]
 
 theorem orderOf_finRotate [hd : d.AtLeastTwo] :
     orderOf (finRotate d) = d := by
