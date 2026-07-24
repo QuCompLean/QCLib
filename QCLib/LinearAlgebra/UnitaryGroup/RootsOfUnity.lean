@@ -105,11 +105,28 @@ theorem ζ_pow_sub {b e f : ℕ} (hb : b ≠ 0) (h : f ≤ e) :
   rw [pow_sub₀ (b : ℂ) (by simp [hb]) h]
   field_simp
 
+@[simp]
+theorem ζ_add_one [NeZero n] (i : Fin n) :
+    ζ n ^ ((i + 1 : Fin n) : ℕ) = ζ n ^ ((i : ℕ) + 1) := by
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne n)
+  simpa [Fin.val_add_one] using by simp_all
+
 noncomputable def uζ : (unitary ℂ) :=
     ⟨ζ n, by rw [mul_comm, ζ_mul_star_ζ_eq_one n], ζ_mul_star_ζ_eq_one n⟩
 
 @[simp]
 theorem coe_uζ : (uζ n : ℂ) = ζ n := rfl
+
+/-
+  Using `Submonoid.smul_def` in a goal like
+    ⊢ ζ d ^ (↑i + 1) • δ[(i + 1)] = (uζ d • ζ d ^ ↑i) • δ[(i + 1)]
+  causes timeout (see `Z_X_anticomm`). The following smul lemmas solve the issue.
+-/
+@[simp]
+lemma uζ_smul_coe_pow (x : ℂ) (k : ℕ) : (uζ n ^ k) • x = (uζ n : ℂ) ^ k * x := by rfl
+
+@[simp]
+lemma uζ_smul_coe (x : ℂ) : (uζ n) • x = (uζ n : ℂ) * x := by rfl
 
 -- Transfer the remaining lemmas above?
 theorem uζ_pow_sub {b e f : ℕ} (hb : b ≠ 0) (h : f ≤ e) :

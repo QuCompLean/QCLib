@@ -25,9 +25,9 @@ def Z : 𝐔ᶠ[Fin d] := diagonalMonoidHom (fun k => (uζ d) ^ (k : ℕ))
 def X : 𝐔ᶠ[Fin d] := permHom ℂ (finRotate d)
 
 @[simp]
-theorem Z_apply (k : Fin d) : (Z d) δ[k] = ((uζ d) ^ (k : ℕ)) • δ[k] := by
+theorem Z_apply (k : Fin d) : (Z d) δ[k] = ((ζ d) ^ (k : ℕ)) • δ[k] := by
   ext
-  simp [Z, basisVector_def, Submonoid.smul_def]
+  simp [Z, basisVector_def]
   grind
 
 @[simp]
@@ -67,10 +67,8 @@ theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
   )
 
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
-  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne d)
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simpa [← pow_succ', Fin.val_add_one] using fun h => by
-    simp_all [((orderOf_eq_iff (by simp)).mp (orderOf_uζ (n + 1)))]
+  simp [-smul_assoc, ←pow_succ']
 
 section DFT
 
@@ -126,6 +124,13 @@ theorem UnitaryGroup.idftFin_apply (a b) : idftFin d a b = √d⁻¹ • ζ d ^ 
 def H : 𝐔ᶠ[Fin d] :=
   UnitaryGroup.toUnitaryEuclideanCLM (UnitaryGroup.idftFin d)
 
-theorem H_apply (v) : H d δ[v] = ∑ k : Fin d, (√d⁻¹ * (ζ d ^ (k * v : ℕ))) • δ[k] := by
+@[simp]
+theorem H_apply (v) : H d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ d ^ (k * v : ℕ))) • δ[k] := by
   ext
   simp [H, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe, Pi.single_apply]
+
+@[simp]
+theorem H_mul_Z_eq_X_mul_H : H d * X d = Z d * H d := by
+  apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
+  simp [mul_assoc, ←pow_add, ←mul_add_one]
+  simp [pow_mul']
