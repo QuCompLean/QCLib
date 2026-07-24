@@ -125,7 +125,7 @@ end aux
 
 
 /- Refer to `https://arxiv.org/pdf/2607.06675` for sign convention. -/
-/-- Generalized Hadamard Gate for Qudits. -/
+/-- Quantum Fourier transformation. For d = 2, it reduces to Hadamard gate. -/
 def 𝓕 : 𝐔ᶠ[Fin d] :=
   UnitaryGroup.toUnitaryEuclideanCLM (UnitaryGroup.idftFin d)
 
