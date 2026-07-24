@@ -72,8 +72,7 @@ theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
 @[simp]
 theorem inv_X_apply (k : Fin d) [NeZero d] : (X d)⁻¹ δ[k] = δ[(k - 1)] := by
   rw [← show (X d) δ[(k - 1)] = δ[k] by simp,
-    ← ContinuousLinearMap.comp_apply, ← mul_def]
-  norm_cast
+    ← ContinuousLinearMap.comp_apply, ← mul_def, ←MulMemClass.coe_mul]
   simp
 
 theorem orderOf_finRotate [hd : d.AtLeastTwo] :
@@ -149,7 +148,6 @@ theorem UnitaryGroup.idftFin_apply (a b) : idftFin d a b = √d⁻¹ • ζ d ^ 
     Complex.exp_nat_mul', show cexp (2 / d * ↑π * I) = ζ d by grind [ζ_def], ζ_pow_mul]
 
 end aux
-
 
 /- Refer to `https://arxiv.org/pdf/2607.06675` for sign convention. -/
 /-- Quantum Fourier transformation for a single qudit. For d = 2, it reduces to Hadamard gate. -/
