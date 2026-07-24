@@ -143,3 +143,7 @@ theorem 𝓕_mul_Z_eq_X_mul_𝓕 : 𝓕 d * X d = Z d * 𝓕 d := by
 @[simp]
 theorem 𝓕_conj_X : 𝓕 d * X d * (𝓕 d)⁻¹ = Z d := by
   simp
+
+@[simp]
+theorem 𝓕_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
+  simp [mul_assoc, ← 𝓕_mul_Z_eq_X_mul_𝓕]
