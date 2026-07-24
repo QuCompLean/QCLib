@@ -5,6 +5,7 @@ public import QCLib.LinearAlgebra.Unitary
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 public import Mathlib.Analysis.Fourier.ZMod
 
+
 @[expose] public noncomputable section
 
 open Unitary Matrix
@@ -68,26 +69,28 @@ theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
 
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp [←pow_succ']
+  simp [← pow_succ']
 
 section DFT
+
+variable [NeZero d]
+
+section aux
 
 open ComplexConjugate ZMod Complex Real
 
 @[simp]
-theorem finEquiv_val {n} [NeZero n] (a : Fin n) :
-    (finEquiv n a).val = ↑a := by
-  cases n with
+theorem finEquiv_val (a : Fin d) :
+    (finEquiv d a).val = ↑a := by
+  cases d with
   | zero => exact Fin.elim0 a
   | succ n => rfl
 
 open AddChar in
-theorem stdChar_orthogonal (N : ℕ) [NeZero N] (t s : ZMod N) :
-    ∑ x, stdAddChar (t * x) * conj (stdAddChar (s * x)) = if t = s then ↑N else 0 := by
+theorem stdChar_orthogonal (t s : ZMod d) :
+    ∑ x, stdAddChar (t * x) * conj (stdAddChar (s * x)) = if t = s then ↑d else 0 := by
   simp [← inv_apply_eq_conj, ← inv_apply', ← map_add_eq_mul, ← sub_eq_add_neg, ← sub_mul, mul_comm,
-    sum_mulShift _ (isPrimitive_stdAddChar N), sub_eq_zero]
-
-variable [NeZero d]
+    sum_mulShift _ (isPrimitive_stdAddChar d), sub_eq_zero]
 
 /-- The matrix representation of the inverse DFT for `ZMod N`, also known as the *Schur matrix* -/
 def Matrix.idftZMod : Matrix (ZMod d) (ZMod d) ℂ :=
@@ -118,23 +121,25 @@ theorem UnitaryGroup.idftFin_apply (a b) : idftFin d a b = √d⁻¹ • ζ d ^ 
   simp [idftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul, ← div_mul_eq_mul_div,
     Complex.exp_nat_mul', show cexp (2 / d * ↑π * I) = ζ d by grind [ζ_def], ζ_pow_mul]
 
-/- Using `H` symbol avoids the sign confusion caused by classical dft vs quantum dft.
-  Refer to `arXiv:2307.10095`.-/
+end aux
+
+
+/- Refer to `https://arxiv.org/pdf/2607.06675` for sign convention. -/
 /-- Generalized Hadamard Gate for Qudits. -/
-def H : 𝐔ᶠ[Fin d] :=
+def 𝓕 : 𝐔ᶠ[Fin d] :=
   UnitaryGroup.toUnitaryEuclideanCLM (UnitaryGroup.idftFin d)
 
 @[simp]
-theorem H_apply (v) : H d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ d ^ (k * v : ℕ))) • δ[k] := by
+theorem 𝓕_apply (v) : 𝓕 d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ d ^ (k * v : ℕ))) • δ[k] := by
   ext
-  simp [H, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe, Pi.single_apply]
+  simp [𝓕, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe, Pi.single_apply]
 
 @[simp]
-theorem H_mul_Z_eq_X_mul_H : H d * X d = Z d * H d := by
+theorem 𝓕_mul_Z_eq_X_mul_𝓕 : 𝓕 d * X d = Z d * 𝓕 d := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp [mul_assoc, ←pow_add, ←mul_add_one]
+  simp [mul_assoc, ← pow_add, ← mul_add_one]
   simp [pow_mul']
 
 @[simp]
-theorem H_conj_X : H d * X d * (H d)⁻¹ = Z d := by
+theorem 𝓕_conj_X : 𝓕 d * X d * (𝓕 d)⁻¹ = Z d := by
   simp
