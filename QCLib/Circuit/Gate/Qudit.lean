@@ -37,9 +37,8 @@ theorem inv_Z_apply (k : Fin d) : (Z d)⁻¹ δ[k] = ((ζ d) ^ (- k : ℤ)) • 
   simp [← Unitary.star_eq_inv, Z, ← map_star, ζ_star, basisVector_def]
   grind
 
-/- Since apply lemmas are expressed for `ContinuousLinearMap`s, the automatic coercion
-  of `ContinuousLinearMap` to plain functions should be prevented (otherwise _apply lemmas
-  will not work).
+/- Since `*_apply` lemmas are expressed for `ContinuousLinearMap`s, the automatic coercion
+  of `ContinuousLinearMap` to plain functions should be prevented, otherwise simp will not fire.
 -/
 attribute [-simp] coe_comp' coe_pow' coe_mul'
 attribute [simp] ContinuousLinearMap.mul_def ContinuousLinearMap.comp_apply
