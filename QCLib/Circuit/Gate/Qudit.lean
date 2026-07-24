@@ -16,13 +16,10 @@ attribute [simp ←] map_pow
 
 notation "𝐔ᶠ["n"]" => unitary (EuclideanSpace ℂ n →L[ℂ] EuclideanSpace ℂ n)
 
-theorem orderOf_finRotate [hd : d.AtLeastTwo] :
-    orderOf (finRotate d) = d := by
-  simp [(isCycle_finRotate_of_le hd.prop).orderOf, support_finRotate_of_le hd.prop]
-
-
+/-- Clock Operator on a qudit. -/
 def Z : 𝐔ᶠ[Fin d] := diagonalMonoidHom (fun k => (uζ d) ^ (k : ℕ))
 
+/-- Shift Operator on a qudit. -/
 def X : 𝐔ᶠ[Fin d] := permHom ℂ (finRotate d)
 
 @[simp]
@@ -45,31 +42,15 @@ attribute [simp] ContinuousLinearMap.mul_def ContinuousLinearMap.comp_apply
 
 @[simp]
 theorem Z_pow_apply (k : Fin d) (m : ℤ) :
-  ((Z d) ^ m) δ[k] = ((ζ d) ^ (k : ℕ)) ^ m • δ[k] := by
-  induction m with
-  | zero => simp
-  | succ n ih =>
-    simp [_root_.zpow_add_one, -zpow_natCast, ih, zpow_add_one₀, mul_comm, ζ_def]
-  | pred n ih =>
-    simp only [_root_.zpow_sub_one, Submonoid.coe_mul, mul_def, ContinuousLinearMap.comp_apply,
-      inv_Z_apply, map_smul, ih, smul_assoc_symm, smul_eq_mul]
-    simp_rw [← neg_add', _root_.zpow_neg, ←_root_.mul_inv_rev]
-    norm_cast
-
-@[simp]
-theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
+    ((Z d) ^ m) δ[k] = ((ζ d) ^ (k : ℕ)) ^ m • δ[k] := by
   ext
-  simp [X, basisVector_def, permHom_apply, UnitaryGroup.toUnitaryEuclideanCLM_coe]
+  simp [Z, ← map_zpow, basisVector_def,   coe_zpow]
   grind
 
 @[simp]
 theorem Z_pow [NeZero d] : (Z d) ^ d = 1 := by
   ext
   simp [Z, pow_right_comm]
-
-@[simp]
-theorem X_pow [hd : d.AtLeastTwo] : (X d) ^ d = 1 := by
-  simp [X, ((orderOf_eq_iff hd.toNeZero.pos).mp (orderOf_finRotate d)).left]
 
 @[simp]
 theorem orderOf_Z [hd : d.AtLeastTwo] : orderOf (Z d) = d :=
@@ -81,6 +62,27 @@ theorem orderOf_Z [hd : d.AtLeastTwo] : orderOf (Z d) = d :=
       Function.Injective.eq_iff diagonalMonoidHom_injective] at h
     simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun h 1
   )
+
+@[simp]
+theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
+  ext
+  simp [X, basisVector_def, permHom_apply, UnitaryGroup.toUnitaryEuclideanCLM_coe]
+  grind
+
+@[simp]
+theorem inv_X_apply (k : Fin d) [NeZero d] : (X d)⁻¹ δ[k] = δ[(k - 1)] := by
+  rw [← show (X d) δ[(k - 1)] = δ[k] by simp,
+    ← ContinuousLinearMap.comp_apply, ← mul_def]
+  norm_cast
+  simp
+
+theorem orderOf_finRotate [hd : d.AtLeastTwo] :
+    orderOf (finRotate d) = d := by
+  simp [(isCycle_finRotate_of_le hd.prop).orderOf, support_finRotate_of_le hd.prop]
+
+@[simp]
+theorem X_pow [hd : d.AtLeastTwo] : (X d) ^ d = 1 := by
+  simp [X, ((orderOf_eq_iff hd.toNeZero.pos).mp (orderOf_finRotate d)).left]
 
 @[simp]
 theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
