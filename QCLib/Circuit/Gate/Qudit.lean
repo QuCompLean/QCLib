@@ -40,11 +40,19 @@ theorem inv_Z_apply (k : Fin d) : (Z d)⁻¹ δ[k] = ((ζ d) ^ (- k : ℤ)) • 
 attribute [-simp] coe_comp' coe_pow' coe_mul'
 attribute [simp] ContinuousLinearMap.mul_def ContinuousLinearMap.comp_apply
 
+-- Keep?
 @[simp]
-theorem Z_pow_apply (k : Fin d) (m : ℤ) :
+theorem Z_zpow_apply (k : Fin d) (m : ℤ) :
     ((Z d) ^ m) δ[k] = ((ζ d) ^ (k : ℕ)) ^ m • δ[k] := by
   ext
   simp [Z, ← map_zpow, basisVector_def, coe_zpow]
+  grind
+
+@[simp]
+theorem Z_pow_apply (k : Fin d) (m : Fin d) :
+    ((Z d) ^ (m : ℤ)) δ[k] = ((ζ d) ^ (k : ℕ)) ^ (m : ℤ) • δ[k] := by
+  ext
+  simp [Z, basisVector_def]
   grind
 
 @[simp]
