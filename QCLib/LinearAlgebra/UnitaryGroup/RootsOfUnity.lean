@@ -123,7 +123,11 @@ theorem coe_uζ : (uζ n : ℂ) = ζ n := rfl
   causes timeout (see `Z_X_anticomm`). The following smul lemmas solve the issue.
 -/
 @[simp]
-lemma uζ_smul_coe_pow (x : ℂ) (k : ℕ) : (uζ n ^ k) • x = (uζ n : ℂ) ^ k * x := by rfl
+lemma uζ_smul_coe_pow (x : ℂ) (k : ℕ) : (uζ n ^ k) • x = (ζ n) ^ k * x := by rfl
+
+@[simp]
+lemma uζ_smul_coe_zpow (x : ℂ) (k : ℤ) : (uζ n ^ k) • x = (ζ n) ^ k * x := by
+  simp [Submonoid.smul_def, Unitary.coe_zpow]
 
 @[simp]
 lemma uζ_smul_coe (x : ℂ) : (uζ n) • x = (uζ n : ℂ) * x := by rfl

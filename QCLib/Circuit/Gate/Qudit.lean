@@ -40,19 +40,11 @@ theorem inv_Z_apply (k : Fin d) : (Z d)⁻¹ δ[k] = ((ζ d) ^ (- k : ℤ)) • 
 attribute [-simp] coe_comp' coe_pow' coe_mul'
 attribute [simp] ContinuousLinearMap.mul_def ContinuousLinearMap.comp_apply
 
--- Keep?
 @[simp]
 theorem Z_zpow_apply (k : Fin d) (m : ℤ) :
     ((Z d) ^ m) δ[k] = ((ζ d) ^ (k : ℕ)) ^ m • δ[k] := by
   ext
   simp [Z, ← map_zpow, basisVector_def, coe_zpow]
-  grind
-
-@[simp]
-theorem Z_pow_apply (k : Fin d) (m : Fin d) :
-    ((Z d) ^ (m : ℤ)) δ[k] = ((ζ d) ^ (k : ℕ)) ^ (m : ℤ) • δ[k] := by
-  ext
-  simp [Z, basisVector_def]
   grind
 
 @[simp]
@@ -93,20 +85,6 @@ theorem finRotate_pow_apply (k m : Fin d) [NeZero d] : (finRotate d ^ (m : ℕ))
   change ((⇑(finRotate d))^[↑m]) k = _
   simp [← finCycle_eq_finRotate_iterate]
 
-@[simp]
-theorem X_pow_apply (k : Fin d) [NeZero d] (m : Fin d) :
-    ((X d) ^ (m : ℤ)) δ[k] = δ[(k + m)] := by
-  ext
-  simp [X]
-
-set_option linter.unusedSimpArgs false in -- Linter Bug!
-@[simp]
-theorem X_pow_apply' (k : Fin d) [NeZero d] (m : Fin d) :
-    ((X d) ^ (-m : ℤ)) δ[k] = δ[(k - m)] := by
-  simp [← show ((X d) ^ (m : ℤ)) δ[(k - m)] = δ[k] by simp [-zpow_natCast],
-  ← ContinuousLinearMap.comp_apply, ← mul_def, ← SubmonoidClass.coe_pow,
-   ← MulMemClass.coe_mul]
-
 theorem orderOf_finRotate [hd : d.AtLeastTwo] :
     orderOf (finRotate d) = d := by
   simp [(isCycle_finRotate_of_le hd.prop).orderOf, support_finRotate_of_le hd.prop]
@@ -124,6 +102,17 @@ theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
     apply permHom_injective
     simpa [X] using h
   )
+
+@[simp]
+theorem X_zpow_apply [hd : d.AtLeastTwo] (k : Fin d) (m : ℤ) :
+    let mf : Fin d := (⟨(m % d).toNat, (Int.toNat_lt' hd.toNeZero.pos).mpr
+    (Int.emod_lt_of_pos m (by simp [hd.toNeZero.pos]))⟩)
+    ((X d) ^ m) δ[k] = δ[(k + mf)] := by
+  intro mf
+  rw [show X d ^ m = X d ^ (m % d) by rw [← zpow_mod_orderOf, orderOf_X],
+    show m % d = mf by simpa [mf] using Int.emod_nonneg m (by simp [hd.toNeZero.ne])]
+  ext
+  simp [X]
 
 lemma inv_finRotate_qubit : (finRotate 2)⁻¹ = (finRotate 2) := by
   ext x
@@ -200,6 +189,7 @@ theorem 𝓕_apply (v) : 𝓕 d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ 
   ext
   simp [𝓕, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe, Pi.single_apply]
 
+-- Generalize?
 @[simp]
 theorem 𝓕_mul_Z_eq_X_mul_𝓕 : 𝓕 d * X d = Z d * 𝓕 d := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
@@ -214,12 +204,12 @@ theorem 𝓕_conj_X : 𝓕 d * X d * (𝓕 d)⁻¹ = Z d := by
 theorem 𝓕_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
   simp [mul_assoc, ← 𝓕_mul_Z_eq_X_mul_𝓕]
 
+/-- Heisenberg-Weyl Observable. -/
+def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
 
--- def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
-
--- theorem 𝓕_conj_𝓓 (k m : ℤ) (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
---     𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d (-k) m := by
---   rw [←mul_left_inj (𝓕 d), inv_mul_cancel_right]
---   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
---   simp [𝓓]
--- #check IsSelfAdjoint
+theorem 𝓕_conj_𝓓 [hd : d.AtLeastTwo] (k m : ℤ) (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
+    𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d (-k) m := by
+  rw [← mul_left_inj (𝓕 d), inv_mul_cancel_right]
+  apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
+  simp [𝓓, X_zpow_apply, - smul_assoc]
+  sorry
