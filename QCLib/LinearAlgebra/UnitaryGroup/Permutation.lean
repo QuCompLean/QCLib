@@ -74,6 +74,10 @@ theorem perm_mul_unitary_apply_apply (σ : Perm n) (U : unitaryGroup n R) (k l :
   push_cast
   simp [PEquiv.toMatrix_toPEquiv_mul]
 
+theorem star_permHom (σ : Perm n) : star (permHom R σ) = permHom R σ⁻¹ := by
+  ext
+  simp
+
 variable (n) in
 /-- Permutations of subsystems -/
 def permSubsystemsHom : Perm ι →* unitaryGroup (ι → n) R :=

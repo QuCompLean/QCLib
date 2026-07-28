@@ -71,6 +71,11 @@ theorem orderOf_Z [hd : d.AtLeastTwo] : orderOf (Z d) = d :=
     simpa [Nat.mod_eq_of_lt hd.one_lt] using congrFun h 1
   )
 
+theorem Z_qubit_isSelfAdjoint : IsSelfAdjoint (Z 2) := by
+  ext _ x
+  fin_cases x <;>
+    simp [Z, ←map_star, ζ_def]; field_simp; norm_num
+
 @[simp]
 theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
   ext
@@ -119,6 +124,15 @@ theorem orderOf_X [hd : d.AtLeastTwo] : orderOf (X d) = d :=
     apply permHom_injective
     simpa [X] using h
   )
+
+lemma inv_finRotate_qubit : (finRotate 2)⁻¹ = (finRotate 2) := by
+  ext x
+  fin_cases x <;> simp
+
+theorem X_qubit_isSelfAdjoint : IsSelfAdjoint (X 2) := by
+  ext _ x
+  fin_cases x <;>
+    simp [X, permHom, ← map_star, UnitaryGroup.star_permHom, inv_finRotate_qubit]
 
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
@@ -208,3 +222,4 @@ theorem 𝓕_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
 --   rw [←mul_left_inj (𝓕 d), inv_mul_cancel_right]
 --   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
 --   simp [𝓓]
+-- #check IsSelfAdjoint
