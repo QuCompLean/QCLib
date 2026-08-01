@@ -105,12 +105,6 @@ theorem ζ_pow_sub {b e f : ℕ} (hb : b ≠ 0) (h : f ≤ e) :
   rw [pow_sub₀ (b : ℂ) (by simp [hb]) h]
   field_simp
 
-@[simp]
-theorem ζ_add_one [NeZero n] (i : Fin n) :
-    ζ n ^ ((i + 1 : Fin n) : ℕ) = ζ n ^ ((i : ℕ) + 1) := by
-  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne n)
-  simpa [Fin.val_add_one] using by simp_all
-
 noncomputable def uζ : (unitary ℂ) :=
     ⟨ζ n, by rw [mul_comm, ζ_mul_star_ζ_eq_one n], ζ_mul_star_ζ_eq_one n⟩
 
@@ -273,5 +267,26 @@ lemma ζ_pow_add (a b c) :
     ζ a ^ (b + c) = ζ a ^ b * ζ a ^ c := by
   simp [pow_add]
 
+-- This is necessary, because simp cannot reduce 1%n to 1 automatically.
+@[simp high]
+theorem ζ_add_one {n : ℕ} [NeZero n] (i : Fin n) :
+    ζ n ^ ((i + 1 : Fin n) : ℕ) = ζ n ^ ((i : ℕ) + 1) := by
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne n)
+  simpa [Fin.val_add_one] using by simp_all
 
-end QFT
+@[simp]
+lemma ζ_add_fin {d} [NeZero d] (i j : Fin d) :
+    ζ d ^ ((i + j : Fin d) : ℕ)
+      = ζ d ^ ((i : ℕ) + (j : ℕ)) := by
+  simp [ζ_pow_eq_pow_iff_modEq, Fin.val_add, Nat.mod_modEq]
+
+@[simp]
+lemma ζ_sub_fin {d} [NeZero d] (i j : Fin d) :
+    ζ d ^ ((i - j : Fin d) : ℕ)
+      = ζ d ^ ((i : ℕ) + d - (j : ℕ)) := by
+  simp [ζ_pow_eq_pow_iff_modEq, Fin.val_sub,
+  ← Nat.sub_add_comm (le_of_lt j.prop), add_comm, Nat.mod_modEq]
+
+theorem ζ_zpow_eq_zpow_iff_modEq {d : ℕ} [NeZero d] (a b : ℤ) :
+    ζ d ^ a = ζ d ^ b ↔ a ≡ b [ZMOD (d : ℤ)] := by
+  simp [← coe_uζ, ← Unitary.coe_zpow, zpow_eq_zpow_iff_modEq]

@@ -205,11 +205,18 @@ theorem 𝓕_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
   simp [mul_assoc, ← 𝓕_mul_Z_eq_X_mul_𝓕]
 
 /-- Heisenberg-Weyl Observable. -/
-def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
+def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ d)) ^ (k * m/2) • Z d ^ k * X d ^ m
 
-theorem 𝓕_conj_𝓓 [hd : d.AtLeastTwo] (k m : ℤ) (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
-    𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d (-k) m := by
+attribute [-simp] _root_.zpow_neg
+theorem 𝓕_conj_𝓓 [hd : d.AtLeastTwo] (k m : ℤ)
+    (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
+    𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d m (-k) := by
   rw [← mul_left_inj (𝓕 d), inv_mul_cancel_right]
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp [𝓓, X_zpow_apply, - smul_assoc]
-  sorry
+  simp only [𝓓, Unitary.star_eq_inv, _root_.inv_zpow', Submonoid.coe_mul, Unitary.coe_smul, mul_def,
+    smul_comp, comp_smul, coe_smul', Pi.smul_apply, ContinuousLinearMap.comp_apply, X_zpow_apply,
+    Z_zpow_apply, ζ_add_fin, map_smul, 𝓕_apply, Real.sqrt_inv, Complex.ofReal_inv, Finset.smul_sum,
+    smul_assoc_symm, smul_eq_mul, uζ_smul_coe_zpow, mul_neg, map_sum]
+  ext
+  simp? [basisVector_def, Pi.single_apply, ←sub_eq_iff_eq_add]
+  field_simp [hd.toNeZero.ne]
