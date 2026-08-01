@@ -129,7 +129,7 @@ theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d)
 
 section DFT
 
-variable [NeZero d]
+variable [hd : NeZero d]
 
 section aux
 
@@ -175,7 +175,7 @@ def UnitaryGroup.idftFin : 𝐔[Fin d] :=
 @[simp]
 theorem UnitaryGroup.idftFin_apply (a b) : idftFin d a b = √d⁻¹ • ζ d ^ (a * b : ℕ) := by
   simp [idftFin_coe, stdAddChar_apply, toCircle_apply, ← map_mul, ← div_mul_eq_mul_div,
-    Complex.exp_nat_mul', show cexp (2 / d * ↑π * I) = ζ d by grind [ζ_def], ζ_pow_mul]
+    Complex.exp_nat_mul', show cexp (2 / d * π * I) = ζ d by grind [ζ_def], ζ_pow_mul]
 
 end aux
 
@@ -189,34 +189,91 @@ theorem 𝓕_apply (v) : 𝓕 d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ 
   ext
   simp [𝓕, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe, Pi.single_apply]
 
--- Generalize?
-@[simp]
-theorem 𝓕_mul_Z_eq_X_mul_𝓕 : 𝓕 d * X d = Z d * 𝓕 d := by
+variable {d}
+
+theorem X_semiconjBy_𝓕_eq_Z : SemiconjBy (𝓕 d) (X d) (Z d):= by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
   simp [mul_assoc, ← pow_add, ← mul_add_one]
   simp [pow_mul']
+
+@[simp]
+theorem 𝓕_mul_X_eq_Z_mul_𝓕 : 𝓕 d * X d = Z d * 𝓕 d := by
+  rw [X_semiconjBy_𝓕_eq_Z.eq]
+
+@[simp]
+theorem 𝓕_conj_X_zpow (m : ℤ) : 𝓕 d * X d ^ m * (𝓕 d)⁻¹ = Z d ^ m := by
+  rw [X_semiconjBy_𝓕_eq_Z.zpow_right m, mul_inv_cancel_right]
+
+theorem Z_semiconjBy_𝓕_eq_inv_X : SemiconjBy (𝓕 d) (Z d) (X d)⁻¹ := by
+  apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
+  simp only [Submonoid.coe_mul, mul_def, ContinuousLinearMap.comp_apply, Z_apply, map_smul, 𝓕_apply,
+    Real.sqrt_inv, Complex.ofReal_inv, Finset.smul_sum, smul_assoc_symm, smul_eq_mul, map_sum,
+    inv_X_apply]
+  ext y
+  simp [basisVector_def, Pi.single_apply, mul_comm,
+    show ∀ x, y = x - 1 ↔ y + 1 = x by grind, ← mul_assoc, hd.ne, pow_mul']
+  simp [← pow_mul, ← pow_add] -- Unecessary pain. To be optimized
+  grind
+
+@[simp]
+theorem 𝓕_mul_Z_eq_inv_X_mul_𝓕 : 𝓕 d * Z d = (X d)⁻¹ * 𝓕 d := by
+  rw [Z_semiconjBy_𝓕_eq_inv_X.eq]
+
+@[simp]
+theorem 𝓕_conj_Z_zpow (m : ℤ) : 𝓕 d * Z d ^ m * (𝓕 d)⁻¹ = (X d)⁻¹ ^ m := by
+  rw [Z_semiconjBy_𝓕_eq_inv_X.zpow_right m, mul_inv_cancel_right]
 
 @[simp]
 theorem 𝓕_conj_X : 𝓕 d * X d * (𝓕 d)⁻¹ = Z d := by
   simp
 
 @[simp]
-theorem 𝓕_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
-  simp [mul_assoc, ← 𝓕_mul_Z_eq_X_mul_𝓕]
-
-/-- Heisenberg-Weyl Observable. -/
-def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ d)) ^ (k * m/2) • Z d ^ k * X d ^ m
+theorem 𝓕_inv_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
+  simp [mul_assoc, ← 𝓕_mul_X_eq_Z_mul_𝓕]
 
 attribute [-simp] _root_.zpow_neg
-theorem 𝓕_conj_𝓓 [hd : d.AtLeastTwo] (k m : ℤ)
-    (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
-    𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d m (-k) := by
-  rw [← mul_left_inj (𝓕 d), inv_mul_cancel_right]
+
+theorem X_Z_anticomm_zpow (a b : ℤ) [hd : d.AtLeastTwo] :
+    X d ^ a * Z d ^ b = (uζ d ^ (-(a * b))) • (Z d ^ b * X d ^ a) := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp only [𝓓, Unitary.star_eq_inv, _root_.inv_zpow', Submonoid.coe_mul, Unitary.coe_smul, mul_def,
-    smul_comp, comp_smul, coe_smul', Pi.smul_apply, ContinuousLinearMap.comp_apply, X_zpow_apply,
-    Z_zpow_apply, ζ_add_fin, map_smul, 𝓕_apply, Real.sqrt_inv, Complex.ofReal_inv, Finset.smul_sum,
-    smul_assoc_symm, smul_eq_mul, uζ_smul_coe_zpow, mul_neg, map_sum]
-  ext
-  simp? [basisVector_def, Pi.single_apply, ←sub_eq_iff_eq_add]
-  field_simp [hd.toNeZero.ne]
+  simp
+  simpa [basisVector_def, ← zpow_natCast, ← _root_.zpow_mul,
+    ←_root_.zpow_add₀ (a := ζ d) (by simp), -Int.ofNat_toNat,
+    ζ_zpow_eq_zpow_iff_modEq, add_mul, add_comm, Int.modEq_iff_dvd,
+    Int.toNat_of_nonneg (Int.emod_nonneg a (b := d) (by simp [hd.toNeZero.ne])),
+    sub_eq_add_neg, add_assoc] using ((Int.mod_modEq a d).mul_right b).symm.dvd
+
+
+
+
+-- #check zpow_right_inj
+-- theorem 𝓕_conj_X_zpow (m : ℤ) : 𝓕 d * X d ^ m * (𝓕 d)⁻¹ = Z d ^ m := by
+--   have h : SemiconjBy (𝓕 d) (X d) (Z d) := 𝓕_mul_Z_eq_X_mul_𝓕 d
+--   rw [h.zpow_right m, mul_inv_cancel_right]
+--   rw [(𝓕_mul_Z_eq_X_mul_𝓕 d).zpow_right m, mul_inv_cancel_right]
+
+/-- Heisenberg-Weyl Observable. -/
+-- def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
+
+-- #check _root_.zpow_add₀
+-- attribute [-simp] _root_.zpow_neg
+-- theorem 𝓕_conj_𝓓 [hd : d.AtLeastTwo] (k m : ℤ)
+--     (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
+--     𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d m (-k) := by
+--   rw [← mul_left_inj (𝓕 d), inv_mul_cancel_right]
+--   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
+--   simp only [𝓓, Unitary.star_eq_inv, _root_.inv_zpow', Submonoid.coe_mul, Unitary.coe_smul, mul_def,
+--     smul_comp, comp_smul, coe_smul', Pi.smul_apply, ContinuousLinearMap.comp_apply, X_zpow_apply,
+--     Z_zpow_apply, ζ_add_fin, map_smul, 𝓕_apply, Real.sqrt_inv, Complex.ofReal_inv, Finset.smul_sum,
+--     smul_assoc_symm, smul_eq_mul, uζ_smul_coe_zpow, mul_neg, map_sum]
+--   ext x
+--   simp only [basisVector_def, EuclideanSpace.basisFun_apply, WithLp.ofLp_sum, WithLp.ofLp_smul,
+--     PiLp.ofLp_single, Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_eq_mul, mul_ite,
+--     mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, ← sub_eq_iff_eq_add]
+--   field_simp [hd.toNeZero.ne]
+--   simp only [← zpow_natCast, ← _root_.zpow_mul,
+--     ← _root_.zpow_add₀ (a := ζ d) (by simp), ζ_zpow_eq_zpow_iff_modEq]
+--   push_cast [Fin.val_add, Fin.val_sub]
+--   abel_nf
+--   ring_nf
+--   simp

@@ -290,3 +290,7 @@ lemma ζ_sub_fin {d} [NeZero d] (i j : Fin d) :
 theorem ζ_zpow_eq_zpow_iff_modEq {d : ℕ} [NeZero d] (a b : ℤ) :
     ζ d ^ a = ζ d ^ b ↔ a ≡ b [ZMOD (d : ℤ)] := by
   simp [← coe_uζ, ← Unitary.coe_zpow, zpow_eq_zpow_iff_modEq]
+
+@[simp]
+theorem ζ_ne_zero {d} : ζ d ≠ 0 := by
+  simp [ζ_def]
