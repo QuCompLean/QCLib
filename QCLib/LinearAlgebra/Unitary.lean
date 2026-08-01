@@ -11,6 +11,43 @@ instance {𝕜 E}
     : CoeFun (unitary (E →L[𝕜] E)) (fun _ => E → E) where
   coe u := (↑u : E →L[𝕜] E)
 
+/-- The scalar action of unitary scalars on unitary linear maps forms an `IsScalarTower`.
+This allows scalar multiplication to associate with multiplication of unitary
+linear maps, for example `r • (X * Z) = (r • X) * Z` from `smul_mul_assoc`.
+-/
+instance
+    {𝕜 E : Type*}
+    [RCLike 𝕜]
+    [NormedAddCommGroup E]
+    [InnerProductSpace 𝕜 E]
+    [CompleteSpace E] :
+    IsScalarTower
+      (unitary 𝕜)
+      (unitary (E →L[𝕜] E))
+      (unitary (E →L[𝕜] E)) where
+  smul_assoc r X Z := by ext; simp
+
+/-- The action of unitary scalars on unitary linear maps satisfies
+`SMulCommClass`.
+
+This allows scalar multiplication to commute with multiplication of unitary
+linear maps. In particular, `simp` can rewrite
+`X * (r • Y)` as `r • (X * Y)` using `mul_smul_comm`.
+-/
+instance
+    {𝕜 E : Type*}
+    [RCLike 𝕜]
+    [NormedAddCommGroup E]
+    [InnerProductSpace 𝕜 E]
+    [CompleteSpace E] :
+    SMulCommClass
+      (unitary 𝕜)
+      (unitary (E →L[𝕜] E))
+      (unitary (E →L[𝕜] E)) where
+  smul_comm r X Z := by ext; simp
+
+attribute [simp] smul_mul_assoc mul_smul_comm
+
 open Matrix Equiv
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
@@ -86,3 +123,5 @@ theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   simp only [← ContinuousLinearMap.ext_basis_iff, permHom_apply_basis] at h
   apply Module.Basis.injective (EuclideanSpace.basisFun n ℂ).toBasis
   simpa [basisVector_def] using (h i)
+
+end Unitary

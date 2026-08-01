@@ -123,9 +123,22 @@ theorem X_qubit_isSelfAdjoint : IsSelfAdjoint (X 2) := by
   fin_cases x <;>
     simp [X, permHom, ← map_star, UnitaryGroup.star_permHom, inv_finRotate_qubit]
 
+@[simp]
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
   simp [← pow_succ']
+
+@[simp]
+theorem Z_X_anticomm_zpow (a b : ℤ) [hd : d.AtLeastTwo] :
+    Z d ^ b * X d ^ a = (uζ d ^ ((a * b))) • X d ^ a * Z d ^ b := by
+  apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
+  simp
+  simpa [basisVector_def, ← zpow_natCast, ← _root_.zpow_mul,
+    ←_root_.zpow_add₀ (a := ζ d) (by simp), -Int.ofNat_toNat,
+    ζ_zpow_eq_zpow_iff_modEq, add_mul, add_comm, Int.modEq_iff_dvd,
+    Int.toNat_of_nonneg (Int.emod_nonneg a (b := d) (by simp [hd.toNeZero.ne])),
+    sub_eq_add_neg, add_assoc] using
+      (Int.ModEq.mul_right b (Int.mod_modEq a d)).dvd
 
 section DFT
 
@@ -233,47 +246,25 @@ theorem 𝓕_inv_conj_Z : (𝓕 d)⁻¹ * Z d * 𝓕 d = X d := by
 
 attribute [-simp] _root_.zpow_neg
 
-theorem X_Z_anticomm_zpow (a b : ℤ) [hd : d.AtLeastTwo] :
-    X d ^ a * Z d ^ b = (uζ d ^ (-(a * b))) • (Z d ^ b * X d ^ a) := by
-  apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
-  simp
-  simpa [basisVector_def, ← zpow_natCast, ← _root_.zpow_mul,
-    ←_root_.zpow_add₀ (a := ζ d) (by simp), -Int.ofNat_toNat,
-    ζ_zpow_eq_zpow_iff_modEq, add_mul, add_comm, Int.modEq_iff_dvd,
-    Int.toNat_of_nonneg (Int.emod_nonneg a (b := d) (by simp [hd.toNeZero.ne])),
-    sub_eq_add_neg, add_assoc] using ((Int.mod_modEq a d).mul_right b).symm.dvd
-
-
-
-
--- #check zpow_right_inj
--- theorem 𝓕_conj_X_zpow (m : ℤ) : 𝓕 d * X d ^ m * (𝓕 d)⁻¹ = Z d ^ m := by
---   have h : SemiconjBy (𝓕 d) (X d) (Z d) := 𝓕_mul_Z_eq_X_mul_𝓕 d
---   rw [h.zpow_right m, mul_inv_cancel_right]
---   rw [(𝓕_mul_Z_eq_X_mul_𝓕 d).zpow_right m, mul_inv_cancel_right]
-
+variable (d)
 /-- Heisenberg-Weyl Observable. -/
--- def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
+def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
 
--- #check _root_.zpow_add₀
--- attribute [-simp] _root_.zpow_neg
--- theorem 𝓕_conj_𝓓 [hd : d.AtLeastTwo] (k m : ℤ)
---     (h₁ : |k| ≤ d) (h₂ : |m| ≤ d) :
---     𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d m (-k) := by
---   rw [← mul_left_inj (𝓕 d), inv_mul_cancel_right]
---   apply ContinuousLinearMap.ext_basis_iff.mp (fun i ↦ ?_)
---   simp only [𝓓, Unitary.star_eq_inv, _root_.inv_zpow', Submonoid.coe_mul, Unitary.coe_smul, mul_def,
---     smul_comp, comp_smul, coe_smul', Pi.smul_apply, ContinuousLinearMap.comp_apply, X_zpow_apply,
---     Z_zpow_apply, ζ_add_fin, map_smul, 𝓕_apply, Real.sqrt_inv, Complex.ofReal_inv, Finset.smul_sum,
---     smul_assoc_symm, smul_eq_mul, uζ_smul_coe_zpow, mul_neg, map_sum]
---   ext x
---   simp only [basisVector_def, EuclideanSpace.basisFun_apply, WithLp.ofLp_sum, WithLp.ofLp_smul,
---     PiLp.ofLp_single, Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_eq_mul, mul_ite,
---     mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, ← sub_eq_iff_eq_add]
---   field_simp [hd.toNeZero.ne]
---   simp only [← zpow_natCast, ← _root_.zpow_mul,
---     ← _root_.zpow_add₀ (a := ζ d) (by simp), ζ_zpow_eq_zpow_iff_modEq]
---   push_cast [Fin.val_add, Fin.val_sub]
---   abel_nf
---   ring_nf
---   simp
+private lemma uζ_eq_phase_neg_two : (star (uζ (2 * d))) ^ (-2 : ℤ) = uζ d := by
+  simp [Unitary.star_eq_inv, Subtype.ext_iff, coe_zpow,
+    ← ζ_pow_dvd d (2 * d) (by simp [hd.ne]) (by simp [hd.ne]) (by simp),
+    ← zpow_natCast, hd.ne]
+
+-- The complexity comes from associativity nuance.
+@[simp]
+theorem 𝓕_conj_𝓓 [d.AtLeastTwo] (k m : ℤ) :
+    𝓕 d * 𝓓 d k m * (𝓕 d)⁻¹ = 𝓓 d m (-k) := by
+  simp_rw [𝓓, smul_mul_assoc, mul_neg,
+    show Z d ^ k * X d ^ m = Z d ^ k * (𝓕 d)⁻¹ * (𝓕 d * X d ^ m) by group,
+    mul_smul_comm, ← mul_assoc, 𝓕_conj_Z_zpow, smul_mul_assoc,
+    show ((X d)⁻¹ ^ k * 𝓕 d * X d ^ m * (𝓕 d)⁻¹) =
+    ((X d)⁻¹ ^ k * (𝓕 d * X d ^ m * (𝓕 d)⁻¹)) by group, 𝓕_conj_X_zpow,
+    Z_X_anticomm_zpow]
+  nth_rw 3 [←uζ_eq_phase_neg_two]
+  simp [Unitary.star_eq_inv, ← _root_.zpow_mul, ← _root_.zpow_add]
+  ring_nf
