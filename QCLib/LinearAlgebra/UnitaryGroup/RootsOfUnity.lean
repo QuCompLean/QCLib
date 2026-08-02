@@ -230,6 +230,11 @@ lemma ζ_pow_dvd (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) (hdvd : n ∣ m) :
   ring_nf
   simp [mul_comm, ←mul_assoc, hk]
 
+lemma ζ_pow_dvd' (n m : ℕ) (hn : n ≠ 0) (hm : m ≠ 0) :
+    ζ (n * m) ^ n = ζ m := by
+  nth_rw 2 [show n = n * m / m by simp_all]
+  apply ζ_pow_dvd <;> simp_all
+
 lemma ζ_pow_succ (a k : ℕ) [ha : NeZero a] :
     ζ (a ^ (k + 1)) ^ (a ^ k) = ζ a := by
   simpa [pow_succ', ha.out] using

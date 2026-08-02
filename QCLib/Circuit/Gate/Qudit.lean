@@ -5,6 +5,19 @@ public import QCLib.LinearAlgebra.Unitary
 public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 public import Mathlib.Analysis.Fourier.ZMod
 
+/-!
+# Single qudit gates
+
+* `Z`: Clock Operator on a qudit
+* `X`: Shift Operator on a qudit
+* `𝓕`: Quantum fourier transform on a single qubit
+* `𝓓`: Weyl-Heisenberg observable
+
+# Results
+
+- `𝓕_conj_𝓓`: Conjugation of `𝓓 d k m` by `𝓕 d` result in `𝓓 d m -k`.
+
+-/
 
 @[expose] public noncomputable section
 
@@ -250,11 +263,6 @@ variable (d)
 /-- Heisenberg-Weyl Observable. -/
 def 𝓓 (k m : ℤ) : 𝐔ᶠ[Fin d] := (star (uζ (2 * d))) ^ (k * m) • Z d ^ k * X d ^ m
 
-private lemma uζ_eq_phase_neg_two : (star (uζ (2 * d))) ^ (-2 : ℤ) = uζ d := by
-  simp [Unitary.star_eq_inv, Subtype.ext_iff, coe_zpow,
-    ← ζ_pow_dvd d (2 * d) (by simp [hd.ne]) (by simp [hd.ne]) (by simp),
-    ← zpow_natCast, hd.ne]
-
 -- The complexity comes from associativity nuance.
 @[simp]
 theorem 𝓕_conj_𝓓 [d.AtLeastTwo] (k m : ℤ) :
@@ -265,6 +273,8 @@ theorem 𝓕_conj_𝓓 [d.AtLeastTwo] (k m : ℤ) :
     show ((X d)⁻¹ ^ k * 𝓕 d * X d ^ m * (𝓕 d)⁻¹) =
     ((X d)⁻¹ ^ k * (𝓕 d * X d ^ m * (𝓕 d)⁻¹)) by group, 𝓕_conj_X_zpow,
     Z_X_anticomm_zpow]
-  nth_rw 3 [←uζ_eq_phase_neg_two]
-  simp [Unitary.star_eq_inv, ← _root_.zpow_mul, ← _root_.zpow_add]
+  have h : uζ d = (star (uζ (2 * d))) ^ (-2 : ℤ) := by
+    rw [Unitary.star_eq_inv, Subtype.ext_iff, coe_zpow, coe_inv]
+    simp [←ζ_pow_dvd' 2 d (by simp) (by simp [hd.ne]), ←zpow_natCast]
+  simp [h, Unitary.star_eq_inv, ← _root_.zpow_mul, ← _root_.zpow_add]
   ring_nf
