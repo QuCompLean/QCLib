@@ -6,44 +6,29 @@ public import QCLib.LinearAlgebra.StdBasis
 
 @[expose] public noncomputable section
 
-instance {𝕜 E}
-    [Semiring 𝕜] [TopologicalSpace E] [AddCommMonoid E] [Module 𝕜 E] [StarMul (E →L[𝕜] E)]
-    : CoeFun (unitary (E →L[𝕜] E)) (fun _ => E → E) where
+/-- `f` superscript stands for finite.-/
+notation "𝐔ᶠ["n"]" => unitary (EuclideanSpace ℂ n →L[ℂ] EuclideanSpace ℂ n)
+
+variable {𝕜 E : Type*}
+  [RCLike 𝕜] [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E]
+
+instance : CoeFun (unitary (E →L[𝕜] E)) (fun _ => E → E) where
   coe u := (↑u : E →L[𝕜] E)
 
 /-- The scalar action of unitary scalars on unitary linear maps forms an `IsScalarTower`.
 This allows scalar multiplication to associate with multiplication of unitary
 linear maps, for example `r • (X * Z) = (r • X) * Z` from `smul_mul_assoc`.
 -/
-instance
-    {𝕜 E : Type*}
-    [RCLike 𝕜]
-    [NormedAddCommGroup E]
-    [InnerProductSpace 𝕜 E]
-    [CompleteSpace E] :
-    IsScalarTower
-      (unitary 𝕜)
-      (unitary (E →L[𝕜] E))
-      (unitary (E →L[𝕜] E)) where
+instance : IsScalarTower (unitary 𝕜) (unitary (E →L[𝕜] E)) (unitary (E →L[𝕜] E)) where
   smul_assoc r X Z := by ext; simp
 
 /-- The action of unitary scalars on unitary linear maps satisfies
 `SMulCommClass`.
-
 This allows scalar multiplication to commute with multiplication of unitary
 linear maps. In particular, `simp` can rewrite
 `X * (r • Y)` as `r • (X * Y)` using `mul_smul_comm`.
 -/
-instance
-    {𝕜 E : Type*}
-    [RCLike 𝕜]
-    [NormedAddCommGroup E]
-    [InnerProductSpace 𝕜 E]
-    [CompleteSpace E] :
-    SMulCommClass
-      (unitary 𝕜)
-      (unitary (E →L[𝕜] E))
-      (unitary (E →L[𝕜] E)) where
+instance : SMulCommClass (unitary 𝕜)  (unitary (E →L[𝕜] E)) (unitary (E →L[𝕜] E)) where
   smul_comm r X Z := by ext; simp
 
 attribute [simp] smul_mul_assoc mul_smul_comm
@@ -60,13 +45,14 @@ theorem Matrix.toEuclideanLinCLM_mem_unitary (U : Matrix.unitaryGroup n 𝕜) :
   rw [Unitary.mem_iff]
   constructor <;> simp [← StarHomClass.map_star, ← map_mul]
 
-@[simps -isSimp coe]
-def Matrix.UnitaryGroup.toUnitaryEuclideanCLM :
-    unitaryGroup n 𝕜 →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) where
-  toFun U := ⟨Matrix.toEuclideanCLM (n := n) (𝕜 := 𝕜) U, by simp⟩
-  map_one' := by simp
-  map_mul' := by simp
-  map_star' := by intros; ext1; simp [StarHomClass.map_star]
+
+/-- Upgrade `Matrix.UnitaryGroup.toUnitaryEuclideanCLM` to a `⋆`-isomorphism between the
+unitary group of `n × n` matrices and the unitary group of continuous linear endomorphisms of
+`EuclideanSpace 𝕜 n`, via the ambient star algebra equivalence `Matrix.toEuclideanCLM`. -/
+@[simps! apply symm_apply]
+noncomputable def euclideanCLMEquiv :
+    unitaryGroup n 𝕜 ≃⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
+  Unitary.mapEquiv (StarMulEquiv.ofClass (Matrix.toEuclideanCLM (n := n) (𝕜 := 𝕜)))
 
 namespace Unitary
 
@@ -96,13 +82,13 @@ variable (𝕜) in
 /-- Permutations of basis vectors as continuous linearmaps. -/
 @[simps! -isSimp apply]
 def permHom : Perm n →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
-  UnitaryGroup.toUnitaryEuclideanCLM.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
+  euclideanCLMEquiv.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
 
 @[simp]
 theorem permHom_apply_basis (i : n) (σ : Perm n) :
     permHom ℂ σ δ[i] = δ[σ i] := by
   ext
-  simp [permHom_apply, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe]
+  simp [permHom_apply, basisVector_def]
   grind
 
 -- mpr is added to make usage of `a = b` that appears as a hypothesis more convenient.

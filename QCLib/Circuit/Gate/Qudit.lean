@@ -6,6 +6,7 @@ public import QCLib.LinearAlgebra.UnitaryGroup.RootsOfUnity
 public import Mathlib.Analysis.Fourier.ZMod
 
 /-!
+
 # Single qudit gates
 
 * `Z`: Clock Operator on a qudit
@@ -26,8 +27,6 @@ open Unitary Matrix ContinuousLinearMap
 variable (d : ℕ)
 
 attribute [simp ←] map_pow
-
-notation "𝐔ᶠ["n"]" => unitary (EuclideanSpace ℂ n →L[ℂ] EuclideanSpace ℂ n)
 
 /-- Clock Operator on a qudit. -/
 def Z : 𝐔ᶠ[Fin d] := diagonalMonoidHom (fun k => (uζ d) ^ (k : ℕ))
@@ -84,7 +83,7 @@ theorem Z_qubit_isSelfAdjoint : IsSelfAdjoint (Z 2) := by
 @[simp]
 theorem X_apply (k : Fin d) [NeZero d] : (X d) δ[k] = δ[(k + 1)] := by
   ext
-  simp [X, basisVector_def, permHom_apply, UnitaryGroup.toUnitaryEuclideanCLM_coe]
+  simp [X, basisVector_def, permHom_apply]
   grind
 
 @[simp]
@@ -134,7 +133,8 @@ lemma inv_finRotate_qubit : (finRotate 2)⁻¹ = (finRotate 2) := by
 theorem X_qubit_isSelfAdjoint : IsSelfAdjoint (X 2) := by
   ext _ x
   fin_cases x <;>
-    simp [X, permHom, ← map_star, UnitaryGroup.star_permHom, inv_finRotate_qubit]
+    simp [X, permHom, ← map_star, UnitaryGroup.star_permHom, inv_finRotate_qubit,
+      -euclideanCLMEquiv_apply]
 
 @[simp]
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
@@ -208,12 +208,12 @@ end aux
 /- Refer to `https://arxiv.org/pdf/2607.06675` for sign convention. -/
 /-- Quantum Fourier transformation for a single qudit. For d = 2, it reduces to Hadamard gate. -/
 def 𝓕 : 𝐔ᶠ[Fin d] :=
-  UnitaryGroup.toUnitaryEuclideanCLM (UnitaryGroup.idftFin d)
+  euclideanCLMEquiv (UnitaryGroup.idftFin d)
 
 @[simp]
 theorem 𝓕_apply (v) : 𝓕 d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ d ^ (k * v : ℕ))) • δ[k] := by
   ext
-  simp [𝓕, basisVector_def, UnitaryGroup.toUnitaryEuclideanCLM_coe, Pi.single_apply]
+  simp [𝓕, basisVector_def, Pi.single_apply]
 
 variable {d}
 
