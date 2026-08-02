@@ -7,9 +7,6 @@ public import QCLib.LinearAlgebra.StdBasis
 
 @[expose] public noncomputable section
 
-/-- `f` superscript stands for finite.-/
-notation "𝐔ᶠ["n"]" => unitary (EuclideanSpace ℂ n →L[ℂ] EuclideanSpace ℂ n)
-
 variable {𝕜 E : Type*}
   [RCLike 𝕜] [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E]
 
@@ -37,6 +34,11 @@ attribute [simp] smul_mul_assoc mul_smul_comm
 -- Without it, certain lemmas will timeout, e.g. `controllizeRight_inv`.
 instance : Inv (unitary (E →L[𝕜] E)) := inferInstance
 
+namespace Unitary.EuclideanCLM
+
+/-- `f` superscript stands for finite.-/
+notation "𝐔ᶠ["n"]" => unitary (EuclideanSpace ℂ n →L[ℂ] EuclideanSpace ℂ n)
+
 open Matrix Equiv
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
@@ -46,40 +48,38 @@ variable {𝕜 : Type*} [RCLike 𝕜]
 unitary group of `n × n` matrices and the unitary group of continuous linear endomorphisms of
 `EuclideanSpace 𝕜 n`, via the ambient star algebra equivalence `Matrix.toEuclideanCLM`. -/
 @[simps! apply symm_apply]
-noncomputable def euclideanCLMEquiv :
+noncomputable def unitaryGroupEquiv :
     unitaryGroup n 𝕜 ≃⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
-  Unitary.mapEquiv (StarMulEquiv.ofClass (Matrix.toEuclideanCLM (n := n) (𝕜 := 𝕜)))
-
-namespace Unitary
+  Unitary.mapEquiv (StarMulEquiv.ofClass (Matrix.toEuclideanCLM (𝕜 := 𝕜)))
 
 /-- MonoidHom from phase-valued functions to diagonal unitaries -/
 def diagonalMonoidHom :
     (n → unitary 𝕜) →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
-  euclideanCLMEquiv.toStarMonoidHom.comp
+  unitaryGroupEquiv.toStarMonoidHom.comp
     ⟨UnitaryGroup.diagonalMonoidHom, by intro d; apply Subtype.ext; simp⟩
 
 @[simp]
 theorem diagonalMonoidHom_apply {e j} (v : n → unitary 𝕜) :
-    ((Unitary.diagonalMonoidHom v) : EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n) e j
+    ((diagonalMonoidHom v) : EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n) e j
       = v j * e.ofLp j := by
-  simp [Unitary.diagonalMonoidHom, mulVec_eq_sum, diagonal_apply, mul_comm]
+  simp [diagonalMonoidHom, mulVec_eq_sum, diagonal_apply, mul_comm]
 
 theorem diagonalMonoidHom_one :
-    Unitary.diagonalMonoidHom (fun _ : n ↦ (1 : unitary 𝕜)) = 1 := by
+    diagonalMonoidHom (fun _ : n ↦ (1 : unitary 𝕜)) = 1 := by
   ext
   simp
 
 theorem diagonalMonoidHom_injective :
-    Function.Injective (Unitary.diagonalMonoidHom (n := n) (𝕜 := 𝕜)) := by
-  refine (injective_iff_map_eq_one Unitary.diagonalMonoidHom).mpr (fun a h ↦ ?_)
+    Function.Injective (diagonalMonoidHom (n := n) (𝕜 := 𝕜)) := by
+  refine (injective_iff_map_eq_one diagonalMonoidHom).mpr (fun a h ↦ ?_)
   ext x
-  exact congr_fun (by simpa [Subtype.ext_iff, Unitary.diagonalMonoidHom] using h) x
+  exact congr_fun (by simpa [Subtype.ext_iff, diagonalMonoidHom] using h) x
 
 variable (𝕜) in
 /-- Permutations of basis vectors as continuous linearmaps. -/
 @[simps! -isSimp apply]
 def permHom : Perm n →* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
-  euclideanCLMEquiv.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
+  unitaryGroupEquiv.toMonoidHom.comp (UnitaryGroup.permHom 𝕜 (n := n))
 
 @[simp]
 theorem permHom_apply_basis (i : n) (σ : Perm n) :
@@ -107,4 +107,4 @@ theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   apply Module.Basis.injective (EuclideanSpace.basisFun n ℂ).toBasis
   simpa [basisVector_def] using (h i)
 
-end Unitary
+end Unitary.EuclideanCLM

@@ -22,7 +22,7 @@ public import Mathlib.Analysis.Fourier.ZMod
 
 @[expose] public noncomputable section
 
-open Unitary Matrix ContinuousLinearMap
+open Unitary Matrix ContinuousLinearMap EuclideanCLM
 
 variable (d : ℕ)
 
@@ -134,7 +134,7 @@ theorem X_qubit_isSelfAdjoint : IsSelfAdjoint (X 2) := by
   ext _ x
   fin_cases x <;>
     simp [X, permHom, ← map_star, UnitaryGroup.star_permHom, inv_finRotate_qubit,
-      -euclideanCLMEquiv_apply]
+      -unitaryGroupEquiv_apply]
 
 @[simp]
 theorem Z_X_anticomm [hd : NeZero d] : (Z d) * (X d) = (uζ d) • (X d) * (Z d) := by
@@ -208,7 +208,7 @@ end aux
 /- Refer to `https://arxiv.org/pdf/2607.06675` for sign convention. -/
 /-- Quantum Fourier transformation for a single qudit. For d = 2, it reduces to Hadamard gate. -/
 def 𝓕 : 𝐔ᶠ[Fin d] :=
-  euclideanCLMEquiv (UnitaryGroup.idftFin d)
+  unitaryGroupEquiv (UnitaryGroup.idftFin d)
 
 @[simp]
 theorem 𝓕_apply (v) : 𝓕 d δ[v] = ∑ k : Fin d, ((√d⁻¹ : ℂ) * (ζ d ^ (k * v : ℕ))) • δ[k] := by

@@ -6,13 +6,7 @@ Authors: Davood Tehrani, David Gross
 
 module
 
-public import Mathlib.Algebra.Algebra.Basic
-public import Mathlib.LinearAlgebra.BilinearMap
-public import Mathlib.LinearAlgebra.Pi
-public import Mathlib.LinearAlgebra.Matrix.Hermitian
-public import QCLib.LinearAlgebra.UnitaryGroup.Basic
-import Mathlib.LinearAlgebra.Matrix.Kronecker
-import Mathlib.LinearAlgebra.Matrix.ToLin
+public import QCLib.LinearAlgebra.Unitary
 
 @[expose] public section
 
@@ -27,6 +21,10 @@ This file defines a `OuterProduct` notation typeclass to unify all notations.
 
 * `OuterProductMap f r s` is the pointwise outer product of the functions
   `r` and `s`. Its value at `(i, j)` is `f (r i) (s j)`.
+
+## Naming convention
+We will use the spelling `OuterProduct` for functions / vectors and `KroneckerProduct` for matrices
+and `TensorProduct` for linearmaps.
 
 ## Implementation notes
 
@@ -227,3 +225,47 @@ end UnitaryGroup
 
 end Matrix
 
+
+namespace Unitary.EuclideanCLM
+
+variable {n m : Type*} [Fintype n] [Fintype m] [DecidableEq n] [DecidableEq m]
+variable {𝕜 : Type*} [RCLike 𝕜]
+variable
+  (A A' : unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)))
+  (B B' : unitary ((EuclideanSpace 𝕜 m) →L[𝕜] (EuclideanSpace 𝕜 m)))
+
+noncomputable instance :
+    OuterProduct
+      (unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)))
+      (unitary ((EuclideanSpace 𝕜 m) →L[𝕜] (EuclideanSpace 𝕜 m)))
+      (unitary ((EuclideanSpace 𝕜 (n × m)) →L[𝕜] (EuclideanSpace 𝕜 (n × m)))) where
+  tprod A B := unitaryGroupEquiv (unitaryGroupEquiv.symm A ⨂ unitaryGroupEquiv.symm B)
+
+theorem tensorProduct_def :
+  (A ⨂ B) = unitaryGroupEquiv (unitaryGroupEquiv.symm A ⨂ unitaryGroupEquiv.symm B) := rfl
+
+@[simp]
+theorem tensorProduct_apply (v : EuclideanSpace 𝕜 (n × m)) :
+    (A ⨂ B) v =
+      (((unitaryGroupEquiv.symm A) ⨂ (unitaryGroupEquiv.symm B))
+        : Matrix (n × m) (n × m) 𝕜).mulVec v := by
+  simp [tensorProduct_def]
+
+@[simp]
+theorem tensorProduct_mul :
+    (A ⨂ B) * (A' ⨂ B') = (A * A') ⨂ (B * B') := by
+  ext
+  simp
+
+@[simp]
+theorem tensorProduct_one :
+  (1 : unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)))
+    ⨂ (1 : unitary ((EuclideanSpace 𝕜 m) →L[𝕜] (EuclideanSpace 𝕜 m))) = 1 := by
+  ext
+  simp
+
+@[simp]
+theorem inv_tensorProduct :
+  (A ⨂ B)⁻¹ = (A⁻¹ ⨂ B⁻¹) := inv_eq_of_mul_eq_one_left (by simp)
+
+end Unitary.EuclideanCLM
