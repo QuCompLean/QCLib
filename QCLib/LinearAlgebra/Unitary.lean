@@ -4,6 +4,7 @@ public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
 public import QCLib.LinearAlgebra.StdBasis
 
+
 @[expose] public noncomputable section
 
 /-- `f` superscript stands for finite.-/
@@ -28,23 +29,18 @@ This allows scalar multiplication to commute with multiplication of unitary
 linear maps. In particular, `simp` can rewrite
 `X * (r • Y)` as `r • (X * Y)` using `mul_smul_comm`.
 -/
-instance : SMulCommClass (unitary 𝕜)  (unitary (E →L[𝕜] E)) (unitary (E →L[𝕜] E)) where
+instance : SMulCommClass (unitary 𝕜) (unitary (E →L[𝕜] E)) (unitary (E →L[𝕜] E)) where
   smul_comm r X Z := by ext; simp
 
 attribute [simp] smul_mul_assoc mul_smul_comm
+
+-- Without it, certain lemmas will timeout, e.g. `controllizeRight_inv`.
+instance : Inv (unitary (E →L[𝕜] E)) := inferInstance
 
 open Matrix Equiv
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
 variable {𝕜 : Type*} [RCLike 𝕜]
-
-@[simp]
-theorem Matrix.toEuclideanLinCLM_mem_unitary (U : Matrix.unitaryGroup n 𝕜) :
-    (toEuclideanCLM (n := n) (𝕜 := 𝕜) (U : Matrix n n 𝕜)) ∈
-      unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) := by
-  rw [Unitary.mem_iff]
-  constructor <;> simp [← StarHomClass.map_star, ← map_mul]
-
 
 /-- Upgrade `Matrix.UnitaryGroup.toUnitaryEuclideanCLM` to a `⋆`-isomorphism between the
 unitary group of `n × n` matrices and the unitary group of continuous linear endomorphisms of
@@ -56,9 +52,10 @@ noncomputable def euclideanCLMEquiv :
 
 namespace Unitary
 
+/-- MonoidHom from phase-valued functions to diagonal unitaries -/
 def diagonalMonoidHom :
     (n → unitary 𝕜) →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
-  (Unitary.map (StarMonoidHom.ofClass (toEuclideanCLM (𝕜 := 𝕜)))).comp
+  euclideanCLMEquiv.toStarMonoidHom.comp
     ⟨UnitaryGroup.diagonalMonoidHom, by intro d; apply Subtype.ext; simp⟩
 
 @[simp]

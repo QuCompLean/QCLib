@@ -42,6 +42,6 @@ namespace Unitary
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 @[simps! coe]
 def single' (i : ι) (U : 𝐔[k i]) : 𝐔ᶠ[Π i, k i] :=
-  toUnitaryEuclideanCLM
+  euclideanCLMEquiv
     (reindexMonoidEquiv (Equiv.piSplitAt i k).symm
       (blockDiagonalMonoidHom (fun _ ↦ U)))
