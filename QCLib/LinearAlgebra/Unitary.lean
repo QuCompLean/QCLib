@@ -53,6 +53,7 @@ noncomputable def unitaryGroupEquiv :
   Unitary.mapEquiv (StarMulEquiv.ofClass (Matrix.toEuclideanCLM (𝕜 := 𝕜)))
 
 /-- MonoidHom from phase-valued functions to diagonal unitaries -/
+@[simps! -isSimp coe]
 def diagonalMonoidHom :
     (n → unitary 𝕜) →⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
   unitaryGroupEquiv.toStarMonoidHom.comp
@@ -60,7 +61,7 @@ def diagonalMonoidHom :
 
 @[simp]
 theorem diagonalMonoidHom_apply {e j} (v : n → unitary 𝕜) :
-    ((diagonalMonoidHom v) : EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n) e j
+    (diagonalMonoidHom v) e j
       = v j * e.ofLp j := by
   simp [diagonalMonoidHom, mulVec_eq_sum, diagonal_apply, mul_comm]
 
@@ -77,13 +78,20 @@ theorem diagonalMonoidHom_injective :
 
 /-- Block-diagonal embedding of unitary operators on `EuclideanSpace 𝕜 n`, indexed by `o`,
 into unitary operators on `EuclideanSpace 𝕜 (n × o)`. -/
-@[simps!]
+@[simps! coe]
 noncomputable def blockDiagonalStarMonoidHom {o} [Fintype o] [DecidableEq o] :
     (o → ↥(unitary (EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n))) →⋆*
       ↥(unitary (EuclideanSpace 𝕜 (n × o) →L[𝕜] EuclideanSpace 𝕜 (n × o))) :=
   unitaryGroupEquiv.toStarMonoidHom.comp <|
     Matrix.UnitaryGroup.blockDiagonalStarMonoidHom.comp <|
       (StarMulEquiv.piCongrRight fun _ : o => unitaryGroupEquiv.symm).toStarMonoidHom
+
+@[simps!]
+def reindexMonoidEquiv {m} [DecidableEq m] [Fintype m] (e : m ≃ n) :
+    ↥(unitary (EuclideanSpace 𝕜 m →L[𝕜] EuclideanSpace 𝕜 m)) ≃*
+      ↥(unitary (EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n)) :=
+  unitaryGroupEquiv.symm.toMulEquiv.trans <|
+    (Matrix.reindexMonoidEquiv e).trans unitaryGroupEquiv.toMulEquiv
 
 variable (𝕜) in
 /-- Permutations of basis vectors as continuous linearmaps. -/

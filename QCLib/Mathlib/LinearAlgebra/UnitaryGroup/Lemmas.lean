@@ -27,6 +27,7 @@ public import Mathlib.Analysis.CStarAlgebra.Matrix
 namespace StarMulEquiv
 -- Is it in mathlib?
 /-- Congruence of `≃⋆*` across a dependent product, pointwise. -/
+@[simps! apply symm_apply]
 def piCongrRight {ι : Type*} {A B : ι → Type*} [∀ i, Mul (A i)] [∀ i, Mul (B i)]
     [∀ i, Star (A i)] [∀ i, Star (B i)] (e : ∀ i, A i ≃⋆* B i) :
     (∀ i, A i) ≃⋆* (∀ i, B i) where
