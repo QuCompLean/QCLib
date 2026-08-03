@@ -24,6 +24,17 @@ public import Mathlib.Analysis.CStarAlgebra.Matrix
 
 @[expose] public section
 
+namespace StarMulEquiv
+-- Is it in mathlib?
+/-- Congruence of `≃⋆*` across a dependent product, pointwise. -/
+def piCongrRight {ι : Type*} {A B : ι → Type*} [∀ i, Mul (A i)] [∀ i, Mul (B i)]
+    [∀ i, Star (A i)] [∀ i, Star (B i)] (e : ∀ i, A i ≃⋆* B i) :
+    (∀ i, A i) ≃⋆* (∀ i, B i) where
+  toMulEquiv := MulEquiv.piCongrRight fun i => (e i).toMulEquiv
+  map_star' a := funext fun i => (e i).map_star' (a i)
+
+end StarMulEquiv
+
 namespace Matrix
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]

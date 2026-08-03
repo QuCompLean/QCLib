@@ -75,6 +75,16 @@ theorem diagonalMonoidHom_injective :
   ext x
   exact congr_fun (by simpa [Subtype.ext_iff, diagonalMonoidHom] using h) x
 
+/-- Block-diagonal embedding of unitary operators on `EuclideanSpace 𝕜 n`, indexed by `o`,
+into unitary operators on `EuclideanSpace 𝕜 (n × o)`. -/
+@[simps!]
+noncomputable def blockDiagonalStarMonoidHom {o} [Fintype o] [DecidableEq o] :
+    (o → ↥(unitary (EuclideanSpace 𝕜 n →L[𝕜] EuclideanSpace 𝕜 n))) →⋆*
+      ↥(unitary (EuclideanSpace 𝕜 (n × o) →L[𝕜] EuclideanSpace 𝕜 (n × o))) :=
+  unitaryGroupEquiv.toStarMonoidHom.comp <|
+    Matrix.UnitaryGroup.blockDiagonalStarMonoidHom.comp <|
+      (StarMulEquiv.piCongrRight fun _ : o => unitaryGroupEquiv.symm).toStarMonoidHom
+
 variable (𝕜) in
 /-- Permutations of basis vectors as continuous linearmaps. -/
 @[simps! -isSimp apply]
