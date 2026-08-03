@@ -8,8 +8,7 @@ module
 public import QCLib.Circuit.Gate.Bipartite
 public import QCLib.Logic.Equiv
 public import QCLib.LinearAlgebra.OuterProduct
-public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
-public import QCLib.Logic.Equiv
+
 
 /-!
 
@@ -33,7 +32,7 @@ TBD
 
 @[expose] public section
 
-open Function PiOuterProduct OuterProduct Equiv
+open Function PiOuterProduct OuterProduct Equiv EuclideanSpace
 
 variable {ι : Type*} [DecidableEq ι] [Fintype ι]
 variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
@@ -109,8 +108,11 @@ theorem single_apply_basis (v : Π i, k i) (j : ι) (U : 𝐔[k j]) :
   · rw [Finset.sum_eq_single (k j)] <;> grind
   · rw [Finset.sum_eq_zero]; grind
 
+variable (v : Π i, k i) (i : ι) (U : 𝐔[k i])
+
+
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔[k i]) :
-    single' i U • δ[v] = (U • δ[v i]) ⊗ δ[fun a : {j // j ≠ i} => v a] ∘ piSplitAt i _ := by
+    single' i U • δ[v] = (U • δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a] ∘ splitAt i ℂ := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
 
@@ -288,7 +290,7 @@ theorem embedRight_apply_basis (U : 𝐔[Fin n → k]) (v : Fin (n + 1) → k) :
       WithLp.toLp 2 (((U • δ[Fin.tail v]) ⊗ δ[v 0]) ∘ (Fin.consFunEquiv n k).symm) := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply, Fin.tail_def]
-  
+
 -- get rid of this pattern, in favor of the one below?
 theorem _root_.Equiv.comp_equiv_injective {α β R : Type*} {f g : α → R} (e : β ≃ α)
     (h : f ∘ e = g ∘ e) : f = g := by

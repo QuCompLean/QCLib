@@ -6,7 +6,7 @@ Authors: Davood Tehrani, David Gross
 module
 
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
-public import QCLib.LinearAlgebra.UnitaryGroup.Kronecker
+public import QCLib.LinearAlgebra.OuterProduct
 public import QCLib.Tactic.MatrixExpand
 
 
@@ -46,7 +46,7 @@ variable {k} [Fintype k] [DecidableEq k]
 
 variable (n : ℕ)
 
-open Matrix.UnitaryGroup Matrix
+open Matrix.UnitaryGroup Matrix OuterProduct
 
 /-- For `U : 𝐔[k]`, return the unitary in `𝐔[k × Fin n]` that applies `U ^ x` to the first
 subsystem if the second system is in state `x`. -/
@@ -77,9 +77,10 @@ theorem controllizeRight_diagonal (d : k → unitary ℂ) :
 
 -- TBD: Left version
 theorem controllizeRight_conj (U V : 𝐔[k]) :
-    controllizeRight n (V * U * V⁻¹) = (V ⊗ᵤ 1) * controllizeRight n U * (V ⊗ᵤ 1)⁻¹  := by
+    controllizeRight n (V * U * V⁻¹) =
+      (V ⨂ (1 : 𝐔[Fin n])) * controllizeRight n U * (V ⨂ (1 : 𝐔[Fin n]))⁻¹ := by
   ext
-  simp [controllizeRight_def, ← diagonal_one, kronecker_diagonal]
+  simp [controllizeRight_def, ← diagonal_one, kronecker_diagonal, Pi.star_def]
 
 /-- The controlled-`U` gate. For `U : 𝐔[k]`, return the unitary in `𝐔[Fin n × k]` that
 applies `U ^ x` to the second subsystem if the first system is in state `x`. -/

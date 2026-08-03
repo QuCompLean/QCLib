@@ -5,10 +5,7 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-public import Mathlib.Data.Prod.Basic
-public import Mathlib.Logic.Equiv.Prod
-public import Mathlib.Data.Fintype.Basic
-
+public import Mathlib.Analysis.InnerProductSpace.PiL2
 /-!
 
 Various equivalences. mainly used for splitting up index types into products.
@@ -21,6 +18,16 @@ Various equivalences. mainly used for splitting up index types into products.
 variable {ι α β l : Type*}
 
 namespace Equiv
+
+/-- `EuclideanSpace 𝕜 α` splits as the binary product of the `i`-th coordinate and the
+`EuclideanSpace` on the remaining indices. -/
+@[simps!]
+noncomputable def EuclideanSpace.splitAt
+    {α : Type*} [Fintype α] [DecidableEq α] (i : α) (𝕜 : Type*) [RCLike 𝕜] :
+    EuclideanSpace 𝕜 α ≃ 𝕜 × EuclideanSpace 𝕜 { j // j ≠ i } :=
+  (EuclideanSpace.equiv α 𝕜).toEquiv.trans <|
+    (funSplitAt i 𝕜).trans <|
+      (Equiv.refl 𝕜).prodCongr (EuclideanSpace.equiv { j // j ≠ i } 𝕜).symm
 
 -- TBD: Version stated for sets?
 -- TBD: Make dependent?
