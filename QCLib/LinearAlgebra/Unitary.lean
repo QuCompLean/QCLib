@@ -52,6 +52,9 @@ noncomputable def unitaryGroupEquiv :
     unitaryGroup n 𝕜 ≃⋆* unitary ((EuclideanSpace 𝕜 n) →L[𝕜] (EuclideanSpace 𝕜 n)) :=
   Unitary.mapEquiv (StarMulEquiv.ofClass (Matrix.toEuclideanCLM (𝕜 := 𝕜)))
 
+-- see `controllize_eq_controllizeRight_swap`
+attribute [simp ←] StarMulEquiv.toMulEquiv_symm
+
 /-- MonoidHom from phase-valued functions to diagonal unitaries -/
 @[simps! -isSimp coe]
 def diagonalMonoidHom :

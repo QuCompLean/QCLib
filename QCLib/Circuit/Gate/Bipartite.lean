@@ -84,7 +84,7 @@ theorem controllizeRight_conj (U V : 𝐔ᶠ[k]) :
   ext
   simp [controllizeRight_def, ← Matrix.diagonal_one, Matrix.kronecker_diagonal]
 
-/-- The controlled-`U` gate. For `U : 𝐔[k]`, return the unitary in `𝐔[Fin n × k]` that
+/-- The controlled-`U` gate. For `U : 𝐔ᶠ[k]`, return the unitary in `𝐔ᶠ[Fin n × k]` that
 applies `U ^ x` to the second subsystem if the first system is in state `x`. -/
 @[simps! coe, expose]
 def controllize (U : 𝐔ᶠ[k]) : 𝐔ᶠ[Fin n × k] :=
@@ -101,25 +101,15 @@ noncomputable def EuclideanSpace.swap {q k : Type*} [Fintype q] [Fintype k] [Dec
     EuclideanSpace 𝕜 (q × k) ≃ₗᵢ[𝕜] EuclideanSpace 𝕜 (k × q) :=
   LinearIsometryEquiv.piLpCongrLeft 2 𝕜 𝕜 (Equiv.prodComm q k)
 
--- theorem Matrix.submatrix_equiv_mulVec_apply {α β : Type*} [Fintype α] [Fintype β]
---     [DecidableEq α] (e : α ≃ β) (M : Matrix β β ℂ) (v : α → ℂ) (i : α) :
---     (M.submatrix e e).mulVec v i = M.mulVec (v ∘ e.symm) (e i) := by
---   simp only [Matrix.mulVec, dotProduct, Matrix.submatrix_apply]
---   exact Fintype.sum_equiv e _ _ fun j => by simp
+@[simp]
+theorem EuclideanSpace.swap_ofLp_apply {k : Type*} [Fintype k]
+    [DecidableEq k] {𝕜 : Type*} [RCLike 𝕜] (a : EuclideanSpace 𝕜 (Fin n × k)) :
+  (EuclideanSpace.swap a).ofLp = (fun x ↦ a.ofLp x.swap) := rfl
 
+attribute [simp] Matrix.submatrix_mulVec_equiv
+-- One of special cases that working with CLMs makes the proof counterintuitively harder
 -- TBD: Intro def for `reindexMonoidEquiv (Equiv.prodComm k n))` and state more generally?
 theorem controllize_eq_controllizeRight_swap (U : 𝐔ᶠ[k])
     (a : EuclideanSpace ℂ (Fin n × k)) (b : Fin n × k) :
     controllize n U a b = controllizeRight n U a.swap b.swap := by
-  simp [controllize_def, controllizeRight_def, Matrix.submatrix_apply]
-
--- theorem controllize_one : controllize n (1 : 𝐔ᶠ[k]) = 1 := by
---   simp [controllize_def]
-
--- theorem controllize_zpow (U : 𝐔ᶠ[k]) (p : ℤ) : (controllize n U) ^ p =  controllize n (U ^ p) := by
---   simp_rw [controllize_def, ← map_zpow, controllizeRight_zpow]
-
--- theorem controllize_diagonal (d : k → unitary ℂ) :
---     controllize n (diagonalMonoidHom d) = diagonalMonoidHom fun x ↦ (d x.2) ^ (x.1.toNat) := by
---   ext
---   simp [controllize_def, controllizeRight_diagonal, Matrix.diagonal_apply]
+  simp [controllize_def, -Equiv.coe_prodComm, Function.comp_def]

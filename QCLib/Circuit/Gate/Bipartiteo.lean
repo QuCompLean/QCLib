@@ -95,7 +95,8 @@ theorem controllize_def (U : 𝐔[k]) :
 -- TBD: Intro def for `reindexMonoidEquiv (Equiv.prodComm k n))` and state more generally?
 theorem controllize_eq_controllizeRight_swap (U : 𝐔[k]) (a b : Fin n × k) :
     controllize n U a b = controllizeRight n U a.swap b.swap := by
-  simp [controllize_def]
+  simp only [controllize_def, reindexMonoidEquiv_apply_coe, controllizeRight_coe,
+    Equiv.prodComm_symm, Equiv.coe_prodComm, submatrix_apply]
 
 theorem controllize_one : controllize n (1 : 𝐔[k]) = 1 := by
   simp [controllize_def]
