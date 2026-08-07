@@ -106,14 +106,13 @@ theorem EuclideanSpace.swap_ofLp_apply {k : Type*} [Fintype k]
     [DecidableEq k] {𝕜 : Type*} [RCLike 𝕜] (a : EuclideanSpace 𝕜 (Fin n × k)) :
   (EuclideanSpace.swap a).ofLp = (fun x ↦ a.ofLp x.swap) := rfl
 
-attribute [simp] Matrix.submatrix_mulVec_equiv
-attribute [-simp] Equiv.coe_prodComm
 -- One of special cases that working with CLMs makes the proof counterintuitively harder
 -- TBD: Intro def for `reindexMonoidEquiv (Equiv.prodComm k n))` and state more generally?
 theorem controllize_eq_controllizeRight_swap (U : 𝐔ᶠ[k])
     (a : EuclideanSpace ℂ (Fin n × k)) (b : Fin n × k) :
     controllize n U a b = controllizeRight n U a.swap b.swap := by
-  simp [controllize_def, Function.comp_def]
+  simp [controllize_def, Function.comp_def,
+    Matrix.submatrix_mulVec_equiv, -Equiv.coe_prodComm]
 
 theorem controllize_one : controllize n (1 : 𝐔ᶠ[k]) = 1 := by
   simp [controllize_def]
@@ -124,9 +123,10 @@ theorem controllize_zpow (U : 𝐔ᶠ[k]) (p : ℤ) : (controllize n U) ^ p =  c
 @[simp]
 theorem controllize_diagonal (d : k → unitary ℂ) :
     controllize n (diagonalMonoidHom d) = diagonalMonoidHom fun x ↦ (d x.2) ^ (x.1.toNat) := by
+  apply unitaryGroupEquiv.symm.injective
   ext
-  rw [controllize_def, controllizeRight_diagonal]
-  simp [diagonalMonoidHom_coe, Function.comp_def, Matrix.mulVec_eq_sum]
+  simp [controllize_def,  Matrix.diagonal_apply, reindexMonoidEquiv,
+    diagonalMonoidHom, Matrix.diagonal_pow]
 
 namespace Qubit
 
@@ -135,49 +135,11 @@ notation "[" g "]C" => controllizeRight 2 g
 notation "C[" g "]" => controllize 2 g
 
 theorem controllizeRight_mul (g₁ g₂ : 𝐔ᶠ[k]) : [g₁]C * [g₂]C = [g₁ * g₂]C := by
-  ext v ⟨i, j⟩
-  simp only [controllizeRight_def, Fin.toNat_eq_val, blockDiagonalStarMonoidHom_coe,
-    Submonoid.coe_mul, Subtype.map_coe, Matrix.UnitaryGroup.blockDiagonalStarMonoidHom_coe_coe,
-    StarMulEquiv.piCongrRight_apply, unitaryGroupEquiv_symm_apply, SubmonoidClass.coe_pow,
-    StarMulEquiv.toStarMonoidHom_coe, StarMulEquiv.ofClass_symm_apply, StarAlgEquiv.invFun_eq_symm,
-    map_pow, StarMulEquiv.ofClass_apply, ← map_mul, ← Matrix.blockDiagonal_mul,
-    Matrix.ofLp_toEuclideanCLM]
-  congr with x a1 a2
-  fin_cases x <;> simp
+  apply unitaryGroupEquiv.symm.injective
+  ext ⟨i₁, i₂⟩ ⟨j₁, j₂⟩
+  fin_cases i₂, j₂ <;> simp [controllizeRight, ← Matrix.blockDiagonal_mul,
+    Matrix.blockDiagonal_apply]
 
-
-
-
--- #exit
--- theorem controllize_mul (g₁ g₂ : 𝐔ᶠ[k]) : C[g₁] * C[g₂] = C[g₁ * g₂] := by
---   simp [controllize, ← map_mul, controllizeRight_mul]
-
--- @[simp]
--- theorem controllizeRight_apply (U : 𝐔ᶠ[k]) (a b : k × Qubit) :
---    [U]C a b =
---     if a.2 = b.2 then
---       if a.2 = 0 then
---         (1 : 𝐔[k]) (a.1) (b.1)
---       else
---         U (a.1) (b.1)
---     else 0 := by
---   simp only [controllizeRight_coe, blockDiagonal_apply, Fin.isValue, OneMemClass.coe_one]
---   generalize h : a.2 = c
---   fin_cases c <;> simp
-
--- @[simp]
--- theorem controllize_apply (U : 𝐔ᶠ[k]) (a b : Qubit × k) :
---     C[U] a b =
---     if a.1 = b.1 then
---       if a.1 = 0 then
---         (1 : 𝐔ᶠ[k]) (a.2) (b.2)
---       else
---         U (a.2) (b.2)
---     else 0 := by
---   simp [controllize_eq_controllizeRight_swap]
-
-
--- end Qubit
-
--- end Controllize
-#check mul_pow
+-- -- using bare map_mul gives timeout error
+theorem controllize_mul (g₁ g₂ : 𝐔ᶠ[k]) : C[g₁] * C[g₂] = C[g₁ * g₂] := by
+  simp [controllize_def, ← controllizeRight_mul, MulEquiv.map_mul]
