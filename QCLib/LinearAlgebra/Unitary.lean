@@ -3,7 +3,7 @@ module
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.Lemmas
 public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
 public import QCLib.LinearAlgebra.StdBasis
-
+public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 
 @[expose] public noncomputable section
 
@@ -127,5 +127,54 @@ theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   simp only [← ContinuousLinearMap.ext_basis_iff, permHom_apply_basis] at h
   apply Module.Basis.injective (EuclideanSpace.basisFun n ℂ).toBasis
   simpa [basisVector_def] using (h i)
+
+section PiKronecker
+
+open PiOuterProduct
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+variable {n : ι → Type*} [∀ i, Fintype (n i)] [∀ i, DecidableEq (n i)]
+variable {𝕜 : Type*} [RCLike 𝕜]
+
+/-- Kronecker product of a family of unitary CLMs, via `unitaryGroupEquiv`. -/
+instance :
+    PiOuterProduct (fun i ↦ unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
+      (unitary (EuclideanSpace 𝕜 (Π i, n i) →L[𝕜] EuclideanSpace 𝕜 (Π i, n i))) where
+  tprod U := unitaryGroupEquiv (⨂ i, unitaryGroupEquiv.symm (U i))
+
+theorem piTensor_def
+    (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+    (⨂ i, U i) = unitaryGroupEquiv (⨂ i, unitaryGroupEquiv.symm (U i)) := rfl
+
+@[simp]
+theorem piTprod_apply (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
+    (v : EuclideanSpace 𝕜 (Π i, n i)) :
+    (⨂ i, U i) v =
+      (⨂ i, unitaryGroupEquiv.symm (U i) : Matrix (Π i, n i) (Π i, n i) 𝕜).mulVec v := by
+  simp [PiOuterProduct.tprod]
+
+@[simp]
+theorem mul_piTprod_mul
+    (U V : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+    (⨂ i, U i) * (⨂ i, V i) = ⨂ i, U i * V i := by
+  ext
+  simp [mul_piKronecker_mul]
+
+@[simp]
+theorem piTprod_one :
+    (⨂ i, (1 :
+      unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))) = 1 := by
+  ext
+  simp
+
+@[simp]
+theorem piTprod_inv
+    (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+    (⨂ i, U i)⁻¹ = ⨂ i, (U i)⁻¹ :=
+  inv_eq_of_mul_eq_one_left (by simp)
+
+
+end PiKronecker
+
 
 end Unitary.EuclideanCLM
