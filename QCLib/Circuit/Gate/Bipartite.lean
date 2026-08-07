@@ -143,3 +143,34 @@ theorem controllizeRight_mul (g₁ g₂ : 𝐔ᶠ[k]) : [g₁]C * [g₂]C = [g�
 -- -- using bare map_mul gives timeout error
 theorem controllize_mul (g₁ g₂ : 𝐔ᶠ[k]) : C[g₁] * C[g₂] = C[g₁ * g₂] := by
   simp [controllize_def, ← controllizeRight_mul, MulEquiv.map_mul]
+
+end Qubit
+
+end Controllize
+
+public noncomputable section Swap
+
+open Unitary.EuclideanCLM
+
+variable {n} [Fintype n] [DecidableEq n]
+
+/-- The swap gate. -/
+def Swap : 𝐔ᶠ[n × n] := permHom ℂ (Equiv.prodComm n n)
+
+-- Missing simp lemma?
+@[simp]
+theorem Equiv.prodComm_prodComm {n : Type*} :
+    (Equiv.prodComm n n) * (Equiv.prodComm n n) = 1 := by
+  ext <;> simp
+
+@[simp]
+theorem swap_swap : Swap * Swap = (1 : 𝐔ᶠ[n × n]) := by
+  simp [Swap, ← map_mul]
+
+@[simp]
+theorem swap_apply_basis {v : n × n} : Swap (n := n) δ[v] = δ[v.swap] := by
+  simp [Swap]
+
+abbrev QubitSwap := Swap (n := Qubit)
+
+end Swap

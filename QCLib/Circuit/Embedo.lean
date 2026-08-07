@@ -5,7 +5,7 @@ Authors: Davood Tehrani, David Gross
 -/
 module
 
-public import QCLib.Circuit.Gate.Bipartite
+public import QCLib.Circuit.Gate.Bipartiteo
 public import QCLib.Logic.Equiv
 public import QCLib.LinearAlgebra.OuterProduct
 
@@ -110,9 +110,11 @@ theorem single_apply_basis (v : Π i, k i) (j : ι) (U : 𝐔[k j]) :
 
 variable (v : Π i, k i) (i : ι) (U : 𝐔[k i])
 
-
+#check (U • δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]
+#check splitAt
+#check single' i U • δ[v]
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔[k i]) :
-    single' i U • δ[v] = (U • δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a] ∘ splitAt i ℂ := by
+    single' i U • δ[v] = ((U • δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]) ∘ splitAt i ℂ := by
   ext
   simp [basisVector_def, Submonoid.smul_def, blockDiagonal_apply, Pi.single_apply]
 
