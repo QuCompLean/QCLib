@@ -51,12 +51,13 @@ abbrev single {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) 
 theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U = ⨂ j, if h : j = i then h ▸ U else (1 : 𝐔ᶠ[k j]) := by
   apply unitaryGroupEquiv.symm.injective
-  ext v a
-  simp [blockDiagonal_apply, funext_iff]
-  sorry
-  -- simp only [single'_coe, submatrix_apply, blockDiagonal_apply, funext_iff,
-  --   Subtype.forall, piKroneckerUnitary_apply]
-  -- split_ifs with h
-  -- · rw [Finset.prod_eq_single i] <;> aesop
-  -- · obtain ⟨w, hw⟩ := not_forall.mp h
-  --   rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
+  ext
+  simp only [StarMulEquiv.coe_toMulEquiv, unitaryGroupEquiv_symm_apply, Subtype.map_coe,
+    single'_coe, StarMulEquiv.toStarMonoidHom_coe, StarMulEquiv.ofClass_symm_apply,
+    EquivLike.inv_apply_apply, submatrix_apply, Equiv.piSplitAt_apply, ne_eq, blockDiagonal_apply,
+    funext_iff, Subtype.forall, piTprod_coe, apply_dite, OneMemClass.coe_one,
+     EuclideanCLM.piTprod_def, piKronecker_apply]
+  split_ifs with h
+  · rw [Finset.prod_eq_single i] <;> aesop
+  · obtain ⟨w, hw⟩ := not_forall.mp h
+    rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
