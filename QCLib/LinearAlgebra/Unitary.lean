@@ -180,16 +180,14 @@ theorem piTprod_inv
     (⨂ i, U i)⁻¹ = ⨂ i, (U i)⁻¹ :=
   inv_eq_of_mul_eq_one_left (by simp)
 
-
 -- `map_smul` causes timeout here, investigate
 -- Combining simps causes timeout too...
-theorem piKroneckerUnitary_smul_univ (c : ι → unitary 𝕜)
+theorem piTprod_smul_univ (c : ι → unitary 𝕜)
     (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
     (⨂ i, c i • U i) = (∏ i, c i) • (⨂ i, U i) := by
   ext
   simp [-map_smul]
   simp [Submonoid.smul_def, piKronecker_smul_univ, Matrix.smul_mulVec]
-
 
 end PiKronecker
 
