@@ -5,6 +5,11 @@ public import QCLib.LinearAlgebra.UnitaryGroup.Permutation
 public import QCLib.LinearAlgebra.StdBasis
 public import QCLib.Mathlib.LinearAlgebra.UnitaryGroup.PiKronecker
 
+/-!
+Work in progress
+-> Define trace
+-/
+
 @[expose] public noncomputable section
 
 variable {𝕜 E : Type*}
@@ -121,13 +126,6 @@ theorem ContinuousLinearMap.ext_basis_iff
     simp [h]
   · simp_all
 
-omit [DecidableEq n] in
-@[ext]
-theorem ContinuousLinearMap.ext_basis
-    {a b : unitary ((EuclideanSpace ℂ n) →L[ℂ] (EuclideanSpace ℂ n))}
-    : (∀ i : n, a δ[i] = b δ[i]) → a = b :=
-  ContinuousLinearMap.ext_basis_iff.mp
-
 theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   intro σ τ h
   ext i
@@ -135,60 +133,126 @@ theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   apply Module.Basis.injective (EuclideanSpace.basisFun n ℂ).toBasis
   simpa [basisVector_def] using (h i)
 
-section PiKronecker
+end Unitary.EuclideanCLM
 
-open PiOuterProduct
+
+section PiOuterProduct
+
+open PiOuterProduct Matrix
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 variable {n : ι → Type*} [∀ i, Fintype (n i)] [∀ i, DecidableEq (n i)]
 variable {𝕜 : Type*} [RCLike 𝕜]
 
-/-- Kronecker product of a family of unitary CLMs, via `unitaryGroupEquiv`. -/
-instance :
-    PiOuterProduct (fun i ↦ unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
-      (unitary (EuclideanSpace 𝕜 (Π i, n i) →L[𝕜] EuclideanSpace 𝕜 (Π i, n i))) where
-  tprod U := unitaryGroupEquiv (⨂ i, unitaryGroupEquiv.symm (U i))
+namespace EuclideanCLM -- All of this redundancy for a single lemma: `piTprod_coe`
 
-theorem piTensor_def
-    (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
-    (⨂ i, U i) = unitaryGroupEquiv (⨂ i, unitaryGroupEquiv.symm (U i)) := rfl
+variable (U V : Π i, (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
+
+/-- Tensor product of a family of Euclidean continuous linear maps. -/
+instance :
+    PiOuterProduct
+      (fun i ↦ EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))
+      (EuclideanSpace 𝕜 (Π i, n i) →L[𝕜] EuclideanSpace 𝕜 (Π i, n i)) where
+  tprod U := toEuclideanCLM (𝕜 := 𝕜) (⨂ i, (toEuclideanCLM (𝕜 := 𝕜)).symm (U i))
+
+theorem piTprod_def
+    (U : Π i, EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)) :
+    (⨂ i, U i) =
+      toEuclideanCLM (𝕜 := 𝕜) (⨂ i, (toEuclideanCLM (𝕜 := 𝕜)).symm (U i)) := rfl
 
 @[simp]
-theorem piTprod_apply (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
+theorem piTprod_apply
+    (U : Π i, EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))
     (v : EuclideanSpace 𝕜 (Π i, n i)) :
     (⨂ i, U i) v =
-      (⨂ i, unitaryGroupEquiv.symm (U i) : Matrix (Π i, n i) (Π i, n i) 𝕜).mulVec v := by
-  simp [PiOuterProduct.tprod]
+      (⨂ i, (toEuclideanCLM (𝕜 := 𝕜)).symm (U i)).mulVec v := by
+  simp [piTprod_def]
 
 @[simp]
 theorem mul_piTprod_mul
-    (U V : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+    (U V : Π i, EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)) :
     (⨂ i, U i) * (⨂ i, V i) = ⨂ i, U i * V i := by
   ext
   simp [mul_piKronecker_mul]
 
 @[simp]
-theorem piTprod_one :
-    (⨂ i, (1 :
-      unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))) = 1 := by
+theorem piTprod_one : (⨂ i, (1 :
+    (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))) = 1 := by
   ext
   simp
 
+theorem piTprod_smul_univ (c : ι → 𝕜) :
+    (⨂ i, c i • U i) = (∏ i, c i) • (⨂ i, U i) := by
+  ext
+  simp [piKronecker_smul_univ, Matrix.smul_mulVec]
+
+end EuclideanCLM
+
+open EuclideanCLM
+
+namespace Unitary.EuclideanCLM
+
+variable (U V : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
+
+/-- `star` distributes over the tensor product of CLMs (via `toEuclideanCLM` being a
+`StarAlgEquiv`, reduced to the matrix-level fact about `piKronecker`). -/
 @[simp]
-theorem piTprod_inv
-    (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+theorem star_piTprod_clm
+    (U : Π i, EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)) :
+    star (⨂ i, U i) = ⨂ i, star (U i) := by
+  ext
+  simp [piTprod_def, ← map_star, star_piKronecker]
+
+/-- The tensor product of a family of unitary CLMs is unitary. -/
+theorem piTprod_unitary
+    (U : Π i, EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))
+    (hU : ∀ i, U i ∈ unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+    (⨂ i, U i) ∈ unitary (EuclideanSpace 𝕜 (Π i, n i) →L[𝕜] EuclideanSpace 𝕜 (Π i, n i)) := by
+  simp_all [mem_iff, star_piTprod_clm, piTprod_one, and_self]
+
+-- This instance could be also defined by `unitaryGroupEquiv (⨂ i, unitaryGroupEquiv.symm (U i))`
+-- However, it would make proving `piTprod_coe`, `piTprod_smul_univ` more complicated.
+/-- Tensor product of a family of unitary CLMs, via `unitaryGroupEquiv`. -/
+instance :
+    PiOuterProduct (fun i ↦ unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))
+      (unitary (EuclideanSpace 𝕜 (Π i, n i) →L[𝕜] EuclideanSpace 𝕜 (Π i, n i))) where
+    tprod U := ⟨(⨂ i, (U i).val), by simp [piTprod_unitary]⟩
+
+theorem piTensor_def :
+  (⨂ i, U i) = ⟨(⨂ i, (U i).val), by simp [piTprod_unitary]⟩ := by rfl
+
+@[simp]
+theorem piTprod_apply (v : EuclideanSpace 𝕜 (Π i, n i)) :
+    (⨂ i, U i) v =
+      (⨂ i, unitaryGroupEquiv.symm (U i) : Matrix (Π i, n i) (Π i, n i) 𝕜).mulVec v := by
+  simp [PiOuterProduct.tprod]
+
+@[simp]
+theorem mul_piTprod_mul :
+    (⨂ i, U i) * (⨂ i, V i) = ⨂ i, U i * V i := by
+  simp [piTensor_def]
+
+@[simp]
+theorem piTprod_one : (⨂ i, (1 : unitary
+    (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i)))) = 1 := by
+  simp [piTensor_def]
+
+@[simp]
+theorem piTprod_inv :
     (⨂ i, U i)⁻¹ = ⨂ i, (U i)⁻¹ :=
   inv_eq_of_mul_eq_one_left (by simp)
 
--- `map_smul` causes timeout here, investigate
--- Combining simps causes timeout too...
-theorem piTprod_smul_univ (c : ι → unitary 𝕜)
-    (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
-    (⨂ i, c i • U i) = (∏ i, c i) • (⨂ i, U i) := by
-  ext
-  simp [-map_smul]
-  simp [Submonoid.smul_def, piKronecker_smul_univ, Matrix.smul_mulVec]
+@[simp]
+theorem piTprod_coe :
+    (⨂ i, U i).val = (⨂ i, (U i).val) := by
+  simp [piTprod_def, Unitary.EuclideanCLM.piTensor_def]
 
-end PiKronecker
+-- Combining simps causes timeout, investigate why
+theorem piTprod_smul_univ (c : ι → unitary 𝕜) :
+    (⨂ i, c i • U i) = (∏ i, c i) • (⨂ i, U i) := by
+  simp [piTensor_def, Subtype.ext_iff]
+  simp [Submonoid.smul_def, _root_.EuclideanCLM.piTprod_smul_univ]
 
 end Unitary.EuclideanCLM
+
+end PiOuterProduct

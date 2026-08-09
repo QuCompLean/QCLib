@@ -106,13 +106,13 @@ theorem EuclideanSpace.swap_ofLp_apply {k : Type*} [Fintype k]
     [DecidableEq k] {𝕜 : Type*} [RCLike 𝕜] (a : EuclideanSpace 𝕜 (Fin n × k)) :
   (EuclideanSpace.swap a).ofLp = (fun x ↦ a.ofLp x.swap) := rfl
 
+attribute [simp] Matrix.submatrix_mulVec_equiv
 -- One of special cases that working with CLMs makes the proof counterintuitively harder
 -- TBD: Intro def for `reindexMonoidEquiv (Equiv.prodComm k n))` and state more generally?
 theorem controllize_eq_controllizeRight_swap (U : 𝐔ᶠ[k])
     (a : EuclideanSpace ℂ (Fin n × k)) (b : Fin n × k) :
     controllize n U a b = controllizeRight n U a.swap b.swap := by
-  simp [controllize_def, Function.comp_def,
-    Matrix.submatrix_mulVec_equiv, -Equiv.coe_prodComm]
+  simp [controllize_def, Function.comp_def, -Equiv.coe_prodComm]
 
 theorem controllize_one : controllize n (1 : 𝐔ᶠ[k]) = 1 := by
   simp [controllize_def]
@@ -152,7 +152,7 @@ public noncomputable section Swap
 
 open Unitary.EuclideanCLM
 
-variable {n} [Fintype n] [DecidableEq n]
+variable (n) [Fintype n] [DecidableEq n]
 
 /-- The swap gate. -/
 def Swap : 𝐔ᶠ[n × n] := permHom ℂ (Equiv.prodComm n n)
@@ -164,13 +164,13 @@ theorem Equiv.prodComm_prodComm {n : Type*} :
   ext <;> simp
 
 @[simp]
-theorem swap_swap : Swap * Swap = (1 : 𝐔ᶠ[n × n]) := by
+theorem swap_swap : Swap n * Swap n = (1 : 𝐔ᶠ[n × n]) := by
   simp [Swap, ← map_mul]
 
 @[simp]
-theorem swap_apply_basis {v : n × n} : Swap (n := n) δ[v] = δ[v.swap] := by
+theorem swap_apply_basis {v : n × n} : Swap n δ[v] = δ[v.swap] := by
   simp [Swap]
 
-abbrev QubitSwap := Swap (n := Qubit)
+abbrev QubitSwap := Swap Qubit
 
 end Swap
