@@ -121,6 +121,13 @@ theorem ContinuousLinearMap.ext_basis_iff
     simp [h]
   · simp_all
 
+omit [DecidableEq n] in
+@[ext]
+theorem ContinuousLinearMap.ext_basis
+    {a b : unitary ((EuclideanSpace ℂ n) →L[ℂ] (EuclideanSpace ℂ n))}
+    : (∀ i : n, a δ[i] = b δ[i]) → a = b :=
+  ContinuousLinearMap.ext_basis_iff.mp
+
 theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   intro σ τ h
   ext i
@@ -174,7 +181,16 @@ theorem piTprod_inv
   inv_eq_of_mul_eq_one_left (by simp)
 
 
-end PiKronecker
+-- `map_smul` causes timeout here, investigate
+-- Combining simps causes timeout too...
+theorem piKroneckerUnitary_smul_univ (c : ι → unitary 𝕜)
+    (U : Π i, unitary (EuclideanSpace 𝕜 (n i) →L[𝕜] EuclideanSpace 𝕜 (n i))) :
+    (⨂ i, c i • U i) = (∏ i, c i) • (⨂ i, U i) := by
+  ext
+  simp [-map_smul]
+  simp [Submonoid.smul_def, piKronecker_smul_univ, Matrix.smul_mulVec]
 
+
+end PiKronecker
 
 end Unitary.EuclideanCLM
