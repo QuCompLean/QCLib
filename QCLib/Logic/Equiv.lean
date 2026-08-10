@@ -50,7 +50,7 @@ def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i
   right_inv := by intro _; aesop
 
 @[simp]
-theorem EuclideanSpace.splitAt_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
+theorem EuclideanSpace.piSplitAt_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
   ((fun j : { j // ¬j = i } ↦ x ↑j) = fun j : { j // ¬j = i } ↦ y ↑j) ∧ x i = y i ↔ x = y := by
   simp [funext_iff]
   grind

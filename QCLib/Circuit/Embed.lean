@@ -32,7 +32,8 @@ TBD
 
 @[expose] public noncomputable section
 
-open Unitary.EuclideanCLM OuterProduct Function PiOuterProduct EuclideanSpace Matrix
+open Unitary.EuclideanCLM OuterProduct
+  Function PiOuterProduct EuclideanSpace Matrix Equiv
 
 variable {ι : Type*} [DecidableEq ι] [Fintype ι]
 variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
@@ -66,8 +67,27 @@ example {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :
     single i U = ⨂ j, if j = i then U else 1 := by
   simp [single_eq_prod]
 
+attribute [simp] mulVec_eq_sum blockDiagonal_apply
+attribute [simp ←] ite_and
 @[simp]
 theorem single_one (i : ι) : single' i (1 : 𝐔ᶠ[k i]) = 1 := by
   ext
-  simp [mulVec_eq_sum, blockDiagonal_apply, one_apply, ← ite_and]
+  simp [one_apply]
 
+theorem single'_reindexMonoidEquiv {k' : ι → Type*} [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
+    (e : ∀ i, k i ≃ k' i) (i : ι) (U : 𝐔ᶠ[k i]) :
+    single' i (reindexMonoidEquiv (e i) U) =
+      reindexMonoidEquiv (piCongrRight e) (single' i U) := by
+  ext
+  simp [funext_iff, Unitary.EuclideanCLM.reindexMonoidEquiv]
+
+theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k']
+    [Fintype k] [Fintype k'] (e : k ≃ k') (i : ι) (U : 𝐔ᶠ[k]) :
+    single i (reindexMonoidEquiv e U) =
+    Unitary.EuclideanCLM.reindexMonoidEquiv (piCongrRight (fun _ : ι ↦ e)) (single i U) := by
+  simp [← single'_reindexMonoidEquiv]
+
+theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
+    single' i (diagonalMonoidHom d) = diagonalMonoidHom (fun x ↦ d (x i)) := by
+  ext
+  simp [diagonalMonoidHom_coe, diagonal_apply]
