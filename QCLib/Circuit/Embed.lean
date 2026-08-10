@@ -61,3 +61,13 @@ theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
   · rw [Finset.prod_eq_single i] <;> aesop
   · obtain ⟨w, hw⟩ := not_forall.mp h
     rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
+
+example {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :
+    single i U = ⨂ j, if j = i then U else 1 := by
+  simp [single_eq_prod]
+
+@[simp]
+theorem single_one (i : ι) : single' i (1 : 𝐔ᶠ[k i]) = 1 := by
+  ext
+  simp [mulVec_eq_sum, blockDiagonal_apply, one_apply, ← ite_and]
+

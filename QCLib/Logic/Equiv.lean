@@ -49,6 +49,11 @@ def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i
   left_inv := by intro _; grind
   right_inv := by intro _; aesop
 
+@[simp]
+theorem EuclideanSpace.splitAt_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
+  ((fun j : { j // ¬j = i } ↦ x ↑j) = fun j : { j // ¬j = i } ↦ y ↑j) ∧ x i = y i ↔ x = y := by
+  simp [funext_iff]
+  grind
 /-- Two functions `a b` are equal iff `(a i = b i ∧ a j = b j)` and for all
 arguments `x ≠ i, j` we have `a x = b x`. Useful for case analysis. -/
 @[simp]
