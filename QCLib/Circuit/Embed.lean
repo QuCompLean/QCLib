@@ -122,7 +122,7 @@ theorem single_single_commute {i j : ι} (h : i ≠ j) (U : 𝐔ᶠ[k i]) (V : �
   grind
 
 -- The API doesn't naturally close this goal,
--- in fact, it naturally produces a complicated goal that is hard to distangle.
+-- in fact, it produces a complicated goal that is hard to distangle.
 theorem single_mul (i : ι) (U V : 𝐔ᶠ[k i]) :
     single' i (U * V) = single' i U * single' i V := by
   ext
