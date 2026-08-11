@@ -111,3 +111,12 @@ theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
   ext
   simp [-single'_coe, single_apply_basis, eq_update_iff, ite_and]
   simp [funext_iff]
+
+@[simp]
+theorem single_single_commute {i j : ι} (h : i ≠ j) (U : 𝐔ᶠ[k i]) (V : 𝐔ᶠ[k j]) :
+    Commute (single' i U) (single' j V) := by
+  simp only [single_eq_prod, commute_iff_eq, mul_piTprod_mul]
+  congr
+  grind
+
+
