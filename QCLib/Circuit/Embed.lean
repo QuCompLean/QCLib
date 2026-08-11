@@ -38,6 +38,8 @@ open Unitary.EuclideanCLM OuterProduct
 variable {ι : Type*} [DecidableEq ι] [Fintype ι]
 variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
 
+section single
+
 /-- The embedding of a unitary matrix `U : 𝐔ᶠ[k i]` into `𝐔ᶠ[Π i, k i]` realized by
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 @[simps! coe]
@@ -125,3 +127,26 @@ theorem single_mul (i : ι) (U V : 𝐔ᶠ[k i]) :
     single' i (U * V) = single' i U * single' i V := by
   ext
   simp [← blockDiagonal_mul, ← map_mul]
+
+@[simp]
+theorem pairwise_commute_single (f : Π i, 𝐔ᶠ[k i]) (s : Set ι) :
+    s.Pairwise (Function.onFun Commute (fun i ↦ single' i (f i))) :=
+  (fun x _ y _ hneq ↦ single_single_commute hneq (f x) (f y))
+
+-- TBD : Generalize it to dependent case
+theorem noncommProd_single {k : Type*} [DecidableEq k] [Fintype k] (f : ι → 𝐔ᶠ[k]) (s : Finset ι) :
+    s.noncommProd (fun i ↦ single i (f i)) (by simp) = ⨂ i, if (i ∈ s) then f i else 1 := by
+  induction s using Finset.cons_induction with
+  | empty => simp
+  | cons a s ha IH =>
+    have (i : ι) : (if i = a ∨ i ∈ s then f i else 1) =
+        (if i = a then f a else 1) * (if i ∈ s then f i else 1) := by grind
+    simp_rw [Finset.noncommProd_cons, IH, Finset.cons_eq_insert, Finset.mem_insert, this,
+      ← mul_piTprod_mul, single_eq_prod]
+    simp
+
+theorem noncommProd_single_univ {k : Type*} [DecidableEq k] [Fintype k] (f : ι → 𝐔ᶠ[k]) :
+    Finset.noncommProd Finset.univ (fun i ↦ single i (f i)) (by simp) = ⨂ i, f i := by
+  simp [noncommProd_single]
+
+end single
