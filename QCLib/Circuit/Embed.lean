@@ -91,3 +91,22 @@ theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
     single' i (diagonalMonoidHom d) = diagonalMonoidHom (fun x ↦ d (x i)) := by
   ext
   simp [diagonalMonoidHom_coe, diagonal_apply]
+
+lemma toEuclideanCLM_symm_apply
+    {𝕜 : Type*} [RCLike 𝕜]
+    (v x : ι) (U : EuclideanSpace 𝕜 ι →L[𝕜] EuclideanSpace 𝕜 ι) :
+    toEuclideanCLM (𝕜 := 𝕜).symm U x v =
+      (U (EuclideanSpace.single v 1)) x := by
+  simp [toEuclideanCLM, LinearMap.toMatrix_apply]
+
+theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
+    single' i U δ[v] =
+      ∑ w, (U δ[v i]) w • δ[update v i w] := by
+  ext x
+  simp only [single'_coe, basisVector_def, basisFun_apply, ofLp_toEuclideanCLM, PiLp.ofLp_single,
+    mulVec_eq_sum, Pi.single_apply, transpose_submatrix, blockDiagonal_transpose, op_smul_eq_smul,
+    ite_smul, one_smul, zero_smul, Finset.sum_apply, WithLp.ofLp_sum, WithLp.ofLp_smul,
+    Pi.smul_apply, eq_update_iff, ne_eq, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  rw [Finset.sum_eq_ite v (by simp_all)]
+  simp_all [ite_and, funext_iff, toEuclideanCLM_symm_apply]
+  grind
