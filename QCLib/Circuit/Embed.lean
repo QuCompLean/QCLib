@@ -33,7 +33,7 @@ TBD
 @[expose] public noncomputable section
 
 open Unitary.EuclideanCLM OuterProduct
-  Function PiOuterProduct EuclideanSpace Matrix Equiv
+  Function PiOuterProduct Matrix Equiv
 
 variable {ι : Type*} [DecidableEq ι] [Fintype ι]
 variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
@@ -68,23 +68,23 @@ example {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :
   simp [single_eq_prod]
 
 attribute [simp] mulVec_eq_sum blockDiagonal_apply
-attribute [simp ←] ite_and
+
 @[simp]
 theorem single_one (i : ι) : single' i (1 : 𝐔ᶠ[k i]) = 1 := by
   ext
-  simp [one_apply]
+  simp [one_apply, ← ite_and]
 
 theorem single'_reindexMonoidEquiv {k' : ι → Type*} [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
     (e : ∀ i, k i ≃ k' i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i (reindexMonoidEquiv (e i) U) =
-      reindexMonoidEquiv (piCongrRight e) (single' i U) := by
+      reindexMonoidEquiv (Equiv.piCongrRight e) (single' i U) := by
   ext
   simp [funext_iff, Unitary.EuclideanCLM.reindexMonoidEquiv]
 
 theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k']
     [Fintype k] [Fintype k'] (e : k ≃ k') (i : ι) (U : 𝐔ᶠ[k]) :
     single i (reindexMonoidEquiv e U) =
-    Unitary.EuclideanCLM.reindexMonoidEquiv (piCongrRight (fun _ : ι ↦ e)) (single i U) := by
+    Unitary.EuclideanCLM.reindexMonoidEquiv (Equiv.piCongrRight (fun _ : ι ↦ e)) (single i U) := by
   simp [← single'_reindexMonoidEquiv]
 
 theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
@@ -92,6 +92,7 @@ theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
   ext
   simp [diagonalMonoidHom_coe, diagonal_apply]
 
+-- make it private?
 lemma toEuclideanCLM_symm_apply
     {𝕜 : Type*} [RCLike 𝕜]
     (v x : ι) (U : EuclideanSpace 𝕜 ι →L[𝕜] EuclideanSpace 𝕜 ι) :
@@ -103,10 +104,20 @@ theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] =
       ∑ w, (U δ[v i]) w • δ[update v i w] := by
   ext x
-  simp only [single'_coe, basisVector_def, basisFun_apply, ofLp_toEuclideanCLM, PiLp.ofLp_single,
-    mulVec_eq_sum, Pi.single_apply, transpose_submatrix, blockDiagonal_transpose, op_smul_eq_smul,
-    ite_smul, one_smul, zero_smul, Finset.sum_apply, WithLp.ofLp_sum, WithLp.ofLp_smul,
-    Pi.smul_apply, eq_update_iff, ne_eq, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  simp only [single'_coe, basisVector_def, EuclideanSpace.basisFun_apply, ofLp_toEuclideanCLM,
+    PiLp.ofLp_single, mulVec_eq_sum, Pi.single_apply, transpose_submatrix,
+    blockDiagonal_transpose, op_smul_eq_smul, ite_smul, one_smul, zero_smul, Finset.sum_apply,
+    WithLp.ofLp_sum, WithLp.ofLp_smul, Pi.smul_apply, eq_update_iff,
+    ne_eq, smul_eq_mul, mul_ite, mul_one, mul_zero]
   rw [Finset.sum_eq_ite v (by simp_all)]
   simp_all [ite_and, funext_iff, toEuclideanCLM_symm_apply]
   grind
+
+-- These simps do not commute ... find a better api
+theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
+    single' i U δ[v] = EuclideanSpace.piSplitAt i
+      ((U  δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]) := by
+  ext
+  simp [-single'_coe, single_apply_basis]
+  simp [basisVector_def, eq_update_iff, ite_and]
+  simp [funext_iff]

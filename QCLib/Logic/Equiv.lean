@@ -19,6 +19,7 @@ variable {ι α β l : Type*}
 
 namespace Equiv
 
+-- Remove it (it is for matrices)
 /-- `EuclideanSpace 𝕜 α` splits as the binary product of the `i`-th coordinate and the
 `EuclideanSpace` on the remaining indices. -/
 @[simps!]
@@ -28,6 +29,15 @@ noncomputable def EuclideanSpace.splitAt
   (EuclideanSpace.equiv α 𝕜).toEquiv.trans <|
     (funSplitAt i 𝕜).trans <|
       (Equiv.refl 𝕜).prodCongr (EuclideanSpace.equiv { j // j ≠ i } 𝕜).symm
+
+@[simps! apply symm_apply]
+noncomputable def EuclideanSpace.piSplitAt
+    {𝕜 : Type*} [RCLike 𝕜]
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (i : ι) {k : ι → Type*} [∀ j, Fintype (k j)] :
+    EuclideanSpace 𝕜 (k i × ((a : { j // j ≠ i }) → k ↑a)) ≃L[𝕜]
+      EuclideanSpace 𝕜 ((j : ι) → k j) :=
+  (LinearIsometryEquiv.piLpCongrLeft 2 𝕜 𝕜 (Equiv.piSplitAt i k).symm).toContinuousLinearEquiv
 
 -- TBD: Version stated for sets?
 -- TBD: Make dependent?
@@ -50,7 +60,7 @@ def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i
   right_inv := by intro _; aesop
 
 @[simp]
-theorem EuclideanSpace.piSplitAt_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
+theorem EuclideanSpace.splitPair_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
   ((fun j : { j // ¬j = i } ↦ x ↑j) = fun j : { j // ¬j = i } ↦ y ↑j) ∧ x i = y i ↔ x = y := by
   simp [funext_iff]
   grind
