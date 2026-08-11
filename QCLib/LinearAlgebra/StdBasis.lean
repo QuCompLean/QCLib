@@ -165,6 +165,11 @@ theorem basisVector_def (i : ι) :
 /-- The computational basis. -/
 notation3:max "δ[" i:90 "] " => BasisVector i
 
+@[simp]
+theorem basisVector_apply (i : ι) (x : ι) [DecidableEq ι] :
+    δ[i] x = if x = i then 1 else 0 := by
+  simp [basisVector_def]
+
 -- `ext` lemma stated for `SMul` action of unitaries on vectors.
 -- TBD: Get rid of this? Formulate in terms of `toLin` and general Bases? State
 -- for `MatrixLike` objects?

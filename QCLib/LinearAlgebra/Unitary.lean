@@ -60,6 +60,13 @@ noncomputable def unitaryGroupEquiv :
 -- see `controllize_eq_controllizeRight_swap`
 attribute [simp ←] StarMulEquiv.toMulEquiv_symm
 
+@[simp]
+lemma toEuclideanCLM_symm_apply
+    (v x : n) (U : 𝐔ᶠ[n]) :
+    toEuclideanCLM (𝕜 := ℂ).symm U x v =
+      (U δ[v]) x := by
+  simp [toEuclideanCLM, LinearMap.toMatrix_apply, basisVector_def]
+
 /-- MonoidHom from phase-valued functions to diagonal unitaries -/
 @[simps! -isSimp coe]
 def diagonalMonoidHom :

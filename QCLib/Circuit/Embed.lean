@@ -38,13 +38,13 @@ open Unitary.EuclideanCLM OuterProduct
 variable {ι : Type*} [DecidableEq ι] [Fintype ι]
 variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
 
-/-- The embedding of a unitary matrix `U : 𝐔[k i]` into `𝐔[Π i, k i]` realized by
+/-- The embedding of a unitary matrix `U : 𝐔ᶠ[k i]` into `𝐔ᶠ[Π i, k i]` realized by
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 @[simps! coe]
 def single' (i : ι) (U : 𝐔ᶠ[k i]) : 𝐔ᶠ[Π i, k i] :=
   reindexMonoidEquiv (Equiv.piSplitAt i k).symm (blockDiagonalStarMonoidHom (fun _ ↦ U))
 
-/-- The embedding of a unitary matrix `U : 𝐔[k]` into `𝐔[ι → k]` realized by
+/-- The embedding of a unitary matrix `U : 𝐔ᶠ[k]` into `𝐔ᶠ[ι → k]` realized by
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 abbrev single {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :=
   single' (k := fun _ ↦ k) i U
@@ -92,23 +92,14 @@ theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
   ext
   simp [diagonalMonoidHom_coe, diagonal_apply]
 
--- make it private?
-lemma toEuclideanCLM_symm_apply
-    {𝕜 : Type*} [RCLike 𝕜]
-    (v x : ι) (U : EuclideanSpace 𝕜 ι →L[𝕜] EuclideanSpace 𝕜 ι) :
-    toEuclideanCLM (𝕜 := 𝕜).symm U x v =
-      (U (EuclideanSpace.single v 1)) x := by
-  simp [toEuclideanCLM, LinearMap.toMatrix_apply]
-
 theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] =
       ∑ w, (U δ[v i]) w • δ[update v i w] := by
   ext x
-  simp only [single'_coe, basisVector_def, EuclideanSpace.basisFun_apply, ofLp_toEuclideanCLM,
-    PiLp.ofLp_single, mulVec_eq_sum, Pi.single_apply, transpose_submatrix,
-    blockDiagonal_transpose, op_smul_eq_smul, ite_smul, one_smul, zero_smul, Finset.sum_apply,
-    WithLp.ofLp_sum, WithLp.ofLp_smul, Pi.smul_apply, eq_update_iff,
-    ne_eq, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  simp only [single'_coe, ofLp_toEuclideanCLM, mulVec_eq_sum, basisVector_apply,
+    transpose_submatrix, blockDiagonal_transpose, op_smul_eq_smul, ite_smul, one_smul, zero_smul,
+    Finset.sum_apply, WithLp.ofLp_sum, WithLp.ofLp_smul, Pi.smul_apply, eq_update_iff, ne_eq,
+    smul_eq_mul, mul_ite, mul_one, mul_zero]
   rw [Finset.sum_eq_ite v (by simp_all)]
   simp_all [ite_and, funext_iff, toEuclideanCLM_symm_apply]
   grind
@@ -116,8 +107,7 @@ theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
 -- These simps do not commute ... find a better api
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] = EuclideanSpace.piSplitAt i
-      ((U  δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]) := by
+      ((U δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]) := by
   ext
-  simp [-single'_coe, single_apply_basis]
-  simp [basisVector_def, eq_update_iff, ite_and]
+  simp [-single'_coe, single_apply_basis, eq_update_iff, ite_and]
   simp [funext_iff]
