@@ -195,7 +195,8 @@ theorem bipartite_apply_basis (i j : ι) (A : 𝐔ᶠ[k i × k j]) (h : i ≠ j)
 -- Another case of bad API.
 theorem bipartite_apply_basis' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j U h δ[v] =
-      (EuclideanSpace.piSplitAtPair i j) ((U δ[(v i, v j)]) ⨂ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) := by
+      (EuclideanSpace.piSplitAtPair i j)
+      ((U δ[(v i, v j)]) ⨂ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) := by
   ext u
   simp only [bipartite_apply_basis, WithLp.ofLp_sum, WithLp.ofLp_smul, Finset.sum_apply,
     Pi.smul_apply, basisVector_apply, funext_iff, smul_eq_mul, mul_ite, mul_one, mul_zero, ne_eq,
@@ -205,3 +206,11 @@ theorem bipartite_apply_basis' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j
     Finset.mem_univ, funext_iff]
   rw [Finset.sum_eq_single (u i) (by grind) (by grind)]
   grind
+
+
+@[simp]
+theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i ≠ j) :
+    bipartite' i j (diagonalMonoidHom d) h = diagonalMonoidHom (fun x ↦ d (x i, x j)) := by
+  apply ContinuousLinearMap.ext_basis_iff.mp (fun k => ?_)
+  ext
+  simp [bipartite_apply_basis', funext_iff, ← ite_and, and_comm]
