@@ -44,7 +44,7 @@ section single
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 @[simps! coe]
 def single' (i : ι) (U : 𝐔ᶠ[k i]) : 𝐔ᶠ[Π i, k i] :=
-  reindexMonoidEquiv (Equiv.piSplitAt i k).symm (blockDiagonalStarMonoidHom (fun _ ↦ U))
+  reindexMonoidEquiv (piSplitAt i k).symm (blockDiagonalStarMonoidHom (fun _ ↦ U))
 
 /-- The embedding of a unitary matrix `U : 𝐔ᶠ[k]` into `𝐔ᶠ[ι → k]` realized by
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
@@ -57,7 +57,7 @@ theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
   ext
   simp only [StarMulEquiv.coe_toMulEquiv, unitaryGroupEquiv_symm_apply, Subtype.map_coe,
     single'_coe, StarMulEquiv.toStarMonoidHom_coe, StarMulEquiv.ofClass_symm_apply,
-    EquivLike.inv_apply_apply, submatrix_apply, Equiv.piSplitAt_apply, ne_eq, blockDiagonal_apply,
+    EquivLike.inv_apply_apply, submatrix_apply, piSplitAt_apply, ne_eq, blockDiagonal_apply,
     funext_iff, Subtype.forall, piTprod_coe, apply_dite, OneMemClass.coe_one,
      EuclideanCLM.piTprod_def, piKronecker_apply]
   split_ifs with h
@@ -79,14 +79,14 @@ theorem single_one (i : ι) : single' i (1 : 𝐔ᶠ[k i]) = 1 := by
 theorem single'_reindexMonoidEquiv {k' : ι → Type*} [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
     (e : ∀ i, k i ≃ k' i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i (reindexMonoidEquiv (e i) U) =
-      reindexMonoidEquiv (Equiv.piCongrRight e) (single' i U) := by
+      reindexMonoidEquiv (piCongrRight e) (single' i U) := by
   ext
   simp [funext_iff, Unitary.EuclideanCLM.reindexMonoidEquiv]
 
 theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k']
     [Fintype k] [Fintype k'] (e : k ≃ k') (i : ι) (U : 𝐔ᶠ[k]) :
     single i (reindexMonoidEquiv e U) =
-    Unitary.EuclideanCLM.reindexMonoidEquiv (Equiv.piCongrRight (fun _ : ι ↦ e)) (single i U) := by
+    Unitary.EuclideanCLM.reindexMonoidEquiv (piCongrRight (fun _ : ι ↦ e)) (single i U) := by
   simp [← single'_reindexMonoidEquiv]
 
 theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
@@ -150,3 +150,44 @@ theorem noncommProd_single_univ {k : Type*} [DecidableEq k] [Fintype k] (f : ι 
   simp [noncommProd_single]
 
 end single
+
+section bipartite
+
+-- TBD: Revisit argument order
+/-- The embedding of a unitary matrix `U : U[k i × k j]` into `𝐔[Π i, k i]`
+realized by acting with `U` on the `i`th and the `j`th index, and trivially on
+all other indices. -/
+@[simps!]
+def bipartite' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j := by grind) : 𝐔ᶠ[Π i, k i] :=
+  reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm
+    <| blockDiagonalStarMonoidHom (fun _ ↦ U)
+
+/-- `Matrix.UnitaryGroup.bipartite'` bundled as a monoid homomorphism. -/
+def bipartiteMonoidHom' (i j : ι) (h : i ≠ j := by grind) : 𝐔ᶠ[k i × k j] →* 𝐔ᶠ[Π i, k i] :=
+  (Unitary.EuclideanCLM.reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm).toMonoidHom.comp
+    <| blockDiagonalStarMonoidHom.toMonoidHom.comp <|
+    Pi.monoidHom fun _ ↦ MonoidHom.id 𝐔ᶠ[k i × k j]
+
+theorem bipartiteMonoidHom_apply (i j : ι) (h : i ≠ j) (U : 𝐔ᶠ[k i × k j]) :
+    bipartiteMonoidHom' i j h U = bipartite' i j U h := by
+  simp only [bipartiteMonoidHom', ne_eq, MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_comp,
+    MonoidHom.coe_coe, Function.comp_apply, bipartite', EmbeddingLike.apply_eq_iff_eq]
+  ext
+  simp
+
+/-- The embedding of a unitary matrix `U : U[k × k]` into `𝐔[ι → k]` realized
+by acting with `U` on the `i`th and the `j`th index, and trivially on all other
+indices. -/
+abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
+    (i j : ι) (U : 𝐔ᶠ[k × k]) (h : i ≠ j := by grind) := bipartite' (k := fun _ : ι ↦ k) i j U h
+
+theorem bipartite_apply_basis (i j : ι) (A : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
+    bipartite' i j A h δ[v] = ∑ q, A δ[(v i, v j)] q • δ[update (update v i q.1) j q.2] := by
+  ext y
+  simp only [bipartite'_coe_apply_ofLp, funext_iff, Subtype.forall, forall_and_index,
+    basisVector_apply, ite_mul, one_mul, zero_mul, ← ite_and, and_comm, WithLp.ofLp_sum,
+    WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  simp only [← funext_iff, ite_and, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
+  rw [Finset.sum_eq_single ⟨y i, y j⟩ (by aesop) (by aesop)]
+  simp [funext_iff]
+  grind
