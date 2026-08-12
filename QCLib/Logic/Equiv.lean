@@ -59,8 +59,18 @@ def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i
   left_inv := by intro _; grind
   right_inv := by intro _; aesop
 
+@[simps! apply symm_apply]
+noncomputable def EuclideanSpace.piSplitAtPair
+    {𝕜 : Type*} [RCLike 𝕜]
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (i j : ι) {k : ι → Type*} [∀ l, Fintype (k l)] (hji : j ≠ i := by grind) :
+    EuclideanSpace 𝕜 ((k i × k j) × ((a : {l // l ≠ i ∧ l ≠ j}) → k a)) ≃L[𝕜]
+      EuclideanSpace 𝕜 ((l : ι) → k l) :=
+  (LinearIsometryEquiv.piLpCongrLeft 2 𝕜 𝕜
+    (Equiv.piSplitAtPair i j hji).symm).toContinuousLinearEquiv
+
 @[simp]
-theorem EuclideanSpace.splitPair_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
+theorem EuclideanSpace.split_funext_iff {k : ι → Type*} (i : ι) (x y : Π x, k x) :
   ((fun j : { j // ¬j = i } ↦ x ↑j) = fun j : { j // ¬j = i } ↦ y ↑j) ∧ x i = y i ↔ x = y := by
   simp [funext_iff]
   grind

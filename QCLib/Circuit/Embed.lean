@@ -191,3 +191,17 @@ theorem bipartite_apply_basis (i j : ι) (A : 𝐔ᶠ[k i × k j]) (h : i ≠ j)
   rw [Finset.sum_eq_single ⟨y i, y j⟩ (by aesop) (by aesop)]
   simp [funext_iff]
   grind
+
+-- Another case of bad API.
+theorem bipartite_apply_basis' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
+    bipartite' i j U h δ[v] =
+      (EuclideanSpace.piSplitAtPair i j) ((U δ[(v i, v j)]) ⨂ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) := by
+  ext u
+  simp only [bipartite_apply_basis, WithLp.ofLp_sum, WithLp.ofLp_smul, Finset.sum_apply,
+    Pi.smul_apply, basisVector_apply, funext_iff, smul_eq_mul, mul_ite, mul_one, mul_zero, ne_eq,
+    EuclideanSpace.piSplitAtPair_apply, LinearEquiv.piCongrLeft'_apply, symm_symm,
+    piSplitAtPair_apply, EuclideanSpace.outerProduct_apply, Subtype.forall, forall_and_index]
+  simp_rw [← funext_iff, eq_update_iff, ne_eq, ite_and, Fintype.sum_prod_type, Finset.sum_ite_eq,
+    Finset.mem_univ, funext_iff]
+  rw [Finset.sum_eq_single (u i) (by grind) (by grind)]
+  grind
