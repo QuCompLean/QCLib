@@ -35,14 +35,39 @@ TBD
 open Unitary.EuclideanCLM OuterProduct
   Function PiOuterProduct Matrix Equiv
 
-variable {ι : Type*} [DecidableEq ι] [Fintype ι]
-variable {k : ι → Type*} [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
+variable {ι : Type*}
+variable {k : ι → Type*}
+
+/-- `funext_iff` specialized to functions out of the "complement of `{i}`" subtype,
+so `simp` won't also unfold unrelated `Π i, k i` equalities like `x = v`. -/
+@[simp]
+theorem funext_iff_ne {i : ι} :
+    ∀ {f g : ∀ a : {ℓ // ℓ ≠ i}, k a.1}, f = g ↔ ∀ a, f a = g a := funext_iff
+
+/-- Same, for the pair of `{i, j}`. -/
+@[simp]
+theorem funext_iff_ne_ne {i j : ι} :
+    ∀ {f g : ∀ a : {ℓ // ℓ ≠ i ∧ ℓ ≠ j}, k a.1}, f = g ↔ ∀ a, f a = g a := funext_iff
+
+@[simp]
+theorem eq_iff_eq_of_eq_at (i : ι) (x y : (j : ι) → k j) :
+   (∀ (a : ι), ¬a = i → x a = y a) ∧ x i = y i ↔ x = y := by grind
+
+variable [DecidableEq ι] [Fintype ι] [∀ i, DecidableEq (k i)] [∀ i, Fintype (k i)]
+
+@[simp]
+theorem sum_update_eq {M} [AddCommMonoid M] (i : ι)
+    (x v : (j : ι) → k j) (f : k i → M) :
+    (∑ x_1 : k i, if x = update v i x_1 then f x_1 else 0) =
+      if ∀ a, a ≠ i → v a = x a then f (x i) else 0 := by
+  simp [eq_update_iff, ite_and]
+  grind
 
 section single
 
 /-- The embedding of a unitary matrix `U : 𝐔ᶠ[k i]` into `𝐔ᶠ[Π i, k i]` realized by
 acting with `U` on the `i`-th factor, and trivially on all other indices. -/
-@[simps! coe]
+@[simps! -isSimp coe]
 def single' (i : ι) (U : 𝐔ᶠ[k i]) : 𝐔ᶠ[Π i, k i] :=
   reindexMonoidEquiv (piSplitAt i k).symm (blockDiagonalStarMonoidHom (fun _ ↦ U))
 
@@ -51,37 +76,32 @@ acting with `U` on the `i`-th factor, and trivially on all other indices. -/
 abbrev single {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :=
   single' (k := fun _ ↦ k) i U
 
-theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
-    single' i U = ⨂ j, if h : j = i then h ▸ U else (1 : 𝐔ᶠ[k j]) := by
-  apply unitaryGroupEquiv.symm.injective
+attribute [simp] mulVec_eq_sum blockDiagonal_apply ite_apply
+
+@[simp]
+theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
+    single' i U δ[v] =
+      ∑ w, (U δ[v i]) w • δ[update v i w] := by
   ext
-  simp only [StarMulEquiv.coe_toMulEquiv, unitaryGroupEquiv_symm_apply, Subtype.map_coe,
-    single'_coe, StarMulEquiv.toStarMonoidHom_coe, StarMulEquiv.ofClass_symm_apply,
-    EquivLike.inv_apply_apply, submatrix_apply, piSplitAt_apply, ne_eq, blockDiagonal_apply,
-    funext_iff, Subtype.forall, piTprod_coe, apply_dite, OneMemClass.coe_one,
-     EuclideanCLM.piTprod_def, piKronecker_apply]
-  split_ifs with h
-  · rw [Finset.prod_eq_single i] <;> aesop
-  · obtain ⟨w, hw⟩ := not_forall.mp h
-    rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all)]
+  simp [single'_coe]
 
-example {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :
-    single i U = ⨂ j, if j = i then U else 1 := by
-  simp [single_eq_prod]
-
-attribute [simp] mulVec_eq_sum blockDiagonal_apply
+theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
+    single' i U δ[v] = EuclideanSpace.piSplitAt i
+      ((U δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]) := by
+  ext
+  simp [eq_update_iff, ite_and]
 
 @[simp]
 theorem single_one (i : ι) : single' i (1 : 𝐔ᶠ[k i]) = 1 := by
   ext
-  simp [one_apply, ← ite_and]
+  simp
 
 theorem single'_reindexMonoidEquiv {k' : ι → Type*} [∀ i, DecidableEq (k' i)] [∀ i, Fintype (k' i)]
     (e : ∀ i, k i ≃ k' i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i (reindexMonoidEquiv (e i) U) =
       reindexMonoidEquiv (piCongrRight e) (single' i U) := by
   ext
-  simp [funext_iff, Unitary.EuclideanCLM.reindexMonoidEquiv]
+  simp [Unitary.EuclideanCLM.reindexMonoidEquiv]
 
 theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k']
     [Fintype k] [Fintype k'] (e : k ≃ k') (i : ι) (U : 𝐔ᶠ[k]) :
@@ -93,26 +113,24 @@ theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
     single' i (diagonalMonoidHom d) = diagonalMonoidHom (fun x ↦ d (x i)) := by
   ext
   simp [diagonalMonoidHom_coe, diagonal_apply]
-
-theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
-    single' i U δ[v] =
-      ∑ w, (U δ[v i]) w • δ[update v i w] := by
-  ext x
-  simp only [single'_coe, ofLp_toEuclideanCLM, mulVec_eq_sum, basisVector_apply,
-    transpose_submatrix, blockDiagonal_transpose, op_smul_eq_smul, ite_smul, one_smul, zero_smul,
-    Finset.sum_apply, WithLp.ofLp_sum, WithLp.ofLp_smul, Pi.smul_apply, eq_update_iff, ne_eq,
-    smul_eq_mul, mul_ite, mul_one, mul_zero]
-  rw [Finset.sum_eq_ite v (by simp_all)]
-  simp_all [ite_and, funext_iff, toEuclideanCLM_symm_apply]
   grind
 
--- These simps do not commute ... find a better api
-theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
-    single' i U δ[v] = EuclideanSpace.piSplitAt i
-      ((U δ[v i]) ⨂ δ[fun a : {j // j ≠ i} => v a]) := by
+theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
+    single' i U = ⨂ j, if h : j = i then h ▸ U else (1 : 𝐔ᶠ[k j]) := by
   ext
-  simp [-single'_coe, single_apply_basis, eq_update_iff, ite_and]
-  simp [funext_iff]
+  simp only [single_apply_basis, WithLp.ofLp_sum, WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply,
+    basisVector_apply, smul_eq_mul, mul_ite, mul_one, mul_zero, sum_update_eq, ne_eq, piTprod_coe,
+    apply_dite, OneMemClass.coe_one, EuclideanCLM.piTprod_apply, map_one, mulVec_eq_sum,
+    op_smul_eq_smul, ite_smul, one_smul, zero_smul, ite_apply, transpose_apply, piKronecker_apply,
+    Pi.zero_apply, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
+  split_ifs with h
+  · rw [Finset.prod_eq_single i] <;> simp_all [one_apply]
+  · obtain ⟨w, hw⟩ := not_forall.mp h
+    rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all [one_apply]; grind)]
+
+example {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :
+    single i U = ⨂ j, if j = i then U else 1 := by
+  simp [single_eq_prod]
 
 @[simp]
 theorem single_single_commute {i j : ι} (h : i ≠ j) (U : 𝐔ᶠ[k i]) (V : 𝐔ᶠ[k j]) :
@@ -126,7 +144,7 @@ theorem single_single_commute {i j : ι} (h : i ≠ j) (U : 𝐔ᶠ[k i]) (V : �
 theorem single_mul (i : ι) (U V : 𝐔ᶠ[k i]) :
     single' i (U * V) = single' i U * single' i V := by
   ext
-  simp [← blockDiagonal_mul, ← map_mul]
+  simp [single'_coe, ← blockDiagonal_mul, ← map_mul]
 
 @[simp]
 theorem pairwise_commute_single (f : Π i, 𝐔ᶠ[k i]) (s : Set ι) :
@@ -150,7 +168,7 @@ theorem noncommProd_single_univ {k : Type*} [DecidableEq k] [Fintype k] (f : ι 
   simp [noncommProd_single]
 
 end single
-
+#exit
 section bipartite
 
 -- TBD: Revisit argument order
@@ -184,13 +202,14 @@ abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
 theorem bipartite_apply_basis (i j : ι) (A : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j A h δ[v] = ∑ q, A δ[(v i, v j)] q • δ[update (update v i q.1) j q.2] := by
   ext y
-  simp only [bipartite'_coe_apply_ofLp, funext_iff, Subtype.forall, forall_and_index,
-    basisVector_apply, ite_mul, one_mul, zero_mul, ← ite_and, and_comm, WithLp.ofLp_sum,
-    WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
-  simp only [← funext_iff, ite_and, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
-  rw [Finset.sum_eq_single ⟨y i, y j⟩ (by aesop) (by aesop)]
-  simp [funext_iff]
-  grind
+  simp
+  -- simp only [bipartite'_coe_apply_ofLp, funext_iff, Subtype.forall, forall_and_index,
+  --   basisVector_apply, ite_mul, one_mul, zero_mul, ← ite_and, and_comm, WithLp.ofLp_sum,
+  --   WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  -- simp only [← funext_iff, ite_and, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
+  -- rw [Finset.sum_eq_single ⟨y i, y j⟩ (by aesop) (by aesop)]
+  -- simp [funext_iff]
+  -- grind
 
 -- Another case of bad API.
 theorem bipartite_apply_basis' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
