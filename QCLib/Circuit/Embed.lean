@@ -121,8 +121,7 @@ theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k'
 theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
     single' i (diagonalMonoidHom d) = diagonalMonoidHom (fun x ↦ d (x i)) := by
   ext
-  simp [diagonalMonoidHom_coe, diagonal_apply]
-  grind
+  simp [diagonalMonoidHom_coe, diagonal_apply, eq_comm_eq]
 
 theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U = ⨂ j, if h : j = i then h ▸ U else (1 : 𝐔ᶠ[k j]) := by
