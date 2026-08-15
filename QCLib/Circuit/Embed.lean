@@ -58,10 +58,19 @@ variable [DecidableEq ι] [Fintype ι] [∀ i, DecidableEq (k i)] [∀ i, Fintyp
 @[simp]
 theorem sum_update_eq {M} [AddCommMonoid M] (i : ι)
     (x v : (j : ι) → k j) (f : k i → M) :
-    (∑ x_1 : k i, if x = update v i x_1 then f x_1 else 0) =
-      if ∀ a, a ≠ i → v a = x a then f (x i) else 0 := by
+    (∑ t : k i, if x = update v i t then f t else 0) =
+      if ∀ a, a ≠ i → x a = v a then f (x i) else 0 := by
   simp [eq_update_iff, ite_and]
-  grind
+
+@[simp]
+theorem sum_update_update_eq {M} [AddCommMonoid M] {i j : ι}
+    (hij : i ≠ j)
+    (y v : (a : ι) → k a)
+    (f : k i × k j → M) :
+    (∑ x, if y = update (update v i x.1) j x.2 then f x else 0) =
+      if ∀ a, a ≠ i → a ≠ j → y a = v a then f (y i, y j) else 0 := by
+  simp only [Fintype.sum_prod_type, sum_update_eq, ne_eq]
+  rw [Finset.sum_eq_single (y i)] <;> grind
 
 section single
 
@@ -83,7 +92,7 @@ theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] =
       ∑ w, (U δ[v i]) w • δ[update v i w] := by
   ext
-  simp [single'_coe]
+  simp [single'_coe, eq_comm_eq]
 
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] = EuclideanSpace.piSplitAt i
@@ -126,7 +135,7 @@ theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
   split_ifs with h
   · rw [Finset.prod_eq_single i] <;> simp_all [one_apply]
   · obtain ⟨w, hw⟩ := not_forall.mp h
-    rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all [one_apply]; grind)]
+    rw [Finset.prod_eq_zero (Finset.mem_univ w) (by simp_all )]
 
 example {k : Type*} [DecidableEq k] [Fintype k] (i : ι) (U : 𝐔ᶠ[k]) :
     single i U = ⨂ j, if j = i then U else 1 := by
@@ -168,14 +177,16 @@ theorem noncommProd_single_univ {k : Type*} [DecidableEq k] [Fintype k] (f : ι 
   simp [noncommProd_single]
 
 end single
-#exit
+
+
+
 section bipartite
 
 -- TBD: Revisit argument order
 /-- The embedding of a unitary matrix `U : U[k i × k j]` into `𝐔[Π i, k i]`
 realized by acting with `U` on the `i`th and the `j`th index, and trivially on
 all other indices. -/
-@[simps!]
+@[simps! -isSimp coe]
 def bipartite' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j := by grind) : 𝐔ᶠ[Π i, k i] :=
   reindexMonoidEquiv (Equiv.piSplitAtPair i j h.symm).symm
     <| blockDiagonalStarMonoidHom (fun _ ↦ U)
@@ -199,37 +210,22 @@ indices. -/
 abbrev bipartite {k : Type*} [DecidableEq k] [Fintype k]
     (i j : ι) (U : 𝐔ᶠ[k × k]) (h : i ≠ j := by grind) := bipartite' (k := fun _ : ι ↦ k) i j U h
 
+@[simp]
 theorem bipartite_apply_basis (i j : ι) (A : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j A h δ[v] = ∑ q, A δ[(v i, v j)] q • δ[update (update v i q.1) j q.2] := by
-  ext y
-  simp
-  -- simp only [bipartite'_coe_apply_ofLp, funext_iff, Subtype.forall, forall_and_index,
-  --   basisVector_apply, ite_mul, one_mul, zero_mul, ← ite_and, and_comm, WithLp.ofLp_sum,
-  --   WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
-  -- simp only [← funext_iff, ite_and, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
-  -- rw [Finset.sum_eq_single ⟨y i, y j⟩ (by aesop) (by aesop)]
-  -- simp [funext_iff]
-  -- grind
+  ext
+  simp [bipartite'_coe, sum_update_update_eq h]
+  simp [eq_comm_eq]
 
--- Another case of bad API.
 theorem bipartite_apply_basis' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j) (v : Π i, k i) :
     bipartite' i j U h δ[v] =
       (EuclideanSpace.piSplitAtPair i j)
       ((U δ[(v i, v j)]) ⨂ δ[fun a : {m // m ≠ i ∧ m ≠ j} => v a]) := by
-  ext u
-  simp only [bipartite_apply_basis, WithLp.ofLp_sum, WithLp.ofLp_smul, Finset.sum_apply,
-    Pi.smul_apply, basisVector_apply, funext_iff, smul_eq_mul, mul_ite, mul_one, mul_zero, ne_eq,
-    EuclideanSpace.piSplitAtPair_apply, LinearEquiv.piCongrLeft'_apply, symm_symm,
-    piSplitAtPair_apply, EuclideanSpace.outerProduct_apply, Subtype.forall, forall_and_index]
-  simp_rw [← funext_iff, eq_update_iff, ne_eq, ite_and, Fintype.sum_prod_type, Finset.sum_ite_eq,
-    Finset.mem_univ, funext_iff]
-  rw [Finset.sum_eq_single (u i) (by grind) (by grind)]
-  grind
-
+  ext
+  simp [sum_update_update_eq h]
 
 @[simp]
 theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i ≠ j) :
     bipartite' i j (diagonalMonoidHom d) h = diagonalMonoidHom (fun x ↦ d (x i, x j)) := by
-  apply ContinuousLinearMap.ext_basis_iff.mp (fun k => ?_)
   ext
-  simp [bipartite_apply_basis', funext_iff, ← ite_and, and_comm]
+  simp_all [eq_comm_eq]
