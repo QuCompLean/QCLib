@@ -48,7 +48,7 @@ def piSplitPred (p : ι → Prop) [DecidablePred p] :
     arrowCongr (piEquivPiSubtypeProd p (fun _ ↦ l)) (Equiv.refl α)
 
 -- C.f. `Equiv.piSplitAt`
-@[simps]
+@[simps apply symm_apply]
 def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i := by grind) :
     (∀ k : ι, β k) ≃ (β i × β j) × (∀ k : {k // k ≠ i ∧ k ≠ j}, β k) where
   toFun f := ((f i, f j), fun ⟨k, hi, hj⟩ => f k)

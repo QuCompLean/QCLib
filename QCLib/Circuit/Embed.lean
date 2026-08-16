@@ -92,7 +92,7 @@ theorem single_apply_basis (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] =
       ∑ w, (U δ[v i]) w • δ[update v i w] := by
   ext
-  simp [single'_coe, eq_comm_eq]
+  simp [single'_coe, eq_comm]
 
 theorem single_apply_basis' (v : Π i, k i) (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U δ[v] = EuclideanSpace.piSplitAt i
@@ -121,7 +121,7 @@ theorem single_reindexMonoidEquiv {k k' : Type*} [DecidableEq k] [DecidableEq k'
 theorem single_diagonal (i : ι) (d : k i → unitary ℂ) :
     single' i (diagonalMonoidHom d) = diagonalMonoidHom (fun x ↦ d (x i)) := by
   ext
-  simp [diagonalMonoidHom_coe, diagonal_apply, eq_comm_eq]
+  simp [diagonalMonoidHom_coe, diagonal_apply, eq_comm]
 
 theorem single_eq_prod (i : ι) (U : 𝐔ᶠ[k i]) :
     single' i U = ⨂ j, if h : j = i then h ▸ U else (1 : 𝐔ᶠ[k j]) := by
@@ -227,4 +227,13 @@ theorem bipartite_apply_basis' (i j : ι) (U : 𝐔ᶠ[k i × k j]) (h : i ≠ j
 theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i ≠ j) :
     bipartite' i j (diagonalMonoidHom d) h = diagonalMonoidHom (fun x ↦ d (x i, x j)) := by
   ext
-  simp_all [eq_comm_eq]
+  simp_all
+
+-- TBD : Generalize it to dependent case
+set_option backward.isDefEq.respectTransparency false in
+theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
+    (A B : 𝐔ᶠ[k]) (i j : ι) (h : i ≠ j) :
+    bipartite i j (A ⨂ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
+  ext
+  simp [-bipartite_apply_basis,bipartite_apply_basis']
+  simp [funext_iff, apply_ite (Subtype.val),]

@@ -137,11 +137,7 @@ omit [DecidableEq n] in
 @[ext]
 theorem ContinuousLinearMap.ext_basis
     {a b : unitary ((EuclideanSpace ℂ n) →L[ℂ] (EuclideanSpace ℂ n))} :
-    (∀ i j : n, a δ[i] j = b δ[i] j) → a = b := by
-  intro h
-  apply ContinuousLinearMap.ext_basis_iff.mp (fun i => ?_)
-  ext j
-  exact h i j
+    (∀ i  : n, a δ[i] = b δ[i]) → a = b := ContinuousLinearMap.ext_basis_iff.mp
 
 theorem permHom_injective : Function.Injective (permHom (n := n) ℂ) := by
   intro σ τ h
