@@ -72,6 +72,31 @@ theorem sum_update_update_eq {M} [AddCommMonoid M] {i j : ι}
   simp only [Fintype.sum_prod_type, sum_update_eq, ne_eq]
   rw [Finset.sum_eq_single (y i)] <;> grind
 
+@[simp]
+theorem ContinuousLinearMap.dite_apply
+    {R₁ R₂ : Type*} [Semiring R₁] [Semiring R₂]
+    {σ₁₂ : R₁ →+* R₂}
+    {M₁ : Type*} [TopologicalSpace M₁] [AddCommMonoid M₁] [Module R₁ M₁]
+    {M₂ : Type*} [TopologicalSpace M₂] [AddCommMonoid M₂] [Module R₂ M₂]
+    {p : Prop} [Decidable p]
+    (f : p → M₁ →SL[σ₁₂] M₂)
+    (g : ¬p → M₁ →SL[σ₁₂] M₂)
+    (x : M₁) :
+    (dite p f g) x = dite p (fun h => f h x) (fun h => g h x) := by
+  grind
+
+@[simp]
+theorem ContinuousLinearMap.ite_apply
+    {R₁ R₂ : Type*} [Semiring R₁] [Semiring R₂]
+    {σ₁₂ : R₁ →+* R₂}
+    {M₁ : Type*} [TopologicalSpace M₁] [AddCommMonoid M₁] [Module R₁ M₁]
+    {M₂ : Type*} [TopologicalSpace M₂] [AddCommMonoid M₂] [Module R₂ M₂]
+    {p : Prop} [Decidable p]
+    (f g : M₁ →SL[σ₁₂] M₂)
+    (x : M₁) :
+    (if p then f else g) x = if p then f x else g x := by
+  grind
+
 section single
 
 /-- The embedding of a unitary matrix `U : 𝐔ᶠ[k i]` into `𝐔ᶠ[Π i, k i]` realized by
@@ -230,10 +255,11 @@ theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i �
   simp_all
 
 -- TBD : Generalize it to dependent case
-set_option backward.isDefEq.respectTransparency false in
 theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     (A B : 𝐔ᶠ[k]) (i j : ι) (h : i ≠ j) :
     bipartite i j (A ⨂ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
-  ext
-  simp [-bipartite_apply_basis,bipartite_apply_basis']
-  simp [funext_iff, apply_ite (Subtype.val),]
+  ext n m
+  simp [-bipartite_apply_basis, bipartite_apply_basis']
+  simp [funext_iff, apply_ite (Subtype.val), apply_ite (WithLp.ofLp)]
+  sorry
+  
