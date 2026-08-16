@@ -259,7 +259,19 @@ theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     (A B : 𝐔ᶠ[k]) (i j : ι) (h : i ≠ j) :
     bipartite i j (A ⨂ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
   ext n m
-  simp [-bipartite_apply_basis, bipartite_apply_basis']
-  simp [funext_iff, apply_ite (Subtype.val), apply_ite (WithLp.ofLp)]
-  sorry
-  
+  simp only [bipartite_apply_basis', ne_eq, EuclideanSpace.piSplitAtPair_apply,
+    LinearEquiv.piCongrLeft'_apply, symm_symm, piSplitAtPair_apply,
+    EuclideanSpace.outerProduct_apply, tensorProduct_apply, unitaryGroupEquiv_symm_apply,
+    UnitaryGroup.kronecker_apply, Subtype.map_coe, StarMulEquiv.toStarMonoidHom_coe,
+    StarMulEquiv.ofClass_symm_apply, StarAlgEquiv.invFun_eq_symm, mulVec_eq_sum, basisVector_apply,
+    op_smul_eq_smul, ite_smul, one_smul, zero_smul, Finset.sum_apply, ite_apply, transpose_apply,
+    kroneckerMap_apply, toEuclideanCLM_symm_apply, Pi.zero_apply, Finset.sum_ite_eq',
+    Finset.mem_univ, ↓reduceIte, mul_ite, mul_one, mul_zero, piTprod_coe,
+    EuclideanCLM.piTprod_apply, piKronecker_apply]
+  simp only [funext_iff, Subtype.forall, forall_and_index, apply_ite (Subtype.val),
+    OneMemClass.coe_one, ContinuousLinearMap.ite_apply, ContinuousLinearMap.one_apply,
+    apply_ite (WithLp.ofLp), ite_apply, basisVector_apply]
+  split_ifs with hv
+  · have (i : ι) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
+    simp_all [Finset.prod_ite, Ne.symm h]
+  · simp_all [Finset.prod_ite]
