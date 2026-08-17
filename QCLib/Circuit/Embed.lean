@@ -281,3 +281,11 @@ theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
   · have (i : ι) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
     simp_all [Finset.prod_ite, Ne.symm h]
   · simp_all [Finset.prod_ite]
+
+@[simp]
+theorem controllize_of_zero {n} (U : 𝐔ᶠ[Qubit]) (i j : Fin n) (h : i ≠ j)
+    (v : Register n) (hv : v i = 0) : bipartite i j C[U] h δ[v] = δ[v] := by
+  ext
+  simp [-controllize_coe, controllize_apply_basis,
+    Fintype.sum_prod_type, apply_ite (WithLp.ofLp)]
+  sorry

@@ -55,6 +55,21 @@ def controllizeRight (U : 𝐔ᶠ[k]) : 𝐔ᶠ[k × Fin n] :=
 theorem controllizeRight_def (U : 𝐔ᶠ[k]) :
   controllizeRight n U = blockDiagonalStarMonoidHom fun k ↦ U ^ (k.toNat) := by rfl
 
+-- BAD API!
+theorem controllizeRight_apply_basis (U : 𝐔ᶠ[k]) (x : k × Fin n) :
+  controllizeRight n U δ[x] = ∑ i, (U ^ (x.2 : ℕ)) δ[x.1] i • δ[⟨i, x.2⟩] := by
+  ext u
+  conv_lhs => simp [basisVector_def, Pi.single_apply, ← map_pow, Matrix.blockDiagonal_apply]
+  simp only [map_pow, WithLp.ofLp_sum, WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply,
+    basisVector_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  split_ifs with h
+  · rw [Finset.sum_eq_single u.1 (by grind) (by grind)]
+    simp [-SubmonoidClass.coe_pow, show (u.1, x.2) = u by grind,
+      ← toEuclideanCLM_symm_apply]
+    simp_all
+  · rw [Finset.sum_eq_zero]
+    grind
+
 @[simp]
 theorem controllizeRight_one : controllizeRight n (1 : 𝐔ᶠ[k]) = 1 := by
   simp [controllizeRight_def, ← Pi.one_def, -blockDiagonalStarMonoidHom_coe]
@@ -113,6 +128,20 @@ theorem controllize_eq_controllizeRight_swap (U : 𝐔ᶠ[k])
     (a : EuclideanSpace ℂ (Fin n × k)) (b : Fin n × k) :
     controllize n U a b = controllizeRight n U a.swap b.swap := by
   simp [controllize_def, Function.comp_def, -Equiv.coe_prodComm]
+
+theorem controllize_apply_basis (U : 𝐔ᶠ[k]) (x : Fin n × k) :
+    controllize n U δ[x] = ∑ i, (U ^ (x.1 : ℕ)) δ[x.2] i • δ[⟨x.1, i⟩] := by
+  ext u
+  conv_lhs => simp [basisVector_def, Pi.single_apply, ← map_pow, Matrix.blockDiagonal_apply]
+  simp only [map_pow, WithLp.ofLp_sum, WithLp.ofLp_smul, Finset.sum_apply, Pi.smul_apply,
+    basisVector_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  split_ifs with h
+  · rw [Finset.sum_eq_single u.2 (by grind) (by grind)]
+    simp [-SubmonoidClass.coe_pow, show (x.1, u.2) = u by grind,
+      ← toEuclideanCLM_symm_apply]
+    simp_all
+  · rw [Finset.sum_eq_zero]
+    grind
 
 theorem controllize_one : controllize n (1 : 𝐔ᶠ[k]) = 1 := by
   simp [controllize_def]
