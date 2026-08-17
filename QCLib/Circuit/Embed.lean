@@ -97,6 +97,14 @@ theorem ContinuousLinearMap.ite_apply
     (if p then f else g) x = if p then f x else g x := by
   grind
 
+
+@[simp]
+lemma StarAlgEquiv.map_ite {R A B : Type*} [CommSemiring R] [Semiring A] [Semiring B]
+  [Algebra R A] [Algebra R B] [Star A] [Star B]
+  (f : A ≃⋆ₐ[R] B) (P : Prop) [Decidable P] (x y : A) :
+  f (if P then x else y) = if P then f x else f y := by
+  grind
+
 section single
 
 /-- The embedding of a unitary matrix `U : 𝐔ᶠ[k i]` into `𝐔ᶠ[Π i, k i]` realized by
@@ -258,19 +266,17 @@ theorem bipartite_diagonal (i j : ι) (d : k i × k j → unitary ℂ) (h : i �
 theorem bipartite_kronecker {k : Type*} [DecidableEq k] [Fintype k]
     (A B : 𝐔ᶠ[k]) (i j : ι) (h : i ≠ j) :
     bipartite i j (A ⨂ B) h = ⨂ k, if k = i then A else if k = j then B else 1 := by
-  ext n m
-  simp only [bipartite_apply_basis', ne_eq, EuclideanSpace.piSplitAtPair_apply,
-    LinearEquiv.piCongrLeft'_apply, symm_symm, piSplitAtPair_apply,
-    EuclideanSpace.outerProduct_apply, tensorProduct_apply, unitaryGroupEquiv_symm_apply,
+  ext m n
+  simp only [bipartite_apply_basis, tensorProduct_apply, unitaryGroupEquiv_symm_apply,
     UnitaryGroup.kronecker_apply, Subtype.map_coe, StarMulEquiv.toStarMonoidHom_coe,
     StarMulEquiv.ofClass_symm_apply, StarAlgEquiv.invFun_eq_symm, mulVec_eq_sum, basisVector_apply,
     op_smul_eq_smul, ite_smul, one_smul, zero_smul, Finset.sum_apply, ite_apply, transpose_apply,
     kroneckerMap_apply, toEuclideanCLM_symm_apply, Pi.zero_apply, Finset.sum_ite_eq',
-    Finset.mem_univ, ↓reduceIte, mul_ite, mul_one, mul_zero, piTprod_coe,
+    Finset.mem_univ, ↓reduceIte, WithLp.ofLp_sum, WithLp.ofLp_smul, Pi.smul_apply, smul_eq_mul,
+    mul_ite, mul_one, mul_zero, sum_update_update_eq h n, ne_eq, piTprod_coe,
     EuclideanCLM.piTprod_apply, piKronecker_apply]
-  simp only [funext_iff, Subtype.forall, forall_and_index, apply_ite (Subtype.val),
-    OneMemClass.coe_one, ContinuousLinearMap.ite_apply, ContinuousLinearMap.one_apply,
-    apply_ite (WithLp.ofLp), ite_apply, basisVector_apply]
+  simp only [apply_ite (Subtype.val), OneMemClass.coe_one, ContinuousLinearMap.ite_apply,
+    ContinuousLinearMap.one_apply, apply_ite (WithLp.ofLp), ite_apply, basisVector_apply]
   split_ifs with hv
   · have (i : ι) : Finset.card {x | x = i} = 1 := Finset.card_eq_one.mpr (by use i; grind)
     simp_all [Finset.prod_ite, Ne.symm h]

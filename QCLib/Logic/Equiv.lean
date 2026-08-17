@@ -48,7 +48,7 @@ def piSplitPred (p : ι → Prop) [DecidablePred p] :
     arrowCongr (piEquivPiSubtypeProd p (fun _ ↦ l)) (Equiv.refl α)
 
 -- C.f. `Equiv.piSplitAt`
-@[simps apply symm_apply]
+@[simps symm_apply]
 def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i := by grind) :
     (∀ k : ι, β k) ≃ (β i × β j) × (∀ k : {k // k ≠ i ∧ k ≠ j}, β k) where
   toFun f := ((f i, f j), fun ⟨k, hi, hj⟩ => f k)
@@ -58,6 +58,13 @@ def piSplitAtPair {β : ι → Type*} [DecidableEq ι] (i j : ι) (hji : j ≠ i
     else g ⟨k, hki, hkj⟩
   left_inv := by intro _; grind
   right_inv := by intro _; aesop
+
+@[simp]
+theorem piSplitAtPair_applys {ι : Type u_1} {β : ι → Type u_5} [DecidableEq ι] (i j : ι)
+  (hji : j ≠ i := by grind) (f : (k : ι) → β k) :
+  (piSplitAtPair i j hji) f =
+      ((f i, f j), fun x : {k // k ≠ i ∧ k ≠ j} => f x.1) := by
+  simp [piSplitAtPair, funext_iff]
 
 @[simps! apply symm_apply]
 noncomputable def EuclideanSpace.piSplitAtPair
