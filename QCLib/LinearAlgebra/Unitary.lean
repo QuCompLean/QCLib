@@ -36,7 +36,7 @@ instance : SMulCommClass (unitary 𝕜) (unitary (E →L[𝕜] E)) (unitary (E �
 
 attribute [simp] smul_mul_assoc mul_smul_comm
 
--- Without it, certain lemmas will timeout, e.g. `controllizeRight_inv`.
+-- Without it, certain lemmas will time out, e.g. `controllizeRight_inv`.
 instance : Inv (unitary (E →L[𝕜] E)) := inferInstance
 
 namespace Unitary.EuclideanCLM
